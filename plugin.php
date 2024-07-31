@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Power House
+ * Plugin Name:       Powerhouse
  * Plugin URI:        https://github.com/j7-dev/power-house
  * Description:       方便開發 WordPress 外掛的工具包。
  * Version:           1.0.4
@@ -17,9 +17,9 @@
 
 declare ( strict_types=1 );
 
-namespace J7\PowerHouse;
+namespace J7\Powerhouse;
 
-if ( ! \class_exists( 'J7\PowerHouse\Plugin' ) ) {
+if ( ! \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 	require_once __DIR__ . '/vendor/autoload.php';
 
 	/**
@@ -36,7 +36,7 @@ if ( ! \class_exists( 'J7\PowerHouse\Plugin' ) ) {
 			require_once __DIR__ . '/inc/class/class-bootstrap.php';
 			$this->init(
 				[
-					'app_name'    => 'Power House',
+					'app_name'    => 'Powerhouse',
 					'github_repo' => 'https://github.com/j7-dev/power-house',
 					'callback'    => [ Bootstrap::class, 'instance' ],
 				]

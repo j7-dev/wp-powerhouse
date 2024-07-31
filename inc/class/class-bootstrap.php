@@ -5,7 +5,7 @@
 
 declare (strict_types = 1);
 
-namespace J7\PowerHouse;
+namespace J7\Powerhouse;
 
 /**
  * Class Bootstrap
@@ -25,22 +25,22 @@ final class Bootstrap {
 	 */
 	public static function add_power_plugin_menu(): void {
 		\add_menu_page(
-			__( 'Power Plugins', 'power_house' ),
-			__( 'Power Plugins', 'power_house' ),
+			__( 'Powerhouse', 'power_house' ),
+			__( 'Powerhouse', 'power_house' ),
 			'manage_options',
-			'power_plugins_settings',
-			[ __CLASS__, 'power_plugins_page_callback' ],
+			'power_house',
+			[ __CLASS__, 'power_house_page_callback' ],
 			'dashicons-superhero',
 			70
 		);
 
-		\add_submenu_page( 'power_plugins_settings', __( '其他', 'power_house' ), __( '其他', 'power_house' ), 'manage_options', 'power_plugins_settings', [ __CLASS__, 'power_plugins_page_callback' ], 1000 );
+		\add_submenu_page( 'power_house', __( '其他', 'power_house' ), __( '其他', 'power_house' ), 'manage_options', 'power_house', [ __CLASS__, 'power_house_page_callback' ], 1000 );
 	}
 
 	/**
-	 * Render Power Plugins Page Callback
+	 * Render Powerhouse Page Callback
 	 */
-	public static function power_plugins_page_callback(): void {
+	public static function power_house_page_callback(): void {
 		Plugin::get('admin');
 	}
 }
