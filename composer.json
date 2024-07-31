@@ -1,0 +1,36 @@
+{
+  "name": "j7-dev/power-house",
+  "description": "A toolkit for WordPress development, library as plugin",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-only",
+  "authors": [
+    {
+      "name": "JerryLiu",
+      "email": "j7.dev.gg@gmail.com",
+      "homepage": "https://github.com/j7-dev",
+      "role": "Developer"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    }
+  ],
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "require": {
+    "j7-dev/wp-utils": "0.2.8"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "@stable",
+    "wp-coding-standards/wpcs": "@stable",
+    "dealerdirect/phpcodesniffer-composer-installer": "@stable"
+  },
+  "scripts": {
+    "lint": "phpcs"
+  }
+}
