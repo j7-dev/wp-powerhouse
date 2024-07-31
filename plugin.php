@@ -3,7 +3,7 @@
  * Plugin Name:       Power House
  * Plugin URI:        https://github.com/j7-dev/power-house
  * Description:       方便開發 WordPress 外掛的工具包。
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 5.7
  * Requires PHP:      8.0
  * Author:            J7
