@@ -17,7 +17,10 @@ final class Bootstrap {
 	 * Constructor
 	 */
 	public function __construct() {
+		require_once __DIR__ . '/admin/index.php';
+
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_power_plugin_menu' ], 10 );
+		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 	}
 
 	/**
@@ -43,5 +46,24 @@ final class Bootstrap {
 	public static function power_house_page_callback(): void {
 		// Plugin::get('admin');
 		echo '';
+	}
+
+	/**
+	 * Enqueue assets
+	 *
+	 * @return void
+	 */
+	public static function enqueue_assets(): void {
+		\wp_enqueue_script(
+			Plugin::$kebab,
+			Plugin::$url . '/inc/assets/dist/index.js',
+			[ 'jquery' ],
+			Plugin::$version,
+			[
+				'strategy' => 'defer',
+			]
+		);
+
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
 	}
 }
