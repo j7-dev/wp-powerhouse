@@ -37,7 +37,7 @@ if ( ! \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 			$this->init(
 				[
 					'app_name'    => 'Powerhouse',
-					'github_repo' => 'https://github.com/j7-dev/powerhouse',
+					'github_repo' => 'https://github.com/j7-dev/wp-powerhouse',
 					'callback'    => [ Bootstrap::class, 'instance' ],
 				]
 			);
