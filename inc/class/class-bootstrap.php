@@ -31,7 +31,7 @@ final class Bootstrap {
 			'power_house',
 			[ __CLASS__, 'power_house_page_callback' ],
 			'dashicons-superhero',
-			70
+			3
 		);
 
 		\add_submenu_page( 'power_house', __( '其他', 'power_house' ), __( '其他', 'power_house' ), 'manage_options', 'power_house', [ __CLASS__, 'power_house_page_callback' ], 1000 );
@@ -41,6 +41,7 @@ final class Bootstrap {
 	 * Render Powerhouse Page Callback
 	 */
 	public static function power_house_page_callback(): void {
-		Plugin::get('admin');
+		// Plugin::get('admin');
+		echo '';
 	}
 }
