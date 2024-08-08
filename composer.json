@@ -23,7 +23,7 @@
 		}
 	},
 	"require": {
-		"j7-dev/wp-utils": "0.2.10"
+		"j7-dev/wp-utils": "0.2.11"
 	},
 	"require-dev": {
 		"squizlabs/php_codesniffer": "@stable",
