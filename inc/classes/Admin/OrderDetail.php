@@ -9,10 +9,13 @@ namespace J7\Powerhouse\Admin;
 
 use J7\WpUtils\Classes\WC;
 
+if ( class_exists( 'J7\Powerhouse\Admin\OrderDetail' ) ) {
+	return;
+}
 /**
  * Class Order
  */
-final class Order_Detail {
+final class OrderDetail {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	/**
@@ -139,5 +142,3 @@ final class Order_Detail {
 		echo '</div>';
 	}
 }
-
-Order_Detail::instance();

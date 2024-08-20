@@ -7,6 +7,9 @@ declare (strict_types = 1);
 
 namespace J7\Powerhouse;
 
+if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
+	return;
+}
 /**
  * Class Bootstrap
  */
@@ -14,10 +17,17 @@ final class Bootstrap {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	/**
+	 * @var array
+	 * Store instances of classes
+	 */
+	public $instances = [];
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		require_once __DIR__ . '/admin/index.php';
+		$this->instances['Admin\OrderDetail'] = Admin\OrderDetail::instance();
+		$this->instances['Admin\OrderList']   = Admin\OrderList::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_power_plugin_menu' ], 10 );
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );

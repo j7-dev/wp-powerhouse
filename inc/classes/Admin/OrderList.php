@@ -9,10 +9,13 @@ namespace J7\Powerhouse\Admin;
 
 use J7\WpUtils\Classes\WC;
 
+if ( class_exists( 'J7\Powerhouse\Admin\OrderList' ) ) {
+	return;
+}
 /**
  * Class OrderList
  */
-final class Order_List {
+final class OrderList {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	const PRODUCT_COLUMN_NAME = 'elittleworld_extension_order_products';
@@ -93,5 +96,3 @@ final class Order_List {
 		}
 	}
 }
-
-Order_List::instance();
