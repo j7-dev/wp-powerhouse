@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 // eslint-disable-next-line no-undef
 module.exports = {
-	important: '.ph',
+	important: '.tailwind',
 	corePlugins: {
 		preflight: false,
 	},
@@ -11,6 +11,9 @@ module.exports = {
 		'./inc/assets/src/**/*.ts',
 	],
 	theme: {
+		animation: {
+			pulse: 'tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+		},
 		extend: {
 			screens: {
 				sm: '576px', // iphone SE
@@ -18,6 +21,11 @@ module.exports = {
 				lg: '1080px', // ipad Landscape
 				xl: '1280px', // mac air
 				xxl: '1440px',
+			},
+			keyframes: {
+				'tw-pulse': {
+					'50%': { opacity: '0.5' },
+				},
 			},
 		},
 	},
@@ -46,5 +54,5 @@ module.exports = {
 		},
 	],
 	safelist: [],
-	blocklist: ['hidden', 'columns-1', 'columns-2', 'fixed']
+	blocklist: ['hidden', 'columns-1', 'columns-2', 'fixed'],
 }

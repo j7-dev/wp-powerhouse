@@ -1,3 +1,9 @@
 import '@/assets/scss/index.scss'
+import $ from 'jquery'
 
-console.log('powerhouse loaded')
+
+$(document).ready(() => {
+	// $('#powerhouse-settings').html(/*html*/`
+
+	// `)
+})
