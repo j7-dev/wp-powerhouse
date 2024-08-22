@@ -61,12 +61,14 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function enqueue_assets(): void {
-		if (!General::in_url(
+		if (\method_exists(General::class, 'in_url')) {
+			if (!General::in_url(
 			[
 				'admin.php?page=powerhouse',
 			]
 			)) {
-			return;
+				return;
+			}
 		}
 
 		\wp_enqueue_script(
