@@ -1,6 +1,6 @@
 {
 	"name": "powerhouse",
-	"version": "1.0.19",
+	"version": "1.0.20",
 	"type": "module",
 	"scripts": {
 		"bootstrap": "yarn && composer install --no-interaction",
