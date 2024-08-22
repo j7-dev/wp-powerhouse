@@ -16,7 +16,7 @@ $field_args = [
 	'value'       => Settings::get($fields[1]),
 ];
 
-Plugin::get(
+Plugin::safe_get(
 	'typography/title',
 	[
 		'value' => 'My Account 帳號欄位優化',

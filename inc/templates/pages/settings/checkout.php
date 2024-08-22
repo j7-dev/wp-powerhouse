@@ -20,7 +20,7 @@ $field_args = [
 ];
 
 Plugin::safe_get(
-	'typography\title',
+	'typography/title',
 	[
 		'value' => '結帳優化',
 	]
