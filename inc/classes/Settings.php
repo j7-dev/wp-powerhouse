@@ -79,7 +79,7 @@ final class Settings {
 		',
 		$is_saved ? 'open' : '',
 		\wp_nonce_field("{$key}_action", "{$key}_nonce", true, false),
-		Plugin::get(
+		Plugin::safe_get(
 			'settings',
 			[
 				'fields' => $fields,

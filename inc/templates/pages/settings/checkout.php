@@ -19,7 +19,7 @@ $field_args = [
 	'value'       => Settings::get($fields[0]),
 ];
 
-Plugin::get(
+Plugin::safe_get(
 	'typography\title',
 	[
 		'value' => '結帳優化',
