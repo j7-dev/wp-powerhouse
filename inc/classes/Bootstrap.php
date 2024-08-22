@@ -97,17 +97,22 @@ final class Bootstrap {
 					儲存成功
 				</sl-alert>
 				%2$s
-				<div class="mb-12">
-					<sl-tooltip content="可以加快結帳速度">
-						<p class="text-sm font-bold inline-block">延遲寄送 Email</p>
-					</sl-tooltip>
-					<sl-switch class="block" name="%3$s" value="yes" %4$s></sl-switch>
+				<div class="grid grid-cols-[20rem_1fr] gap-4">
+					<div>
+						<p class="text-sm text-gray-800 font-bold mt-0 mb-2">使用非同步方式寄送 Email，加快結帳速度</p>
+						<p class="text-xs text-gray-400 mt-0 mb-2">可以前往 <a href="%3$s" target="_blank">Scheduled Actions</a> 查看信件寄送的狀況</p>
+					</div>
+					<div>
+						<sl-switch class="block" name="%4$s" value="yes" %5$s></sl-switch>
+					</div>
 				</div>
-				<sl-button type="submit" variant="primary" name="submit_button" value="1">儲存</sl-button>
+				<sl-button class="mt-12" type="submit" variant="primary" name="submit_button" value="1">儲存</sl-button>
 			</form>
+		</div>
 		',
 		$is_saved ? 'open' : '',
 		\wp_nonce_field("{$key}_action", "{$key}_nonce", true, false),
+		\admin_url('admin.php?page=wc-status&tab=action-scheduler&s=powerhouse_delay_email&action=-1&paged=1&action2=-1'),
 		$fields[0],
 		\checked($delay_email, 'yes', false),
 		);
@@ -132,12 +137,12 @@ final class Bootstrap {
 		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
 
 		// CDN shoelace
-		// php:disable
+		// phpcs:disable
 		echo '
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/themes/light.css" />
 		<script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
 		';
-		// php:enable
+		// phpcs:enable
 	}
 
 	/**
