@@ -8,7 +8,6 @@ declare (strict_types = 1);
 namespace J7\Powerhouse;
 
 use J7\Powerhouse\Plugin;
-use J7\WpUtils\Classes\General;
 
 
 if ( class_exists( 'J7\Powerhouse\Settings' ) ) {
