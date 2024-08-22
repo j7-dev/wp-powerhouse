@@ -7,6 +7,8 @@ declare (strict_types = 1);
 
 namespace J7\Powerhouse;
 
+use J7\WpUtils\Classes\General;
+
 if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
 	return;
 }
@@ -38,7 +40,7 @@ final class Bootstrap {
 		$this->instances['Admin\OrderList']   = Admin\OrderList::instance();
 		$this->instances['Admin\DelayEmail']  = Admin\DelayEmail::instance();
 
-		\add_action( 'admin_menu', [ __CLASS__ , 'add_power_plugin_menu' ], 10 );
+		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 	}
 
@@ -72,24 +74,24 @@ final class Bootstrap {
 	/**
 	 * Add Power Plugin Menu
 	 */
-	public static function add_power_plugin_menu(): void {
+	public static function add_menu(): void {
 		\add_menu_page(
-		__( 'Powerhouse', 'power_house' ),
-		__( 'Powerhouse', 'power_house' ),
+		__( 'Powerhouse', 'powerhouse' ),
+		__( 'Powerhouse', 'powerhouse' ),
 		'manage_options',
-		'power_house',
-		[ __CLASS__, 'power_house_page_callback' ],
+		'powerhouse',
+		[ __CLASS__, 'powerhouse_page_callback' ],
 		'dashicons-superhero',
 		3
 		);
 
-		\add_submenu_page( 'power_house', __( '其他', 'power_house' ), __( '其他', 'power_house' ), 'manage_options', 'power_house', [ __CLASS__, 'power_house_page_callback' ], 1000 );
+		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '其他', 'powerhouse' ), 'manage_options', 'powerhouse', [ __CLASS__, 'powerhouse_page_callback' ], 1000 );
 	}
 
 	/**
 	 * Render Powerhouse Page Callback
 	 */
-	public static function power_house_page_callback(): void {
+	public static function powerhouse_page_callback(): void {
 		$key      = self::KEY;
 		$fields   = [ 'delay_email' ];
 		$is_saved = self::handle_save($fields);
@@ -134,6 +136,14 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function enqueue_assets(): void {
+		if (!General::in_url(
+			[
+				'admin.php?page=powerhouse',
+			]
+			)) {
+			return;
+		}
+
 		\wp_enqueue_script(
 		Plugin::$kebab,
 		Plugin::$url . '/inc/assets/dist/index.js',
