@@ -25,6 +25,12 @@ final class Bootstrap {
 	public $instances = [];
 
 	/**
+	 * @var array
+	 * Store settings
+	 */
+	public static $settings = [];
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -49,8 +55,12 @@ final class Bootstrap {
 			'delay_email' => 'yes',
 		];
 
-		$settings = \get_option(self::KEY, $default_value);
-		$settings = \wp_parse_args($settings, $default_value);
+		if (!self::$settings) {
+			$settings = \get_option(self::KEY, $default_value);
+			$settings = \wp_parse_args($settings, $default_value);
+		} else {
+			$settings = self::$settings;
+		}
 
 		if (!$key) {
 			return $settings;
@@ -92,7 +102,7 @@ final class Bootstrap {
 		/*html*/'
 		<div id="powerhouse-settings" class="tailwind">
 			<form id="powerhouse-settings-form" class="pr-5 mt-8" method="post" action="">
-				<sl-alert variant="success" %1$s>
+				<sl-alert class="mb-8" variant="success" %1$s>
 					<sl-icon slot="icon" name="check2-circle"></sl-icon>
 					儲存成功
 				</sl-alert>
@@ -172,7 +182,12 @@ final class Bootstrap {
 			$data[ $field ] = \sanitize_text_field($_POST[ $field ] ?? '');
 		}
 
-		return \update_option($key, $data);
+		$update_success = \update_option($key, $data);
+		if($update_success){
+			self::$settings = $data;
+		}
+
+		return $update_success;
 		// phpcs:enable
 	}
 }
