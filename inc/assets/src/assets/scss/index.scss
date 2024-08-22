@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+// @see https://shoelace.style/getting-started/usage#waiting-for-components-to-load
+// 讓 Shoelace 元件在載入完成前不顯示
+:not(:defined) {
+	visibility: hidden;
+}
