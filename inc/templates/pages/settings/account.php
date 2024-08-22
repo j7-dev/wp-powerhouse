@@ -17,7 +17,7 @@ $field_args = [
 ];
 
 Plugin::get(
-	'typography\title',
+	'typography/title',
 	[
 		'value' => 'My Account 帳號欄位優化',
 	]

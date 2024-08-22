@@ -6,12 +6,12 @@
 
 use J7\Powerhouse\Plugin;
 
-Plugin::safe_get(
-	'settings\checkout',
+Plugin::get(
+	'settings/checkout',
 	$args
 );
 
-Plugin::safe_get(
-	'settings\account',
+Plugin::get(
+	'settings/account',
 	$args
 );
