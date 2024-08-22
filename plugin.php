@@ -44,7 +44,7 @@ final class Plugin {
 			]
 		);
 
-		self::$template_page_names = [ 'admin' ];
+		self::$template_page_names = [ 'admin', 'settings' ];
 	}
 }
 

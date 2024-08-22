@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Admin;
 
-use J7\Powerhouse\Bootstrap;
+use J7\Powerhouse\Settings;
 
 if ( class_exists( 'J7\Powerhouse\Admin\DelayEmail' ) ) {
 	return;
 }
 /**
- * Class Order
+ * Class DelayEmail
  */
 final class DelayEmail {
 	use \J7\WpUtils\Traits\SingletonTrait;
@@ -22,7 +22,7 @@ final class DelayEmail {
 	 * Constructor
 	 */
 	public function __construct() {
-		$delay_email = Bootstrap::get('delay_email');
+		$delay_email = Settings::get('delay_email');
 
 		if ($delay_email !== 'yes') {
 			return;
@@ -35,6 +35,7 @@ final class DelayEmail {
 
 	/**
 	 * 移除 EMAIL
+	 * 測試可用 \as_schedule_single_action( time() + 3600, 'powerhouse_delay_email', [ $class_name, ...$args ] );
 	 */
 	public static function remove_origin_email_sending(): void {
 		$class_name_and_hooks = [
@@ -68,7 +69,6 @@ final class DelayEmail {
 					$hook,
 					function ( ...$args ) use ( $class_name ) {
 						\as_enqueue_async_action( 'powerhouse_delay_email', [ $class_name, ...$args ] );
-						// TEST \as_schedule_single_action( time() + 3600, 'powerhouse_delay_email', [ $class_name, ...$args ] );
 					},
 					10
 					);
