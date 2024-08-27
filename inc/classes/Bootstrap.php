@@ -35,6 +35,8 @@ final class Bootstrap {
 		$this->instances['Admin\DelayEmail']  = Admin\DelayEmail::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
+		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
+
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
@@ -53,8 +55,13 @@ final class Bootstrap {
 		'dashicons-superhero',
 		3
 		);
+	}
 
-		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '其他', 'powerhouse' ), 'manage_options', 'powerhouse', [ Settings::class, 'powerhouse_page_callback' ], 1000 );
+	/**
+	 * Add submenu page
+	 */
+	public static function add_submenu(): void {
+		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse', [ Settings::class, 'powerhouse_page_callback' ] );
 	}
 
 	/**

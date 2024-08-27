@@ -7,3 +7,11 @@
 :not(:defined) {
 	visibility: hidden;
 }
+
+#toplevel_page_powerhouse {
+	.wp-submenu {
+		.wp-first-item {
+			display: none !important;
+		}
+	}
+}
