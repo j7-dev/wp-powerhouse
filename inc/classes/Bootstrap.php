@@ -36,6 +36,8 @@ final class Bootstrap {
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
+		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
 	}
 
 	/**
@@ -90,5 +92,26 @@ final class Bootstrap {
 		<script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
 		';
 		// phpcs:enable
+	}
+
+	/**
+	 * 為前台 body 添加 tailwind class
+	 *
+	 * @param array $classes 現有的 body classes
+	 * @return array 修改後的 body classes
+	 */
+	public static function add_tailwind_class( $classes ) {
+		$classes[] = 'tailwind';
+		return $classes;
+	}
+
+	/**
+	 * 為後台 body 添加 tailwind class
+	 *
+	 * @param string $classes 現有的 admin body classes
+	 * @return string 修改後的 admin body classes
+	 */
+	public static function add_tailwind_class_admin( $classes ) {
+		return $classes . ' tailwind';
 	}
 }
