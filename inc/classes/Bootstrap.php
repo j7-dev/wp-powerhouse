@@ -70,6 +70,10 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function enqueue_assets(): void {
+
+		// TODO 之後再對 css 做分割 & 按需載入
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
+
 		if (\method_exists(General::class, 'in_url')) {
 			if (!General::in_url(
 			[
@@ -89,8 +93,6 @@ final class Bootstrap {
 			'strategy' => 'defer',
 		]
 		);
-
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
 
 		// CDN shoelace
 		// phpcs:disable
