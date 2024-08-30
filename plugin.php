@@ -44,7 +44,7 @@ final class Plugin {
 			]
 		);
 
-		self::$template_page_names = [ 'admin', 'settings' ];
+		self::$template_page_names = [ 'admin', 'settings', 'license-codes' ];
 	}
 }
 

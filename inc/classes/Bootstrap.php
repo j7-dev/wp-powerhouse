@@ -19,20 +19,14 @@ final class Bootstrap {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	/**
-	 * @var array
-	 * Store instances of classes
-	 */
-	public $instances = [];
-
-	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->instances['Settings']          = Settings::instance();
-		$this->instances['Admin\Account']     = Admin\Account::instance();
-		$this->instances['Admin\OrderDetail'] = Admin\OrderDetail::instance();
-		$this->instances['Admin\OrderList']   = Admin\OrderList::instance();
-		$this->instances['Admin\DelayEmail']  = Admin\DelayEmail::instance();
+		Settings::instance();
+		Admin\Account::instance();
+		Admin\OrderDetail::instance();
+		Admin\OrderList::instance();
+		Admin\DelayEmail::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
@@ -40,6 +34,15 @@ final class Bootstrap {
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
+
+		// TEST
+		\add_filter(
+			'powerhouse_product_names',
+			function ( $names ) {
+				return $names + [
+					'power-course' => 'Power Course',
+				]; }
+			);
 	}
 
 	/**
@@ -51,7 +54,7 @@ final class Bootstrap {
 		__( 'Powerhouse', 'powerhouse' ),
 		'manage_options',
 		'powerhouse',
-		[ Settings::class, 'powerhouse_page_callback' ],
+		[ Settings::class, 'powerhouse_settings_page_callback' ],
 		'dashicons-superhero',
 		3
 		);
@@ -59,9 +62,12 @@ final class Bootstrap {
 
 	/**
 	 * Add submenu page
+	 *
+	 * @return void
 	 */
 	public static function add_submenu(): void {
-		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse', [ Settings::class, 'powerhouse_page_callback' ] );
+		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings::class, 'powerhouse_settings_page_callback' ] );
+		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'powerhouse-license-codes', [ LicenseCodes::class, 'powerhouse_license_codes_page_callback' ] );
 	}
 
 	/**
@@ -106,10 +112,10 @@ final class Bootstrap {
 	/**
 	 * 為前台 body 添加 tailwind class
 	 *
-	 * @param array $classes 現有的 body classes
-	 * @return array 修改後的 body classes
+	 * @param array<string> $classes 現有的 body classes
+	 * @return array<string> 修改後的 body classes
 	 */
-	public static function add_tailwind_class( $classes ) {
+	public static function add_tailwind_class( array $classes ): array {
 		$classes[] = 'tailwind';
 		return $classes;
 	}

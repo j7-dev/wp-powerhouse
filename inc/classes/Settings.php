@@ -22,7 +22,7 @@ final class Settings {
 	const KEY = 'powerhouse_settings';
 
 	/**
-	 * @var array
+	 * @var array<string, mixed>
 	 * Store settings
 	 */
 	public static $settings = [];
@@ -42,7 +42,7 @@ final class Settings {
 		];
 
 		if (!self::$settings) {
-			$settings = \get_option(self::KEY, $default_value);
+			$settings = (array) \get_option(self::KEY, $default_value);
 			$settings = \wp_parse_args($settings, $default_value);
 		} else {
 			$settings = self::$settings;
@@ -58,7 +58,7 @@ final class Settings {
 	/**
 	 * Render Powerhouse Page Callback
 	 */
-	public static function powerhouse_page_callback(): void {
+	public static function powerhouse_settings_page_callback(): void {
 		$key      = self::KEY;
 		$fields   = [ 'delay_email', 'last_name_optional' ];
 		$is_saved = self::handle_save($fields);
