@@ -36,8 +36,8 @@ final class OrderList {
 	/**
 	 * Add order column.
 	 *
-	 * @param array $columns Columns.
-	 * @return array
+	 * @param array<string> $columns Columns.
+	 * @return array<string>
 	 */
 	public static function add_order_column( array $columns ): array {
 		$columns[ self::PRODUCT_COLUMN_NAME ] = '訂單商品';
@@ -52,8 +52,10 @@ final class OrderList {
 	 * @return void
 	 */
 	public static function render_order_column_hpos( $column, $order ): void {
-		$order_id = (int) $order?->get_id();
-		self::render_order_column( $column, $order_id );
+		if (method_exists($order, 'get_id')) {
+			$order_id = (int) $order->get_id();
+			self::render_order_column( $column, $order_id );
+		}
 	}
 
 	/**
@@ -78,20 +80,34 @@ final class OrderList {
 	public static function render_order_column( $column, int $order_id ): void {
 		if ( self::PRODUCT_COLUMN_NAME === $column ) {
 			$order = \wc_get_order( $order_id );
-			$items = $order?->get_items();
-			$items = is_array( $items ) ? $items : [];
+			if (!( $order instanceof \WC_Order )) {
+				return;
+			}
+			$items = $order->get_items();
 			foreach ( $items as $item ) {
+				if ('line_item' !== $item->get_type()) {
+					continue;
+				}
 				/**
 				 * Type
 				 *
 				 * @var \WC_Order_Item_Product $item Order item.
 				 */
-				$product      = $item?->get_product();
-				$product_name = $product?->get_name();
-				$product_id   = $product?->get_id();
-				$quantity     = $item?->get_quantity();
-				$product_link = \get_edit_post_link( $product_id );
-				echo '<a href="' . esc_url( $product_link ) . '">' . esc_html( $product_name ) . '</a> x ' . esc_html( $quantity ) . '<br />';
+				$product = $item->get_product();
+				if (!( $product instanceof \WC_Product )) {
+					continue;
+				}
+				$product_name = $product->get_name();
+				$product_id   = $product->get_id();
+				$quantity     = $item->get_quantity();
+				$product_link = \get_edit_post_link( $product_id ) ?? '';
+				printf(
+				/*html*/'<a href="%1$s">%2$s</a> x %3$d<br />',
+				\esc_url( $product_link ),
+				\esc_html( $product_name ),
+				$quantity
+				);
+
 			}
 		}
 	}
