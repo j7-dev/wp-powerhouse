@@ -9,7 +9,7 @@ $default_args = [
 		'product_name' => 'Unknown',
 		'code'         => '',
 		'status'       => '',
-		'expired_date' => '',
+		'expire_date'  => '',
 		'type'         => 'normal',
 	],
 ];
@@ -26,7 +26,7 @@ $args = \wp_parse_args( $args, $default_args );
 	'product_name' => $product_name,
 	'code'         => $code,
 	'status'       => $license_status,
-	'expired_date' => $expired_date,
+	'expire_date' => $expire_date,
 	'type'         => $license_type,
 ] = $license_code;
 
@@ -34,7 +34,7 @@ $deactivate_button = '<sl-button type="submit" name="submit_button" value="deact
 
 $activate_button = '
 <sl-button-group label="Alignment" class="mt-4 w-full">
-  <sl-input class="w-full" placeholder="請輸入授權碼 xxxxxx-xxxxxx-xxxxxx-xxxxxx" size="small" name="license_code" clearable></sl-input>
+  <sl-input class="w-full" placeholder="請輸入授權碼 xxxxxx-xxxxxx-xxxxxx-xxxxxx" size="small" name="code" clearable></sl-input>
   <sl-button type="submit" name="submit_button" value="activate" variant="primary" size="small">啟用</sl-button>
 </sl-button-group>
 ';

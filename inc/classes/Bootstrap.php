@@ -27,6 +27,7 @@ final class Bootstrap {
 		Admin\OrderDetail::instance();
 		Admin\OrderList::instance();
 		Admin\DelayEmail::instance();
+		Api\Base::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
@@ -58,7 +59,7 @@ final class Bootstrap {
 	 */
 	public static function add_submenu(): void {
 		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings::class, 'powerhouse_settings_page_callback' ] );
-		// \add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'powerhouse-license-codes', [ LicenseCodes::class, 'powerhouse_license_codes_page_callback' ] );
+		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'powerhouse-license-codes', [ LC::class, 'powerhouse_license_codes_page_callback' ] );
 	}
 
 	/**

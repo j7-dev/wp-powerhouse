@@ -11,7 +11,7 @@ $default_args = [
 		'product_name' => 'Unknown',
 		'code'         => '',
 		'status'       => '',
-		'expired_date' => '',
+		'expire_date'  => '',
 		'type'         => 'normal',
 	],
 ];
@@ -27,14 +27,14 @@ $args = \wp_parse_args( $args, $default_args );
 	'product_name' => $product_name,
 	'code'         => $code,
 	'status'       => $license_status,
-	'expired_date' => $expired_date,
+	'expire_date' => $expire_date,
 	'type'         => $license_type,
 ] = $license_code;
 
-$display_expired_date = match ( $expired_date ) {
-	'0'    => '無限期',
+$display_expire_date = match ( $expire_date ) {
+	0    => '無限期',
 	''     => '',
-	default => \wp_date( 'Y-m-d', $expired_date ),
+	default => \wp_date( 'Y-m-d', $expire_date ),
 };
 
 $status_label = match ( $license_status ) {
@@ -82,7 +82,7 @@ $product_name,
 $status_color,
 $status_label,
 $display_license_type,
-$display_expired_date,
+$display_expire_date,
 $code,
 Plugin::safe_get(
 	'license-codes/item/form',
