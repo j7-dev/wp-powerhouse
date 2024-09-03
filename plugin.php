@@ -3,7 +3,7 @@
  * Plugin Name:       Powerhouse
  * Plugin URI:        https://github.com/j7-dev/powerhouse
  * Description:       方便開發 WordPress 外掛的工具包。
- * Version:           1.0.28
+ * Version:           1.0.29
  * Requires at least: 5.7
  * Requires PHP:      8.0
  * Author:            J7
