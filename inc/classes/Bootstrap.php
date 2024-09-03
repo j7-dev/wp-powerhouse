@@ -36,13 +36,13 @@ final class Bootstrap {
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
 
 		// TEST
-		\add_filter(
-			'powerhouse_product_names',
-			function ( $names ) {
-				return $names + [
-					'power-course' => 'Power Course',
-				]; }
-			);
+		// \add_filter(
+		// 'powerhouse_product_names',
+		// function ( $names ) {
+		// return $names + [
+		// 'power-course' => 'Power Course',
+		// ]; }
+		// );
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class Bootstrap {
 	 */
 	public static function add_submenu(): void {
 		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings::class, 'powerhouse_settings_page_callback' ] );
-		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'powerhouse-license-codes', [ LicenseCodes::class, 'powerhouse_license_codes_page_callback' ] );
+		// \add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'powerhouse-license-codes', [ LicenseCodes::class, 'powerhouse_license_codes_page_callback' ] );
 	}
 
 	/**

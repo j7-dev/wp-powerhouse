@@ -108,12 +108,13 @@ final class LicenseCodes {
 		return $lc_array;
 	}
 
-	public static function lc( $code ) {
+	public static function lc( $code, $product_key ) {
 		$response = \wp_remote_post(
 			'https://api.powerhouse.com/v1/license-codes',
 			[
 				'body' => [
-					'code' => $code,
+					'code'        => $code,
+					'product_key' => $product_key,
 				],
 			]
 		);
