@@ -15,7 +15,7 @@ $default_args = [
 		'type'         => 'normal',
 	],
 ];
-
+// @phpstan-ignore-next-line
 $args = \wp_parse_args( $args, $default_args );
 
 [
@@ -29,6 +29,7 @@ $args = \wp_parse_args( $args, $default_args );
 	'status'       => $license_status,
 	'expire_date' => $expire_date,
 	'type'         => $license_type,
+	'link'         => $buy_link,
 ] = $license_code;
 
 $display_expire_date = match ( $expire_date ) {
@@ -62,23 +63,27 @@ $display_license_type = match ( $license_type ) {
 printf(
 /*html*/'
 <div class="bg-white p-4 rounded-lg hover:shadow-md transition-all duration-300">
-	<h2 class="text-lg font-bold mt-0 mb-2">%1$s 授權</h2>
+	<div class="flex justify-between items-center">
+		<h2 class="text-lg font-bold mt-0 mb-2">%1$s 授權</h2>
+		%2$s
+	</div>
 	<div class="grid grid-cols-[10rem_1fr] text-sm text-gray-500 text-mono [&>div]:h-6">
 		<div>狀態</div>
 		<div class="text-right">
-			<sl-tag variant="%2$s" size="small">%3$s</sl-tag>
+			<sl-tag variant="%3$s" size="small">%4$s</sl-tag>
 		</div>
 		<div>授權種類</div>
-		<div class="text-right">%4$s</div>
-		<div>到期日</div>
 		<div class="text-right">%5$s</div>
-		<div>授權碼</div>
+		<div>到期日</div>
 		<div class="text-right">%6$s</div>
+		<div>授權碼</div>
+		<div class="text-right">%7$s</div>
 	</div>
-	%7$s
+	%8$s
 </div>
 ',
 $product_name,
+$buy_link ? "<sl-button variant='primary' href='{$buy_link}' target='_blank' size='small' outline>購買授權</sl-button>" : '',
 $status_color,
 $status_label,
 $display_license_type,

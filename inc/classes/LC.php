@@ -11,7 +11,7 @@ namespace J7\Powerhouse;
 
 use J7\Powerhouse\Plugin;
 use J7\WpUtils\Classes\General;
-use J7\Powerhouse\Utils\Base;
+
 
 if ( class_exists( 'J7\Powerhouse\LC' ) ) {
 	return;
@@ -22,7 +22,8 @@ if ( class_exists( 'J7\Powerhouse\LC' ) ) {
 final class LC {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	const KEY = 'powerhouse_license_codes';
+	const KEY        = 'powerhouse_license_codes';
+	const CACHE_TIME = 24 * HOUR_IN_SECONDS;
 
 	/**
 	 * Render Powerhouse Page Callback
@@ -121,9 +122,9 @@ final class LC {
 	public static function get_lc_array(): array {
 
 		/**
-		 * @var array<string, string>  key:name
+		 * @var array<string, array{name?: string, link?: string}>  key:name
 		 */
-		$product_names = \apply_filters( 'powerhouse_product_names', [] );
+		$product_infos = \apply_filters( 'powerhouse_product_names', [] );
 
 		$default_lc = [
 			'code'        => '',
@@ -134,14 +135,19 @@ final class LC {
 
 		$lc_array = [];
 
-		foreach ( $product_names as $product_key => $product_name ) {
-			$lc = \get_transient("lc_{$product_key}");
+		foreach ( $product_infos as $product_key => $product_info ) {
+			$lc           = \get_transient("lc_{$product_key}");
+			$product_name = $product_info['name'] ?? '';
+			if (!$product_name) {
+				continue;
+			}
 			if (false === $lc) {
 				$lc                 = $default_lc;
 				$lc['product_key']  = $product_key;
 				$lc['product_name'] = $product_name;
+				$lc['link']         = $product_info['link'] ?? '';
 				// @phpstan-ignore-next-line
-				\set_transient("lc_{$product_name}", self::encode($lc), 24 * HOUR_IN_SECONDS);
+				\set_transient("lc_{$product_name}", self::encode($lc), self::CACHE_TIME);
 
 				$lc_array[] = $lc;
 				continue;
@@ -291,7 +297,7 @@ final class LC {
 	 */
 	public static function handle_response( array $data ): void {
 		$product_key = $data['product_key'];
-		\set_transient("lc_{$product_key}", self::encode($data), 24 * HOUR_IN_SECONDS);
+		\set_transient("lc_{$product_key}", self::encode($data), self::CACHE_TIME);
 	}
 
 	/**

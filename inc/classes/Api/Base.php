@@ -1,6 +1,7 @@
 <?php
 /**
  * Api
+ * TODO 加密
  */
 
 declare ( strict_types=1 );
@@ -47,16 +48,6 @@ final class Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		// TEST START
-		\add_filter(
-				'powerhouse_product_names',
-				function ( $names ) {
-					return $names + [
-						'power-course' => 'Power Course',
-					]; }
-				);
-		// TEST END
-
 		$this->base_url = WP_DEBUG ? 'http://cloud.local' : 'https://cloud.luke.cafe';
 		$this->api_url  = "{$this->base_url}/wp-json/power-partner-server";
 		// @phpstan-ignore-next-line
