@@ -33,6 +33,7 @@ final class LC {
 
 		$lc_array = self::get_lc_array();
 
+		echo '<div class="pr-5 my-8">';
 		printf(
 		/*html*/'
 		<sl-alert class="mb-8" variant="%1$s" %2$s>
@@ -44,8 +45,7 @@ final class LC {
 		$show_alert ? 'open' : '',
 		$save_result['message']
 		);
-
-		echo '<div class="grid grid-cols-4 gap-6 my-8 pr-5">';
+		echo '<div class="grid grid-cols-4 gap-6">';
 		foreach ( $lc_array as $lc ) {
 			Plugin::safe_get(
 				'license-codes/item',
@@ -55,6 +55,7 @@ final class LC {
 				]
 			);
 		}
+		echo '</div>';
 		echo '</div>';
 	}
 
@@ -91,15 +92,13 @@ final class LC {
 		// 如果是按下棄用按鈕
 		if('deactivate' === $_POST['submit_button']){
 			$product_key = $_POST['product_key'] ?? '';
-			\delete_transient("lc_{$product_key}");
-			return [
-				'type'    => 'success',
-				'message' => '停用授權成功',
-				'show_alert' => true,
-			];
+			$data = self::deactivate($_POST['code'], $_POST['product_key']);
+			$message = self::get_deactivate_message($data, $product_key);
+			return array_merge($message, ['show_alert' => true]);
 		}
 
-		$data = self::validate($_POST['code'], $_POST['product_key']);
+
+		$data = self::activate($_POST['code'], $_POST['product_key']);
 
 		if(\is_wp_error($data)){
 			return [
@@ -109,7 +108,7 @@ final class LC {
 			];
 		}
 
-			$message = self::get_message($data);
+			$message = self::get_activate_message($data);
 			return array_merge($message, ['show_alert' => true]);
 		// phpcs:enable
 	}
@@ -158,16 +157,16 @@ final class LC {
 	}
 
 	/**
-	 * 驗證授權碼
+	 * 啟用授權碼
 	 *
 	 * @param string $code 授權碼
 	 * @param string $product_key 產品 key
 	 * @return array|\WP_Error 驗證結果
 	 * @phpstan-ignore-next-line
 	 */
-	public static function validate( string $code, string $product_key ): array|\WP_Error {
+	public static function activate( string $code, string $product_key ): array|\WP_Error {
 		$api      = Api\Base::instance();
-		$endpoint = 'license-codes/validate';
+		$endpoint = 'license-codes/activate';
 		$response = $api->remote_post(
 			$endpoint,
 			[
@@ -180,13 +179,34 @@ final class LC {
 	}
 
 	/**
-	 * 取得訊息
+	 * 棄用授權碼
+	 *
+	 * @param string $code 授權碼
+	 * @param string $product_key 產品 key
+	 * @return array|\WP_Error 驗證結果
+	 * @phpstan-ignore-next-line
+	 */
+	public static function deactivate( string $code, string $product_key ): array|\WP_Error {
+		$api      = Api\Base::instance();
+		$endpoint = 'license-codes/deactivate';
+		$response = $api->remote_post(
+			$endpoint,
+			[
+				'code' => $code,
+			]
+			);
+
+		return $response;
+	}
+
+	/**
+	 * 取得啟用訊息
 	 *
 	 * @param array|\WP_Error $response 回傳的 response
 	 * @return array{type: string, message: string} 訊息
 	 * @phpstan-ignore-next-line
 	 */
-	public static function get_message( array|\WP_Error $response ): array {
+	public static function get_activate_message( array|\WP_Error $response ): array {
 		if (\is_wp_error($response)) {
 			return [
 				'type'    => 'danger',
@@ -217,6 +237,49 @@ final class LC {
 		return [
 			'type'    => 'success',
 			'message' => '啟用授權成功',
+		];
+	}
+
+	/**
+	 * 取得棄用訊息
+	 *
+	 * @param array|\WP_Error $response 回傳的 response
+	 * @param string          $product_key 產品 key
+	 * @return array{type: string, message: string} 訊息
+	 * @phpstan-ignore-next-line
+	 */
+	public static function get_deactivate_message( array|\WP_Error $response, string $product_key ): array {
+		if (\is_wp_error($response)) {
+			return [
+				'type'    => 'danger',
+				'message' => $response->get_error_message(),
+			];
+		}
+
+		$body = \wp_remote_retrieve_body($response);
+
+		/**
+		 * @var array{message: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
+		 */
+		$data = General::json_parse($body, []);
+
+		// get header status code
+		$status_code = \wp_remote_retrieve_response_code($response);
+
+		if (200 !== $status_code) {
+			return [
+				'type'    => 'danger',
+				// @phpstan-ignore-next-line
+				'message' => $data['message'] ?? 'unknown error',
+			];
+		}
+
+		\delete_transient("lc_{$product_key}");
+
+		return [
+			'type'    => 'success',
+			// @phpstan-ignore-next-line
+			'message' => $data['message'] ?? '停用授權成功',
 		];
 	}
 

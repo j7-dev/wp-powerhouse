@@ -57,12 +57,14 @@ final class Base {
 				);
 		// TEST END
 
-		$this->base_url     = WP_DEBUG ? 'http://cloud.test:8080' : 'https://cloud.luke.cafe';
-		$this->api_url      = "{$this->base_url}/wp-json/power-partner-server";
+		$this->base_url = WP_DEBUG ? 'http://cloud.local' : 'https://cloud.luke.cafe';
+		$this->api_url  = "{$this->base_url}/wp-json/power-partner-server";
+		// @phpstan-ignore-next-line
 		$this->default_args = [
 			'headers' => [
 				'Content-Type'  => 'application/json',
 				'Authorization' => 'Basic ' . \base64_encode( Base::USER_NAME . ':' . Base::PASSWORD ), // phpcs:ignore
+				'Origin'        => \wp_parse_url(\site_url(), PHP_URL_HOST),
 			],
 			'timeout' => 30, // 30 秒
 		];
