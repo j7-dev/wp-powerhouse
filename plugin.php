@@ -27,6 +27,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * Class Plugin
+ * TODO 依賴 WC ?
  */
 final class Plugin {
 	use \J7\WpUtils\Traits\PluginTrait;
@@ -36,6 +37,15 @@ final class Plugin {
 	 * Constructor
 	 */
 	public function __construct() {
+		$this->required_plugins = [
+			[
+				'name'     => 'WooCommerce',
+				'slug'     => 'woocommerce',
+				'required' => true,
+				'version'  => '7.6.0',
+			],
+		];
+
 		$this->init(
 			[
 				'app_name'    => 'Powerhouse',
