@@ -87,71 +87,95 @@ final class LC {
 				'show_alert' => true,
 			];
 		}
-
-
+		$code = str_replace(' ', '', $_POST['code'] ?? '');
+		$product_key =str_replace(' ', '', $_POST['product_key'] ?? '');
 
 		// 如果是按下棄用按鈕
 		if('deactivate' === $_POST['submit_button']){
-			$product_key = $_POST['product_key'] ?? '';
-			$data = self::deactivate($_POST['code'], $_POST['product_key']);
+			$data = self::deactivate($code, $product_key);
 			$message = self::get_deactivate_message($data, $product_key);
 			return array_merge($message, ['show_alert' => true]);
 		}
-
-
-		$data = self::activate($_POST['code'], $_POST['product_key']);
-
-		if(\is_wp_error($data)){
-			return [
-				'type'    => 'danger',
-				'message' => $data->get_error_message(),
-				'show_alert' => true,
-			];
-		}
-
-			$message = self::get_activate_message($data);
-			return array_merge($message, ['show_alert' => true]);
 		// phpcs:enable
+
+		// 如果是按下啟用按鈕
+		$data = self::activate($code, $product_key);
+
+		$message = self::get_activate_message($data);
+		return array_merge($message, [ 'show_alert' => true ]);
 	}
 
 	/**
 	 * 取得所有 licenseCode 的 array
+	 * 發起檢查
 	 *
 	 * @return array<array{code: string, status: string, expire_date: string, type: string, product_key: string, product_name: string}>
 	 */
 	public static function get_lc_array(): array {
 
 		/**
-		 * @var array<string, array{name?: string, link?: string}>  key:name
+		 * @var array<string, array{name?: string, link?: string}>  key,info
 		 */
-		$product_infos = \apply_filters( 'powerhouse_product_names', [] );
+		$product_infos = \apply_filters( 'powerhouse_product_infos', [] );
 
-		$default_lc = [
-			'code'        => '',
-			'status'      => '',
-			'expire_date' => '',
-			'type'        => '',
-		];
+		// 存在 db 的 product_key 和 code
+		/**
+		 * @var array<string, string> $saved_codes 產品 key 和 code
+		 */
+		$saved_codes = \get_option(self::KEY, []);
+		if (!is_array($saved_codes)) {
+			$saved_codes = [];
+		}
 
 		$lc_array = [];
 
 		foreach ( $product_infos as $product_key => $product_info ) {
+			$saved_code   = $saved_codes[ $product_key ] ?? '';
 			$lc           = \get_transient("lc_{$product_key}");
 			$product_name = $product_info['name'] ?? '';
 			if (!$product_name) {
 				continue;
 			}
-			if (false === $lc) {
-				$lc                 = $default_lc;
-				$lc['product_key']  = $product_key;
-				$lc['product_name'] = $product_name;
-				$lc['link']         = $product_info['link'] ?? '';
-				// @phpstan-ignore-next-line
-				\set_transient("lc_{$product_name}", self::encode($lc), self::CACHE_TIME);
-
-				$lc_array[] = $lc;
+			// 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient
+			if (false === $lc && !$saved_code ) {
+				$default_lc = self::get_default_lc($product_key, $product_name, $product_info);
+				$lc_array[] = $default_lc;
 				continue;
 			}
+
+			// 如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取
+			// @phpstan-ignore-next-line
+			if (false === $lc && $saved_code ) {
+				$response = self::activate($saved_code, $product_key, true);
+				if (\is_wp_error($response)) {
+					$default_lc = self::get_default_lc($product_key, $product_name, $product_info);
+					$lc_array[] = $default_lc;
+					continue;
+				}
+				$body = \wp_remote_retrieve_body($response);
+
+				/**
+				 * @var array{id: int, status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_key: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
+				 */
+				$data = General::json_parse($body, []);
+
+				// get header status code
+				$status_code = \wp_remote_retrieve_response_code($response);
+
+				if (200 !== $status_code) {
+					$default_lc = self::get_default_lc($product_key, $product_name, $product_info);
+					$lc_array[] = $default_lc;
+					continue;
+				}
+
+				// @phpstan-ignore-next-line
+				self::set_lc_transient($data);
+
+				$lc_array[] = $data;
+				continue;
+			}
+
+			// 如果 transient 存在
 			// @phpstan-ignore-next-line
 			$lc_array[] = self::decode($lc);
 		}
@@ -167,19 +191,25 @@ final class LC {
 	 *
 	 * @param string $code 授權碼
 	 * @param string $product_key 產品 key
+	 * @param bool   $is_system_check 是否為系統檢查
 	 * @return array|\WP_Error 驗證結果
 	 * @phpstan-ignore-next-line
 	 */
-	public static function activate( string $code, string $product_key ): array|\WP_Error {
+	public static function activate( string $code, string $product_key, bool $is_system_check = false ): array|\WP_Error {
 		$api      = Api\Base::instance();
 		$endpoint = 'license-codes/activate';
+
+		$params = [
+			'code'        => $code,
+			'product_key' => $product_key,
+		];
+		if ($is_system_check) {
+			$params['post_status'] = [ 'available', 'activated' ];
+		}
 		$response = $api->remote_post(
 			$endpoint,
-			[
-				'code'        => $code,
-				'product_key' => $product_key,
-			]
-			);
+			$params
+		);
 
 		return $response;
 	}
@@ -238,11 +268,11 @@ final class LC {
 		}
 
 		// @phpstan-ignore-next-line
-		self::handle_response($data);
+		self::set_lc_transient($data);
 
 		return [
 			'type'    => 'success',
-			'message' => '啟用授權成功',
+			'message' => '啟用授權成功，重新整理頁面後就可以使用',
 		];
 	}
 
@@ -280,6 +310,16 @@ final class LC {
 			];
 		}
 
+		// 從 options 裡面移除
+		/**
+		 * @var array<string, string> $saved_codes 產品 key 和 code
+		 */
+		$saved_codes = \get_option(self::KEY, []);
+		if (!is_array($saved_codes)) {
+			$saved_codes = [];
+		}
+		unset($saved_codes[ $product_key ]);
+		\update_option(self::KEY, $saved_codes);
 		\delete_transient("lc_{$product_key}");
 
 		return [
@@ -290,13 +330,60 @@ final class LC {
 	}
 
 	/**
-	 * 處理 response
+	 * 設置預設的 transient
+	 *
+	 * @param string               $product_key 產品 key
+	 * @param string               $product_name 產品名稱
+	 * @param array{link?: string} $product_info 產品資訊
+	 * @return array{code: string, status: string, expire_date: string, type: string, product_key: string, product_name: string} 單個授權狀態
+	 */
+	public static function get_default_lc( string $product_key, string $product_name, array $product_info ): array {
+		// 把 saved_codes 清除
+		/**
+		 * @var array<string, string> $saved_codes 產品 key 和 code
+		 */
+		$saved_codes = \get_option(self::KEY, []);
+		if (!is_array($saved_codes)) {
+			$saved_codes = [];
+		}
+		unset($saved_codes[ $product_key ]);
+		\update_option(self::KEY, $saved_codes);
+
+		$default_lc = [
+			'code'        => '',
+			'status'      => '',
+			'expire_date' => '',
+			'type'        => '',
+		];
+
+		$lc                 = $default_lc;
+		$lc['product_key']  = $product_key;
+		$lc['product_name'] = $product_name;
+		$lc['link']         = $product_info['link'] ?? '';
+		// @phpstan-ignore-next-line
+		\set_transient("lc_{$product_name}", self::encode($lc), self::CACHE_TIME);
+
+		return $lc;
+	}
+
+	/**
+	 * 設置 LC transient
+	 * 儲存 product_key 和 code 到 option
 	 *
 	 * @param array{id: int, status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_key: string, product_name: string} $data 成功
 	 * @return void
 	 */
-	public static function handle_response( array $data ): void {
+	public static function set_lc_transient( array $data ): void {
 		$product_key = $data['product_key'];
+		/**
+		 * @var array<string, string> $saved_codes 產品 key 和 code
+		 */
+		$saved_codes = \get_option(self::KEY, []);
+		if (!is_array($saved_codes)) {
+			$saved_codes = [];
+		}
+		$saved_codes[ $product_key ] = $data['code'];
+		\update_option(self::KEY, $saved_codes);
 		\set_transient("lc_{$product_key}", self::encode($data), self::CACHE_TIME);
 	}
 
@@ -331,5 +418,25 @@ final class LC {
 	 */
 	public static function encode( array $license_code ): string {
 		return \wp_json_encode( $license_code ) ?: '';
+	}
+
+	/**
+	 * 是否啟用
+	 *
+	 * @param string $product_key 產品 key
+	 * @return bool 是否啟用
+	 */
+	public static function is_activated( string $product_key ): bool {
+		$activate  = false;
+		$lc_string = \get_transient("lc_{$product_key}");
+
+		if (false !== $lc_string) {
+			// @phpstan-ignore-next-line
+			$lc = self::decode($lc_string);
+			if ('activated' === ( $lc['status'] )) {
+				$activate = true;
+			}
+		}
+		return $activate;
 	}
 }

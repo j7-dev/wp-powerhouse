@@ -18,6 +18,8 @@ if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
 final class Bootstrap {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
+	const LC_MENU_SLUG = 'powerhouse-license-codes';
+
 	/**
 	 * Constructor
 	 */
@@ -59,7 +61,7 @@ final class Bootstrap {
 	 */
 	public static function add_submenu(): void {
 		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings::class, 'powerhouse_settings_page_callback' ] );
-		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'powerhouse-license-codes', [ LC::class, 'powerhouse_license_codes_page_callback' ] );
+		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', self::LC_MENU_SLUG, [ LC::class, 'powerhouse_license_codes_page_callback' ] );
 	}
 
 	/**
