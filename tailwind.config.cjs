@@ -4,6 +4,7 @@ module.exports = {
 	important: '.tailwind',
 	corePlugins: {
 		preflight: false,
+		container: false,
 	},
 	content: [
 		'./js/src/**/*.{js,ts,jsx,tsx}',
@@ -52,10 +53,13 @@ module.exports = {
 				'.tw-fixed': {
 					position: 'fixed',
 				},
+				'.tw-inline': {
+					display: 'inline'
+				}
 			}
 			addUtilities(newUtilities, ['responsive', 'hover'])
 		},
 	],
 	safelist: [],
-	blocklist: ['hidden', 'columns-1', 'columns-2', 'fixed'],
+	blocklist: ['hidden', 'columns-1', 'columns-2', 'fixed', 'inline'],
 }

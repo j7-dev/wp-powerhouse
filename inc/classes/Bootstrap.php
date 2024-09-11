@@ -35,6 +35,7 @@ final class Bootstrap {
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
 
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+
 		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
 	}
@@ -85,7 +86,7 @@ final class Bootstrap {
 		$admin_handle = Plugin::$kebab . '-admin';
 		\wp_enqueue_script(
 		Plugin::$kebab,
-		Plugin::$url . '/inc/assets/dist/index.js',
+		Plugin::$url . '/inc/assets/dist/admin.js',
 		[ 'jquery' ],
 		Plugin::$version,
 		[
