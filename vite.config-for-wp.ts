@@ -12,7 +12,7 @@ export default defineConfig({
 		minify: true,
 		outDir: path.resolve(__dirname, 'inc/assets/dist'),
 		watch: {
-			include: '../*power*/inc/**',
+			include: ['../*power*/inc/**/*.php', '../*power*/inc/**/*.ts', '../*power*/inc/**/*.tsx'],
 			exclude:
 				'js/**, modules/**, node_modules/**, release/**, vendor/**, .git/**, .vscode/**',
 		},
@@ -22,13 +22,8 @@ export default defineConfig({
 				frontend: 'inc/assets/src/frontend.ts',
 			},
 			output: {
-				entryFileNames: (assetInfo) => {
-					console.log(assetInfo)
-					return '[name].js'
-				},
-				assetFileNames: (assetInfo) => {
-					return '[ext]/index.[ext]'
-				},
+				entryFileNames: '[name].js',
+				assetFileNames: '[ext]/index.[ext]'
 			},
 		},
 	},

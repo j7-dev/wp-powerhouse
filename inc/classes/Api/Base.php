@@ -53,7 +53,7 @@ final class Base {
 		// @phpstan-ignore-next-line
 		$this->default_args = [
 			'headers' => [
-				'Content-Type'  => 'application/json',
+				'Content-Type'  => 'application/json; charset=UTF-8',
 				'Authorization' => 'Basic ' . \base64_encode( Base::USER_NAME . ':' . Base::PASSWORD ), // phpcs:ignore
 				'Origin'        => \wp_parse_url(\site_url(), PHP_URL_HOST),
 			],

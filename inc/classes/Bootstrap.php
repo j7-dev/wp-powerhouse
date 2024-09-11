@@ -85,14 +85,14 @@ final class Bootstrap {
 
 		$admin_handle = Plugin::$kebab . '-admin';
 		\wp_enqueue_script(
-		Plugin::$kebab,
+		$admin_handle,
 		Plugin::$url . '/inc/assets/dist/admin.js',
 		[ 'jquery' ],
 		Plugin::$version,
-		[
-			'strategy' => 'defer',
-		]
+		true
 		);
+
+		Plugin::instance()->add_module_handle($admin_handle, 'defer');
 
 		// CDN shoelace
 		// phpcs:disable
