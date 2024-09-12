@@ -5,22 +5,30 @@
 
 use J7\Powerhouse\Plugin;
 
-$default_args = [
-	'license_code' => [
-		'product_slug'  => 'unknown',
-		'product_name' => 'Unknown',
-		'code'         => '',
-		'status'       => '',
-		'expire_date'  => '',
-		'type'         => 'normal',
-	],
+
+
+$default_license_code = [
+	'product_slug' => 'unknown',
+	'product_name' => 'Unknown',
+	'code'         => '',
+	'status'       => '',
+	'expire_date'  => '',
+	'type'         => 'normal',
+	'link'         => '',
 ];
+
+$default_args = [
+	'license_code' => $default_license_code,
+];
+
 // @phpstan-ignore-next-line
 $args = \wp_parse_args( $args, $default_args );
 
 [
 	'license_code' => $license_code,
 ] = $args;
+
+$license_code = \wp_parse_args( $license_code, $default_license_code );
 
 [
 	'product_slug'  => $product_slug,
