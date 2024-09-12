@@ -5,7 +5,7 @@
 
 $default_args = [
 	'license_code' => [
-		'product_key'  => 'unknown',
+		'product_slug' => 'unknown',
 		'product_name' => 'Unknown',
 		'code'         => '',
 		'status'       => '',
@@ -23,7 +23,7 @@ $args = \wp_parse_args( $args, $default_args );
 ] = $args;
 
 [
-	'product_key'  => $product_key,
+	'product_slug'  => $product_slug,
 	'product_name' => $product_name,
 	'code'         => $code,
 	'status'       => $license_status,
@@ -45,13 +45,13 @@ $activate_button = '
 printf(
 /*html*/'
 <form method="post" action="">
-	<input type="hidden" name="product_key" value="%1$s">
+	<input type="hidden" name="product_slug" value="%1$s">
 	<input type="hidden" name="code" value="%2$s">
 	%3$s
 	%4$s
 </form>
 ',
-$product_key,
+$product_slug,
 $code,
 \wp_nonce_field("{$key}_action", "{$key}_nonce", true, false),
 $code ? $deactivate_button : $activate_button,

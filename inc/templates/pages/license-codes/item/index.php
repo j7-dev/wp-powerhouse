@@ -7,7 +7,7 @@ use J7\Powerhouse\Plugin;
 
 $default_args = [
 	'license_code' => [
-		'product_key'  => 'unknown',
+		'product_slug'  => 'unknown',
 		'product_name' => 'Unknown',
 		'code'         => '',
 		'status'       => '',
@@ -23,7 +23,7 @@ $args = \wp_parse_args( $args, $default_args );
 ] = $args;
 
 [
-	'product_key'  => $product_key,
+	'product_slug'  => $product_slug,
 	'product_name' => $product_name,
 	'code'         => $code,
 	'status'       => $license_status,
