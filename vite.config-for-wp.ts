@@ -12,7 +12,8 @@ export default defineConfig({
 		minify: true,
 		outDir: path.resolve(__dirname, 'inc/assets/dist'),
 		watch: {
-			include: ['../*power*/inc/**/*.php', '../*power*/inc/**/*.ts', '../*power*/inc/**/*.tsx'],
+			include: ['../*power*/inc/**/*.php', '../*power*/inc/**/*.ts', '../*power*/inc/**/*.tsx', '../*power*/js/src/**/*.tsx',
+				'../*power*/js/src/**/*.ts',],
 			exclude:
 				'js/**, modules/**, node_modules/**, release/**, vendor/**, .git/**, .vscode/**',
 		},

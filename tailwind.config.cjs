@@ -19,6 +19,9 @@ module.exports = {
 			pulse: 'tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 		},
 		extend: {
+			colors: {
+				primary: '#1677ff',
+			},
 			screens: {
 				sm: '576px', // iphone SE
 				md: '810px', // ipad Portrait
