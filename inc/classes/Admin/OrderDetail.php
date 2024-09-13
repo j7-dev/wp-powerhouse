@@ -1,6 +1,7 @@
 <?php
 /**
  * Order 訂單備註轉為傳統編輯器
+ * BUG: 編輯器無法顯示
  */
 
 declare(strict_types=1);

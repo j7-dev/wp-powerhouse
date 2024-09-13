@@ -61,6 +61,26 @@ final class Base {
 		];
 	}
 
+		/**
+	 * 發送 GET 請求
+	 *
+	 * @param string $endpoint 請求路徑
+	 * @param array  $url_params 請求參數
+	 * @return array|\WP_Error
+	 * @phpstan-ignore-next-line
+	 */
+	public function remote_get( string $endpoint, array $url_params = [] ): array|\WP_Error {
+		$endpoint     = "{$this->api_url}/{$endpoint}";
+		$endpoint = \add_query_arg($url_params, $endpoint);
+
+		$config = $this->default_args;
+
+		// @phpstan-ignore-next-line
+		$response = \wp_remote_get($endpoint, $config);
+
+		return $response;
+	}
+
 	/**
 	 * 發送 POST 請求
 	 *
@@ -81,6 +101,32 @@ final class Base {
 
 		// @phpstan-ignore-next-line
 		$response = \wp_remote_post($endpoint, $args);
+
+		return $response;
+	}
+
+	/**
+	 * 發送 DELETE 請求
+	 *
+	 * @param string $endpoint 請求路徑
+	 * @param array  $body_params 請求參數
+	 * @return array|\WP_Error
+	 * @phpstan-ignore-next-line
+	 */
+	public function remote_delete( string $endpoint, array $body_params = [] ): array|\WP_Error {
+		$endpoint     = "{$this->api_url}/{$endpoint}";
+		$default_args = $this->default_args;
+		$args         = $body_params ? \array_merge(
+			$default_args,
+			[
+				'body' => \wp_json_encode($body_params),
+			]
+			) : $default_args;
+
+		$args['method'] = 'DELETE';
+
+		// @phpstan-ignore-next-line
+		$response = \wp_remote_request($endpoint, $args);
 
 		return $response;
 	}

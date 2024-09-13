@@ -70,12 +70,12 @@ $display_license_type = match ( $license_type ) {
 
 printf(
 /*html*/'
-<div class="bg-white p-4 rounded-lg hover:shadow-md transition-all duration-300">
+<div class="bg-white p-4 rounded-lg hover:shadow-md transition-all duration-300 w-[24rem]">
 	<div class="flex justify-between items-center">
 		<h2 class="text-lg font-bold mt-0 mb-2">%1$s 授權</h2>
 		%2$s
 	</div>
-	<div class="grid grid-cols-[10rem_1fr] text-sm text-gray-500 text-mono [&>div]:h-6">
+	<div class="grid grid-cols-[6rem_1fr] text-sm text-gray-500 text-mono [&>div]:h-6">
 		<div>狀態</div>
 		<div class="text-right">
 			<sl-tag variant="%3$s" size="small">%4$s</sl-tag>

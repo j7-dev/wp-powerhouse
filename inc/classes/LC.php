@@ -46,7 +46,7 @@ final class LC {
 		$show_alert ? 'open' : '',
 		$save_result['message']
 		);
-		echo '<div class="grid grid-cols-4 gap-6">';
+		echo '<div class="flex flex-wrap gap-6">';
 		foreach ( $lc_array as $lc ) {
 			Plugin::safe_get(
 				'license-codes/item',

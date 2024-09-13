@@ -51,6 +51,7 @@ final class Plugin {
 				'app_name'    => 'Powerhouse',
 				'github_repo' => 'https://github.com/j7-dev/wp-powerhouse',
 				'callback'    => [ Bootstrap::class, 'instance' ],
+				'priority'    => -10,
 			]
 		);
 

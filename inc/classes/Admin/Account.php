@@ -38,6 +38,7 @@ final class Account {
 	 *
 	 * @param array $required_fields 必填欄位
 	 * @return array 必填欄位
+	 * @phpstan-ignore-next-line
 	 */
 	public static function set_last_name_optional( array $required_fields ): array {
 		// 移除姓氏作为必填项的要求
