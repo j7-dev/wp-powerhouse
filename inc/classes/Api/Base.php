@@ -48,7 +48,9 @@ final class Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->base_url = WP_DEBUG ? 'http://cloud.local' : 'https://cloud.luke.cafe';
+		// $is_local = WP_DEBUG;
+		$is_local       = true;
+		$this->base_url = $is_local ? 'https://cloud-staging.wpsite.pro' : 'https://cloud.luke.cafe';
 		$this->api_url  = "{$this->base_url}/wp-json/power-partner-server";
 		// @phpstan-ignore-next-line
 		$this->default_args = [
@@ -61,7 +63,7 @@ final class Base {
 		];
 	}
 
-		/**
+	/**
 	 * 發送 GET 請求
 	 *
 	 * @param string $endpoint 請求路徑
@@ -70,7 +72,7 @@ final class Base {
 	 * @phpstan-ignore-next-line
 	 */
 	public function remote_get( string $endpoint, array $url_params = [] ): array|\WP_Error {
-		$endpoint     = "{$this->api_url}/{$endpoint}";
+		$endpoint = "{$this->api_url}/{$endpoint}";
 		$endpoint = \add_query_arg($url_params, $endpoint);
 
 		$config = $this->default_args;
