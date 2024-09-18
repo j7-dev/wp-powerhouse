@@ -8,13 +8,13 @@ use J7\Powerhouse\Plugin;
 
 
 $default_license_code = [
-	'product_slug' => 'unknown',
-	'product_name' => 'Unknown',
-	'code'         => '',
-	'status'       => '',
-	'expire_date'  => '',
-	'type'         => 'normal',
-	'link'         => '',
+	'product_slug'    => 'unknown',
+	'product_name'    => 'Unknown',
+	'code'            => '',
+	'post_status'     => '',
+	'expire_date'     => '',
+	'is_subscription' => false,
+	'link'            => '',
 ];
 
 $default_args = [
@@ -34,9 +34,9 @@ $license_code = \wp_parse_args( $license_code, $default_license_code );
 	'product_slug'  => $product_slug,
 	'product_name' => $product_name,
 	'code'         => $code,
-	'status'       => $license_status,
+	'post_status'       => $license_status,
 	'expire_date' => $expire_date,
-	'type'         => $license_type,
+	'is_subscription'         => $is_subscription,
 	'link'         => $buy_link,
 ] = $license_code;
 
@@ -62,11 +62,7 @@ $status_color = match ( $license_status ) {
 	default        => 'neutral',
 };
 
-$display_license_type = match ( $license_type ) {
-	'subscription' => '訂閱',
-	'normal'       => '一次性',
-	default        => '',
-};
+$display_is_subscription = $is_subscription ? '訂閱' : '一次性';
 
 printf(
 /*html*/'
@@ -94,7 +90,7 @@ $product_name,
 $buy_link ? "<sl-button variant='primary' href='{$buy_link}' target='_blank' size='small' outline>購買授權</sl-button>" : '',
 $status_color,
 $status_label,
-$display_license_type,
+$display_is_subscription,
 $display_expire_date,
 $code,
 Plugin::safe_get(

@@ -77,10 +77,7 @@ final class Base {
 	 * @phpstan-ignore-next-line
 	 */
 	public function remote_post( string $endpoint, array $body_params = [] ): array|\WP_Error {
-		$endpoint = "{$this->api_url}/{$endpoint}";
-		ob_start();
-		var_dump( $this->default_args);
-		\J7\WpUtils\Classes\Log::info('' . ob_get_clean());
+		$endpoint     = "{$this->api_url}/{$endpoint}";
 		$default_args = $this->default_args;
 		$args         = $body_params ? \array_merge(
 			$default_args,

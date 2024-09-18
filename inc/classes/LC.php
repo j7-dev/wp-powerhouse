@@ -109,7 +109,7 @@ final class LC {
 	 * 取得所有 licenseCode 的 array
 	 * 發起檢查
 	 *
-	 * @return array<array{code: string, status: string, expire_date: string, type: string, product_slug: string, product_name: string}>
+	 * @return array<array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}>
 	 */
 	public static function get_lc_array(): array {
 
@@ -155,7 +155,7 @@ final class LC {
 				$body = \wp_remote_retrieve_body($response);
 
 				/**
-				 * @var array{id: int, status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
+				 * @var array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
 				 */
 				$data = General::json_parse($body, []);
 
@@ -181,7 +181,7 @@ final class LC {
 		}
 
 		/**
-		 * @var array<array{code: string, status: string, expire_date: string, type: string, product_slug: string, product_name: string}> $lc_array
+		 * @var array<array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}> $lc_array
 		 */
 		return $lc_array;
 	}
@@ -253,7 +253,7 @@ final class LC {
 		$body = \wp_remote_retrieve_body($response);
 
 		/**
-		 * @var array{id: int, status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
+		 * @var array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
 		 */
 		$data = General::json_parse($body, []);
 
@@ -335,7 +335,7 @@ final class LC {
 	 * @param string               $product_slug 產品 key
 	 * @param string               $product_name 產品名稱
 	 * @param array{link?: string} $product_info 產品資訊
-	 * @return array{code: string, status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
+	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
 	 */
 	public static function get_default_lc( string $product_slug, string $product_name, array $product_info ): array {
 		// 把 saved_codes 清除
@@ -351,7 +351,7 @@ final class LC {
 
 		$default_lc = [
 			'code'        => '',
-			'status'      => '',
+			'post_status' => '',
 			'expire_date' => '',
 			'type'        => '',
 		];
@@ -361,7 +361,7 @@ final class LC {
 		$lc['product_name'] = $product_name;
 		$lc['link']         = $product_info['link'] ?? '';
 		// @phpstan-ignore-next-line
-		\set_transient("lc_{$product_name}", self::encode($lc), self::CACHE_TIME);
+		\set_transient("lc_{$product_slug}", self::encode($lc), self::CACHE_TIME);
 
 		return $lc;
 	}
@@ -370,7 +370,7 @@ final class LC {
 	 * 設置 LC transient
 	 * 儲存 product_slug 和 code 到 option
 	 *
-	 * @param array{id: int, status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $data 成功
+	 * @param array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $data 成功
 	 * @return void
 	 */
 	public static function set_lc_transient( array $data ): void {
@@ -391,13 +391,13 @@ final class LC {
 	 * 解密
 	 *
 	 * @param string $value 加密後的 string
-	 * @return array{code: string, status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
+	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
 	 */
 	public static function decode( string $value ): array {
 		try {
 
 			/**
-			 * @var array{code: string, status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
+			 * @var array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
 			 */
 			$lc_status = \json_decode( $value, true );
 			return $lc_status;
@@ -413,7 +413,7 @@ final class LC {
 	/**
 	 * 加密函數
 	 *
-	 * @param array{id: int, status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $license_code 單個授權狀態
+	 * @param array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $license_code 單個授權狀態
 	 * @return string 加密後的 string
 	 */
 	public static function encode( array $license_code ): string {
@@ -433,7 +433,7 @@ final class LC {
 		if (false !== $lc_string) {
 			// @phpstan-ignore-next-line
 			$lc = self::decode($lc_string);
-			if ('activated' === ( $lc['status'] )) {
+			if ('activated' === ( $lc['post_status'] ?? '' )) {
 				$activate = true;
 			}
 		}

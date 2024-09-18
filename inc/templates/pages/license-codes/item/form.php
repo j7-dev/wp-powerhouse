@@ -3,15 +3,18 @@
  * License Codes
  */
 
+$default_license_code = [
+	'product_slug'    => 'unknown',
+	'product_name'    => 'Unknown',
+	'code'            => '',
+	'post_status'     => '',
+	'expire_date'     => '',
+	'is_subscription' => false,
+	'link'            => '',
+];
+
 $default_args = [
-	'license_code' => [
-		'product_slug' => 'unknown',
-		'product_name' => 'Unknown',
-		'code'         => '',
-		'status'       => '',
-		'expire_date'  => '',
-		'type'         => 'normal',
-	],
+	'license_code' => $default_license_code,
 ];
 
 // @phpstan-ignore-next-line
@@ -22,13 +25,15 @@ $args = \wp_parse_args( $args, $default_args );
 	'key'          => $key,
 ] = $args;
 
+$license_code = \wp_parse_args( $license_code, $default_license_code );
+
 [
-	'product_slug'  => $product_slug,
-	'product_name' => $product_name,
-	'code'         => $code,
-	'status'       => $license_status,
-	'expire_date' => $expire_date,
-	'type'         => $license_type,
+	'product_slug'    => $product_slug,
+	'product_name'    => $product_name,
+	'code'            => $code,
+	'post_status'     => $license_status,
+	'expire_date'     => $expire_date,
+	'is_subscription' => $is_subscription,
 ] = $license_code;
 
 $deactivate_button = '<sl-button type="submit" name="submit_button" value="deactivate" variant="default" size="small" class="w-full mt-4">棄用授權</sl-button>';
