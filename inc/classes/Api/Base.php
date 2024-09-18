@@ -8,6 +8,8 @@ declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Api;
 
+use J7\Powerhouse\Utils;
+
 if ( class_exists( 'J7\Powerhouse\Api\Base' ) ) {
 	return;
 }
@@ -17,15 +19,9 @@ if ( class_exists( 'J7\Powerhouse\Api\Base' ) ) {
 final class Base {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	private const USER_NAME = 'j7.dev.gg';
-	private const PASSWORD  = 'YQLj xV2R js9p IWYB VWxp oL2E';
-
-	/**
-	 * Base url
-	 *
-	 * @var string $base_url
-	 */
-	private $base_url;
+	public $username = ''; // phpcs:ignore
+	public $psw      = ''; // phpcs:ignore
+	public $base_url = ''; // phpcs:ignore
 
 	/**
 	 * Api url
@@ -48,19 +44,9 @@ final class Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		// $is_local = WP_DEBUG;
-		$is_local       = true;
-		$this->base_url = $is_local ? 'https://cloud-staging.wpsite.pro' : 'https://cloud.luke.cafe';
-		$this->api_url  = "{$this->base_url}/wp-json/power-partner-server";
-		// @phpstan-ignore-next-line
-		$this->default_args = [
-			'headers' => [
-				'Content-Type'  => 'application/json; charset=UTF-8',
-				'Authorization' => 'Basic ' . \base64_encode( Base::USER_NAME . ':' . Base::PASSWORD ), // phpcs:ignore
-				'Origin'        => \wp_parse_url(\site_url(), PHP_URL_HOST),
-			],
-			'timeout' => 30, // 30 秒
-		];
+		// TODO 環境變數
+		Utils\Base::set_api_auth( 'staging', $this );
+
 	}
 
 	/**
