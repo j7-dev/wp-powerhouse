@@ -22,11 +22,12 @@ abstract class Base {
 	/**
 	 * Set API auth
 	 *
-	 * @param string   $env 環境名稱
 	 * @param Api\Base $api 實例
+	 * @param string   $env 環境名稱
+
 	 * @return void
 	 */
-	public static function set_api_auth( ?string $env = 'prod', Api\Base $api ): void {
+	public static function set_api_auth( Api\Base $api, ?string $env = 'prod' ): void {
 
 		switch ($env) { // phpcs:ignore
 			case 'local': // LOCAL
@@ -44,20 +45,20 @@ abstract class Base {
 				$psw      = 'uJsk Gu3S pwUG r6ia P9zy Xjrj';
 				$base_url = 'https://cloud.luke.cafe';
 				break;
-
-			$api->username = $username;
-			$api->psw      = $psw;
-			$api->base_url = $base_url;
-			$api->api_url  = "{$base_url}/wp-json/power-partner-server";
-			// @phpstan-ignore-next-line
-			$api->default_args = [
-				'headers' => [
-					'Content-Type'  => 'application/json; charset=UTF-8',
-					'Authorization' => 'Basic ' . \base64_encode( $username . ':' . $psw ), // phpcs:ignore
-					'Origin'        => \wp_parse_url(\site_url(), PHP_URL_HOST),
-				],
-				'timeout' => 30, // 30 秒
-			];
 		}
+
+		$api->username = $username;
+		$api->psw      = $psw;
+		$api->base_url = $base_url;
+		$api->api_url  = "{$base_url}/wp-json/power-partner-server";
+		// @phpstan-ignore-next-line
+		$api->default_args = [
+			'headers' => [
+				'Content-Type'  => 'application/json; charset=UTF-8',
+				'Authorization' => 'Basic ' . \base64_encode( $username . ':' . $psw ), // phpcs:ignore
+				'Origin'        => \wp_parse_url(\site_url(), PHP_URL_HOST),
+			],
+			'timeout' => 30, // 30 秒
+		];
 	}
 }

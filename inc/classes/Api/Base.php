@@ -29,7 +29,7 @@ final class Base {
 	 *
 	 * @var string $api_url
 	 */
-	private $api_url;
+	public $api_url;
 
 	/**
 	 * 預設的 API 參數
@@ -38,15 +38,14 @@ final class Base {
 	 *
 	 * @var array{body?: string, headers: array<string, string>, timeout: int} $default_args
 	 */
-	private $default_args;
+	public $default_args;
 
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		// TODO 環境變數
-		Utils\Base::set_api_auth( 'staging', $this );
-
+		Utils\Base::set_api_auth( $this, 'staging');
 	}
 
 	/**
@@ -78,7 +77,10 @@ final class Base {
 	 * @phpstan-ignore-next-line
 	 */
 	public function remote_post( string $endpoint, array $body_params = [] ): array|\WP_Error {
-		$endpoint     = "{$this->api_url}/{$endpoint}";
+		$endpoint = "{$this->api_url}/{$endpoint}";
+		ob_start();
+		var_dump( $this->default_args);
+		\J7\WpUtils\Classes\Log::info('' . ob_get_clean());
 		$default_args = $this->default_args;
 		$args         = $body_params ? \array_merge(
 			$default_args,
