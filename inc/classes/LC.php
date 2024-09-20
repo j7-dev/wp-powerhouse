@@ -30,9 +30,15 @@ final class LC {
 	 */
 	public static function powerhouse_license_codes_page_callback(): void {
 		$save_result = self::handle_save();
-		$show_alert  = $save_result['show_alert'];
 
-		$lc_array = self::get_lc_array();
+		// 如果啟用成功，自動刷新頁面
+		if ('success' === $save_result['type']) {
+			\wp_safe_redirect(\admin_url('admin.php?page=powerhouse-license-codes'));
+			exit;
+		}
+
+		$show_alert = $save_result['show_alert'];
+		$lc_array   = self::get_lc_array();
 
 		echo '<div class="pr-5 my-8">';
 		printf(
