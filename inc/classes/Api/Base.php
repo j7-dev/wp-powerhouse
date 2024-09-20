@@ -44,8 +44,8 @@ final class Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		// TODO 環境變數
-		Utils\Base::set_api_auth( $this, 'staging');
+		// 設定環境變數
+		Utils\Base::set_api_auth( $this);
 	}
 
 	/**

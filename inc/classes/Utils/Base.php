@@ -22,12 +22,18 @@ abstract class Base {
 	/**
 	 * Set API auth
 	 *
-	 * @param Api\Base $api 實例
-	 * @param string   $env 環境名稱
+	 * @param Api\Base    $api 實例
+	 * @param string|null $env 環境名稱
 
 	 * @return void
 	 */
-	public static function set_api_auth( Api\Base $api, ?string $env = 'prod' ): void {
+	public static function set_api_auth( Api\Base $api, ?string $env = null ): void {
+
+		if (!defined('WP_ENVIRONMENT_TYPE')) {
+			define('WP_ENVIRONMENT_TYPE', 'production');
+		}
+
+		$env = $env ?? WP_ENVIRONMENT_TYPE;
 
 		switch ($env) { // phpcs:ignore
 			case 'local': // LOCAL
