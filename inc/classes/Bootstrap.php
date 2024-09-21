@@ -92,7 +92,9 @@ final class Bootstrap {
 		true
 		);
 
-		Plugin::instance()->add_module_handle($admin_handle, 'defer');
+		if (\method_exists(Plugin::class, 'add_module_handle')) {
+			Plugin::instance()->add_module_handle($admin_handle, 'defer');
+		}
 
 		// CDN shoelace
 		// phpcs:disable
