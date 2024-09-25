@@ -62,6 +62,12 @@ final class Bootstrap {
 	 */
 	public static function add_submenu(): void {
 		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings::class, 'powerhouse_settings_page_callback' ] );
+
+		// 如果沒有註冊產品資訊，就不用顯示授權碼
+		$product_infos = \apply_filters( 'powerhouse_product_infos', [] );
+		if (!$product_infos) {
+			return;
+		}
 		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', self::LC_MENU_SLUG, [ LC::class, 'powerhouse_license_codes_page_callback' ] );
 	}
 

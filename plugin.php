@@ -27,7 +27,6 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * Class Plugin
- * TODO 依賴 WC ?
  */
 final class Plugin {
 	use \J7\WpUtils\Traits\PluginTrait;
