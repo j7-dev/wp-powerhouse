@@ -30,6 +30,7 @@ final class Bootstrap {
 		Admin\OrderList::instance();
 		Admin\DelayEmail::instance();
 		Api\Base::instance();
+		Api\LC::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );

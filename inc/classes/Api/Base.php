@@ -1,7 +1,6 @@
 <?php
 /**
  * Api
- * TODO 加密
  */
 
 declare ( strict_types=1 );
