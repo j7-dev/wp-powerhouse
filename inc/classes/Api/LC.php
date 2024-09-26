@@ -68,12 +68,16 @@ final class LC {
 			);
 		}
 
-		\delete_transient( "lc_{$product_slug}" );
+		$delete_transient_result = \delete_transient( "lc_{$product_slug}" );
 
 		return new \WP_REST_Response(
 			[
 				'code'    => 'invalidate_lc_cache_success',
 				'message' => '清除快取成功',
+				'data'    => [
+					'delete_transient_result' => $delete_transient_result,
+					'product_slug'            => $product_slug,
+				],
 			],
 			200
 			);

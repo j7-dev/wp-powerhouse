@@ -434,12 +434,11 @@ final class LC {
 	 */
 	public static function is_activated( string $product_slug ): bool {
 		$activate  = false;
-		$lc_string = \get_transient("lc_{$product_slug}");
+		$lc_string = (string) \get_transient("lc_{$product_slug}");
 
 		if (false !== $lc_string) {
-			// @phpstan-ignore-next-line
 			$lc = self::decode($lc_string);
-			if ('activated' === ( $lc['post_status'] ?? '' )) {
+			if ('activated' === ( $lc['post_status'] ?? '' )) { // @phpstan-ignore-line
 				$activate = true;
 			}
 		}
