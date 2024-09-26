@@ -182,8 +182,10 @@ final class LC {
 			}
 
 			// 如果 transient 存在
-			// @phpstan-ignore-next-line
-			$lc_array[] = self::decode($lc);
+			$decoded = self::decode( (string) $lc);
+			if ($decoded) {
+				$lc_array[] = $decoded;
+			}
 		}
 
 		/**
@@ -316,17 +318,7 @@ final class LC {
 			];
 		}
 
-		// 從 options 裡面移除
-		/**
-		 * @var array<string, string> $saved_codes 產品 key 和 code
-		 */
-		$saved_codes = \get_option(self::KEY, []);
-		if (!is_array($saved_codes)) {
-			$saved_codes = [];
-		}
-		unset($saved_codes[ $product_slug ]);
-		\update_option(self::KEY, $saved_codes);
-		\delete_transient("lc_{$product_slug}");
+		self::delete_lc_transient($product_slug);
 
 		return [
 			'type'    => 'success',
@@ -393,26 +385,51 @@ final class LC {
 		\set_transient("lc_{$product_slug}", self::encode($data), self::CACHE_TIME);
 	}
 
+
+	/**
+	 * 刪除 LC transient
+	 * 刪除 product_slug 和 code 到 option
+	 *
+	 * @param string $product_slug 產品 slug
+	 * @return bool 是否刪除成功
+	 */
+	public static function delete_lc_transient( string $product_slug ): bool {
+		/**
+		 * @var array<string, string> $saved_codes 產品 key 和 code
+		 */
+		$saved_codes = \get_option(self::KEY, []);
+		if (!is_array($saved_codes)) {
+			$saved_codes = [];
+		}
+		unset($saved_codes[ $product_slug ]);
+		\update_option(self::KEY, $saved_codes);
+		$delete_transient_result = \delete_transient("lc_{$product_slug}");
+		return $delete_transient_result;
+	}
+
 	/**
 	 * 解密
 	 *
 	 * @param string $value 加密後的 string
-	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
+	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}|false 單個授權狀態，false 表示解密失敗
 	 */
-	public static function decode( string $value ): array {
+	public static function decode( string $value ): array|false {
 		try {
 
 			/**
 			 * @var array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
 			 */
 			$lc_status = \json_decode( $value, true );
+			if (!is_array($lc_status)) {
+				return false;
+			}
 			return $lc_status;
-			// @phpstan-ignore-next-line
+
 		} catch ( \Exception $e ) {
 			ob_start();
 			var_dump($e->getMessage());
 			\J7\WpUtils\Classes\Log::info('decode error: ' . ob_get_clean());
-			return [];
+			return false;
 		}
 	}
 
@@ -433,15 +450,17 @@ final class LC {
 	 * @return bool 是否啟用
 	 */
 	public static function is_activated( string $product_slug ): bool {
-		$activate  = false;
 		$lc_string = (string) \get_transient("lc_{$product_slug}");
 
 		if (false !== $lc_string) {
 			$lc = self::decode($lc_string);
+			if (!$lc) {
+				return false;
+			}
 			if ('activated' === ( $lc['post_status'] ?? '' )) { // @phpstan-ignore-line
-				$activate = true;
+				return true;
 			}
 		}
-		return $activate;
+		return false;
 	}
 }

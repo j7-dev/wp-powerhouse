@@ -8,6 +8,7 @@ declare( strict_types=1 );
 namespace J7\Powerhouse\Api;
 
 use J7\Powerhouse\Plugin;
+use J7\Powerhouse\LC as LC_CLASS;
 
 /**
  * Class LC
@@ -68,7 +69,7 @@ final class LC {
 			);
 		}
 
-		$delete_transient_result = \delete_transient( "lc_{$product_slug}" );
+		$delete_transient_result = LC_CLASS::delete_lc_transient( $product_slug );
 
 		return new \WP_REST_Response(
 			[
