@@ -49,11 +49,12 @@ final class Plugin {
 
 		$this->init(
 			[
-				'app_name'    => 'Powerhouse',
-				'github_repo' => 'https://github.com/j7-dev/wp-powerhouse',
-				'callback'    => [ Bootstrap::class, 'instance' ],
-				'priority'    => -10,
-				'lc'          => false,
+				'app_name'     => 'Powerhouse',
+				'github_repo'  => 'https://github.com/j7-dev/wp-powerhouse',
+				'callback'     => [ Bootstrap::class, 'instance' ],
+				'priority'     => -10,
+				'lc'           => false,
+				'hide_submenu' => true,
 			]
 		);
 
