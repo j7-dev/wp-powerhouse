@@ -34,15 +34,6 @@ final class Bootstrap {
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
-
-		// TEST
-		// \add_filter(
-		// 'powerhouse_product_names',
-		// function ( $names ) {
-		// return $names + [
-		// 'power-course' => 'Power Course',
-		// ]; }
-		// );
 	}
 
 	/**
@@ -76,10 +67,6 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function enqueue_assets(): void {
-
-		// TODO 之後再對 css 做分割 & 按需載入
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
-
 		if (\method_exists(General::class, 'in_url')) {
 			if (!General::in_url(
 			[
@@ -90,6 +77,9 @@ final class Bootstrap {
 			}
 		}
 
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
+
+		$admin_handle = Plugin::$kebab . '-admin';
 		\wp_enqueue_script(
 		Plugin::$kebab,
 		Plugin::$url . '/inc/assets/dist/index.js',

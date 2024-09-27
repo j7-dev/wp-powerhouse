@@ -8,7 +8,10 @@ module.exports = {
 	content: [
 		'./js/src/**/*.{js,ts,jsx,tsx}',
 		'./inc/**/*.php',
-		'./inc/assets/src/**/*.ts',
+		'./inc/**/*.ts',
+		'./inc/**/*.tsx',
+		'./js/src/**/*.tsx',
+		'./js/src/**/*.ts',
 	],
 	theme: {
 		animation: {
