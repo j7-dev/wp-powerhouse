@@ -1,6 +1,6 @@
 {
 	"name": "j7-dev/powerhouse",
-	"description": "A toolkit for WordPress development, library as plugin",
+	"description": "powerhouse is a library as plugin",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-only",
 	"authors": [
@@ -29,7 +29,8 @@
 		}
 	},
 	"require": {
-		"j7-dev/wp-utils": "0.2.26"
+		"j7-dev/wp-utils": "0.2.31",
+		"brainfoolong/js-aes-php": "^1.0"
 	},
 	"require-dev": {
 		"squizlabs/php_codesniffer": "@stable",

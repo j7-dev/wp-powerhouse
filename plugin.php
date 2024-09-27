@@ -24,6 +24,7 @@ if ( \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/inc/classes/LC.php';
 
 /**
  * Class Plugin
@@ -52,6 +53,7 @@ final class Plugin {
 				'github_repo' => 'https://github.com/j7-dev/wp-powerhouse',
 				'callback'    => [ Bootstrap::class, 'instance' ],
 				'priority'    => -10,
+				'lc'          => false,
 			]
 		);
 

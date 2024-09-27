@@ -11,6 +11,7 @@ namespace J7\Powerhouse;
 
 use J7\Powerhouse\Plugin;
 use J7\WpUtils\Classes\General;
+use Nullix\JsAesPhp\JsAesPhp;
 
 
 if ( class_exists( 'J7\Powerhouse\LC' ) ) {
@@ -129,6 +130,7 @@ final class LC {
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
 		$saved_codes = \get_option(self::KEY, []);
+
 		if (!is_array($saved_codes)) {
 			$saved_codes = [];
 		}
@@ -142,9 +144,10 @@ final class LC {
 			if (!$product_name) {
 				continue;
 			}
+
+			$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 			// 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient
 			if (false === $lc && !$saved_code ) {
-				$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 				$lc_array[] = $default_lc;
 				continue;
 			}
@@ -183,9 +186,8 @@ final class LC {
 
 			// 如果 transient 存在
 			$decoded = self::decode( (string) $lc);
-			if ($decoded) {
-				$lc_array[] = $decoded;
-			}
+
+			$lc_array[] = $decoded ? $decoded : $default_lc;
 		}
 
 		/**
@@ -336,17 +338,6 @@ final class LC {
 	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
 	 */
 	public static function get_default_lc( string $product_slug, string $product_name, array $product_info ): array {
-		// 把 saved_codes 清除
-		/**
-		 * @var array<string, string> $saved_codes 產品 key 和 code
-		 */
-		$saved_codes = \get_option(self::KEY, []);
-		if (!is_array($saved_codes)) {
-			$saved_codes = [];
-		}
-		unset($saved_codes[ $product_slug ]);
-		\update_option(self::KEY, $saved_codes);
-
 		$default_lc = [
 			'code'        => '',
 			'post_status' => '',
@@ -358,9 +349,6 @@ final class LC {
 		$lc['product_slug'] = $product_slug;
 		$lc['product_name'] = $product_name;
 		$lc['link']         = $product_info['link'] ?? '';
-		// @phpstan-ignore-next-line
-		\set_transient("lc_{$product_slug}", self::encode($lc), self::CACHE_TIME);
-
 		return $lc;
 	}
 
@@ -381,6 +369,7 @@ final class LC {
 			$saved_codes = [];
 		}
 		$saved_codes[ $product_slug ] = $data['code'];
+
 		\update_option(self::KEY, $saved_codes);
 		\set_transient("lc_{$product_slug}", self::encode($data), self::CACHE_TIME);
 	}
@@ -414,21 +403,22 @@ final class LC {
 	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}|false 單個授權狀態，false 表示解密失敗
 	 */
 	public static function decode( string $value ): array|false {
-		try {
 
+		try {
 			/**
-			 * @var array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
-			 */
-			$lc_status = \json_decode( $value, true );
+		 * @var array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
+		 */
+			$lc_status = JsAesPhp::decrypt($value, Plugin::$kebab);
+
 			if (!is_array($lc_status)) {
 				return false;
 			}
-			return $lc_status;
 
-		} catch ( \Exception $e ) {
+			return $lc_status;
+		} catch ( \Error $e ) {
 			ob_start();
 			var_dump($e->getMessage());
-			\J7\WpUtils\Classes\Log::info('decode error: ' . ob_get_clean());
+			\J7\WpUtils\Classes\Log::info('decode error: ' . $value . ob_get_clean());
 			return false;
 		}
 	}
@@ -437,24 +427,23 @@ final class LC {
 	 * 加密函數
 	 *
 	 * @param array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $license_code 單個授權狀態
-	 * @return string 加密後的 string
+	 * @return string|false 加密後的 string，失敗回傳 false
 	 */
-	public static function encode( array $license_code ): string {
-		return \wp_json_encode( $license_code ) ?: '';
+	public static function encode( array $license_code ): string|false {
+		return JsAesPhp::encrypt($license_code, Plugin::$kebab);
 	}
 
 	/**
-	 * 是否啟用
-	 *
 	 * @param string $product_slug 產品 key
-	 * @return bool 是否啟用
+	 * @return bool ia
 	 */
-	public static function is_activated( string $product_slug ): bool {
-		$lc_string = (string) \get_transient("lc_{$product_slug}");
+	public static function ia( string $product_slug ): bool {
+		$lc_string = \get_transient("lc_{$product_slug}");
 
 		if (false !== $lc_string) {
-			$lc = self::decode($lc_string);
-			if (!$lc) {
+			$lc = self::decode( (string) $lc_string);
+
+			if (!is_array($lc)) {
 				return false;
 			}
 			if ('activated' === ( $lc['post_status'] ?? '' )) { // @phpstan-ignore-line
