@@ -84,14 +84,16 @@ final class DelayEmail {
 	 * @return void
 	 */
 	public static function schedule_email( $class_name, ...$args ): void {
-		// check if the method exists
-		if ( ! method_exists( \WC()->mailer()->emails[ $class_name ], 'trigger' ) ) {
-			return;
-		}
 		/**
-		 * @var WC_Email $email_instance
+		 * @var \WC_Email $email_instance
 		 */
 		$email_instance = \WC()->mailer()->emails[ $class_name ];
+
+		// check if the method exists
+		if ( ! method_exists(   $email_instance, 'trigger' ) ) {
+			return;
+		}
+
 		$email_instance->trigger( ...$args );
 	}
 }
