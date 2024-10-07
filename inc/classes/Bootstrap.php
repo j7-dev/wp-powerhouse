@@ -39,7 +39,11 @@ final class Bootstrap {
 
 		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
+
+		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
 	}
+
+
 
 	/**
 	 * Add Power Plugin Menu
@@ -131,5 +135,14 @@ final class Bootstrap {
 	 */
 	public static function add_tailwind_class_admin( $classes ) {
 		return $classes . ' tailwind';
+	}
+
+	/**
+	 * Check LC array
+	 *
+	 * @return void
+	 */
+	public static function check_lc_array(): void {
+		$lc_array = LC::get_lc_array();
 	}
 }

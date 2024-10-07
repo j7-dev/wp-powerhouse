@@ -21,7 +21,6 @@ if ( class_exists( 'J7\Powerhouse\LC' ) ) {
  * Class LC
  */
 final class LC {
-	use \J7\WpUtils\Traits\SingletonTrait;
 
 	const KEY        = 'powerhouse_license_codes';
 	const CACHE_TIME = 24 * HOUR_IN_SECONDS;
