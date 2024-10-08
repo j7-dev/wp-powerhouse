@@ -143,17 +143,17 @@ final class LC {
 			if (!$product_name) {
 				continue;
 			}
-
+			$decoded    = self::decode( (string) $lc);
 			$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 			// 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient
-			if (false === $lc && !$saved_code ) {
+			if (!is_array($decoded) && !$saved_code ) {
 				$lc_array[] = $default_lc;
 				continue;
 			}
 
 			// 如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取
 			// @phpstan-ignore-next-line
-			if (false === $lc && $saved_code ) {
+			if (!is_array($decoded) && $saved_code ) {
 				$response = self::activate($saved_code, $product_slug, true);
 				if (\is_wp_error($response)) {
 					$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
@@ -184,9 +184,7 @@ final class LC {
 			}
 
 			// 如果 transient 存在
-			$decoded = self::decode( (string) $lc);
-
-			$lc_array[] = $decoded ? $decoded : $default_lc;
+			$lc_array[] = $decoded;
 		}
 
 		/**
@@ -417,7 +415,7 @@ final class LC {
 		} catch ( \Error $e ) {
 			ob_start();
 			var_dump($e->getMessage());
-			\J7\WpUtils\Classes\Log::info('decode error: ' . $value . ob_get_clean());
+			\J7\WpUtils\Classes\ErrorLog::info('decode error: ' . $value . ob_get_clean());
 			return false;
 		}
 	}
@@ -429,7 +427,7 @@ final class LC {
 	 * @return string|false 加密後的 string，失敗回傳 false
 	 */
 	public static function encode( array $license_code ): string|false {
-		return JsAesPhp::encrypt($license_code, Plugin::$kebab);
+		return JsAesPhp::encrypt($license_code, Plugin::$kebab, 1);
 	}
 
 	/**
