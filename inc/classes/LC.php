@@ -161,25 +161,26 @@ final class LC {
 			if (!is_array($decoded) && $saved_code ) {
 				$response = self::activate($saved_code, $product_slug, true);
 				if (\is_wp_error($response)) {
-					$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 					$lc_array[] = $default_lc;
+					self::delete_lc_transient($product_slug);
 					continue;
 				}
+
+				// get header status code
+				$status_code = \wp_remote_retrieve_response_code($response);
+
+				if (200 !== $status_code) {
+					$lc_array[] = $default_lc;
+					self::delete_lc_transient($product_slug);
+					continue;
+				}
+
 				$body = \wp_remote_retrieve_body($response);
 
 				/**
 				 * @var array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
 				 */
 				$data = General::json_parse($body, []);
-
-				// get header status code
-				$status_code = \wp_remote_retrieve_response_code($response);
-
-				if (200 !== $status_code) {
-					$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
-					$lc_array[] = $default_lc;
-					continue;
-				}
 
 				// @phpstan-ignore-next-line
 				self::set_lc_transient($data);
