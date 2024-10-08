@@ -143,16 +143,21 @@ final class LC {
 			if (!$product_name) {
 				continue;
 			}
-			$decoded    = self::decode( (string) $lc);
+
+			$decoded = false;
+			if (false !== $lc) {
+				$decoded = self::decode( (string) $lc);
+			}
+
 			$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 			// 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient
 			if (!is_array($decoded) && !$saved_code ) {
+				self::delete_lc_transient($product_slug);
 				$lc_array[] = $default_lc;
 				continue;
 			}
 
 			// 如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取
-			// @phpstan-ignore-next-line
 			if (!is_array($decoded) && $saved_code ) {
 				$response = self::activate($saved_code, $product_slug, true);
 				if (\is_wp_error($response)) {
