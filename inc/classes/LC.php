@@ -159,10 +159,15 @@ final class LC {
 
 			// 如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取
 			if (!is_array($decoded) && $saved_code ) {
-				$response = self::activate($saved_code, $product_slug, true);
+				$response = self::activate( (string) $saved_code, $product_slug, true);
 				if (\is_wp_error($response)) {
-					$lc_array[] = $default_lc;
-					self::delete_lc_transient($product_slug);
+					$default_lc['code']        = '500 ' . $response->get_error_message();
+					$default_lc['post_status'] = 'activated';
+					$lc_array[]                = $default_lc;
+					// 失敗的話，就先暫存一個預設啟用值，等於說跳過這次，下次到期再檢查
+					self::set_lc_transient($default_lc);
+					// 失敗不清除原本的 saved_code
+					// self::delete_lc_transient($product_slug);
 					continue;
 				}
 
@@ -170,8 +175,13 @@ final class LC {
 				$status_code = \wp_remote_retrieve_response_code($response);
 
 				if (200 !== $status_code) {
-					$lc_array[] = $default_lc;
-					self::delete_lc_transient($product_slug);
+					$default_lc['code']        = (string) $status_code;
+					$default_lc['post_status'] = 'activated';
+					$lc_array[]                = $default_lc;
+					// 失敗的話，就先暫存一個預設啟用值，等於說跳過這次，下次到期再檢查
+					self::set_lc_transient($default_lc);
+					// 失敗不清除原本的 saved_code
+					// self::delete_lc_transient($product_slug);
 					continue;
 				}
 
