@@ -162,6 +162,6 @@ final class Bootstrap {
 
 		ob_start();
 		var_dump($error);
-		\J7\WpUtils\Classes\ErrorLog::error('Error: ' . ob_get_clean());
+		\J7\WpUtils\Classes\ErrorLog::error(ob_get_clean());
 	}
 }
