@@ -41,6 +41,8 @@ final class Bootstrap {
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
 
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
+
+		\add_action( 'shutdown', [ __CLASS__ , 'log_error' ], 999 );
 	}
 
 
@@ -144,5 +146,22 @@ final class Bootstrap {
 	 */
 	public static function check_lc_array(): void {
 		$lc_array = LC::get_lc_array();
+	}
+
+	/**
+	 * Log error
+	 *
+	 * @return void
+	 */
+	public static function log_error(): void {
+		$error = error_get_last();
+
+		if (!$error) {
+			return;
+		}
+
+		ob_start();
+		var_dump($error);
+		\J7\WpUtils\Classes\ErrorLog::error('Error: ' . ob_get_clean());
 	}
 }
