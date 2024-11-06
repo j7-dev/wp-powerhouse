@@ -160,6 +160,11 @@ final class Bootstrap {
 			return;
 		}
 
+		// 只記錄重大錯誤
+		if (!in_array($error['type'], [ E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_RECOVERABLE_ERROR ])) {
+			return;
+		}
+
 		ob_start();
 		var_dump($error);
 		\J7\WpUtils\Classes\ErrorLog::error(ob_get_clean());
