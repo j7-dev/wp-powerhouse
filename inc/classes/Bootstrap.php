@@ -32,6 +32,8 @@ final class Bootstrap {
 		Api\Base::instance();
 		Api\LC::instance();
 
+		\add_action( 'init', [ __CLASS__, 'register_assets' ] );
+
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
 
@@ -45,7 +47,15 @@ final class Bootstrap {
 		\add_action( 'shutdown', [ __CLASS__ , 'log_error' ], 999 );
 	}
 
-
+	/**
+	 * Register assets
+	 *
+	 * @return void
+	 */
+	public static function register_assets(): void {
+		\wp_register_style( 'shoelace', 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/themes/light.css', [], '2.18.0' );
+		\wp_register_script( 'shoelace', 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/shoelace-autoloader.js', [], '2.18.0', false );
+	}
 
 	/**
 	 * Add Power Plugin Menu
@@ -105,17 +115,14 @@ final class Bootstrap {
 		true
 		);
 
+		// CDN shoelace
+		\wp_enqueue_style( 'shoelace' );
+		\wp_enqueue_script( 'shoelace' );
+
 		if (\method_exists(Plugin::class, 'add_module_handle')) {
 			Plugin::instance()->add_module_handle($admin_handle, 'defer');
+			Plugin::instance()->add_module_handle('shoelace', '');
 		}
-
-		// CDN shoelace
-		// phpcs:disable
-		echo '
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/themes/light.css" />
-		<script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.16.0/cdn/shoelace-autoloader.js"></script>
-		';
-		// phpcs:enable
 	}
 
 	/**

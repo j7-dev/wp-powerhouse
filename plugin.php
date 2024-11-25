@@ -13,6 +13,17 @@
  * Text Domain:       power-partner-server
  * Domain Path:       /languages
  * Tags: vite, WordPress plugin
+ *
+ * *****************************************************************************************
+ *                                                                                         *
+ * ██████╗  ██████╗ ██╗    ██╗███████╗██████╗ ██╗  ██╗ ██████╗ ██╗   ██╗███████╗███████╗   *
+ * ██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔══██╗██║  ██║██╔═══██╗██║   ██║██╔════╝██╔════╝   *
+ * ██████╔╝██║   ██║██║ █╗ ██║█████╗  ██████╔╝███████║██║   ██║██║   ██║███████╗█████╗     *
+ * ██╔═══╝ ██║   ██║██║███╗██║██╔══╝  ██╔══██╗██╔══██║██║   ██║██║   ██║╚════██║██╔══╝     *
+ * ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║██║  ██║╚██████╔╝╚██████╔╝███████║███████╗   *
+ * ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝   *
+ *                                                                                         *
+ * *********************************** www.powerhouse.com **********************************
  */
 
 declare ( strict_types=1 );
@@ -48,14 +59,14 @@ final class Plugin {
 		];
 
 		$this->init(
-			[
-				'app_name'     => 'Powerhouse',
-				'github_repo'  => 'https://github.com/j7-dev/wp-powerhouse',
-				'callback'     => [ Bootstrap::class, 'instance' ],
-				'priority'     => -10,
-				'lc'           => false,
-				'hide_submenu' => true,
-			]
+		[
+			'app_name'     => 'Powerhouse',
+			'github_repo'  => 'https://github.com/j7-dev/wp-powerhouse',
+			'callback'     => [ Bootstrap::class, 'instance' ],
+			'priority'     => -10,
+			'lc'           => false,
+			'hide_submenu' => true,
+		]
 		);
 
 		self::$template_page_names = [ 'admin', 'settings', 'license-codes' ];
