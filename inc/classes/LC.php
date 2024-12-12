@@ -325,6 +325,8 @@ final class LC {
 		// get header status code
 		$status_code = \wp_remote_retrieve_response_code($response);
 
+		self::delete_lc_transient($product_slug);
+
 		if (200 !== $status_code) {
 			return [
 				'type'    => 'danger',
@@ -332,8 +334,6 @@ final class LC {
 				'message' => $data['message'] ?? 'unknown error',
 			];
 		}
-
-		self::delete_lc_transient($product_slug);
 
 		return [
 			'type'    => 'success',
