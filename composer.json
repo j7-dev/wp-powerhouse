@@ -29,7 +29,7 @@
 		}
 	},
 	"require": {
-		"j7-dev/wp-utils": "0.2.56",
+		"j7-dev/wp-utils": "0.2.58",
 		"brainfoolong/js-aes-php": "^1.0"
 	},
 	"require-dev": {
