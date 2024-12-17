@@ -429,9 +429,7 @@ final class LC {
 
 			return $lc_status;
 		} catch ( \Error $e ) {
-			ob_start();
-			var_dump($e->getMessage());
-			\J7\WpUtils\Classes\ErrorLog::info('decode error: ' . $value . ob_get_clean());
+			\J7\WpUtils\Classes\ErrorLog::info('decode error: ' . $value . $e->getMessage());
 			return false;
 		}
 	}

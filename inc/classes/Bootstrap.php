@@ -25,6 +25,7 @@ final class Bootstrap {
 	 */
 	public function __construct() {
 		Settings::instance();
+		Admin\Debug::instance();
 		Admin\Account::instance();
 		// Admin\OrderDetail::instance();
 		Admin\OrderList::instance();
@@ -171,9 +172,6 @@ final class Bootstrap {
 		if (!in_array($error['type'], [ E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_RECOVERABLE_ERROR ])) {
 			return;
 		}
-
-		ob_start();
-		var_dump($error);
-		\J7\WpUtils\Classes\ErrorLog::error(ob_get_clean());
+		\J7\WpUtils\Classes\ErrorLog::error($error, '');
 	}
 }
