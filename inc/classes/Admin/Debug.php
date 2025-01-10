@@ -24,6 +24,7 @@ final class Debug {
 	public function __construct() {
 		\add_action( 'admin_menu', [ $this, 'add_debug_submenu_page' ], -10 );
 		\add_action('admin_bar_menu', [ $this, 'add_debug_admin_bar_menu' ], 100);
+		\add_action('admin_post_delete_debug_log', [ $this, 'handle_delete_debug_log' ]);
 	}
 
 	/**
@@ -62,21 +63,40 @@ final class Debug {
 	 * @return void
 	 */
 	public function debug_log_page_content(): void {
+		// 顯示刪除成功/失敗訊息
+		if (isset($_GET['deleted'])) {
+			if ($_GET['deleted'] === '1') {
+				echo '<div class="notice notice-success"><p>Debug log 已成功刪除</p></div>';
+			} else {
+				echo '<div class="notice notice-error"><p>刪除 Debug log 失敗</p></div>';
+			}
+		}
+
 		printf(
 		/*html*/'
 		<div class="wrap">
 			<h1>Debug Log</h1>
-			<p>只顯示 <code>/wp-content/debug.log</code> 最後 1000 行，
-				<a href="%s" target="_blank">下載 debug.log</a>
-			</p>
-			<p><a href="#bottom">前往底部</a></p>
+			<form method="post" action="%2$s" style="margin: 1rem 0;">
+				%3$s
+				<a href="%1$s" target="_blank" class="button button-primary">
+					下載 debug.log
+				</a>
+				<button type="submit" class="button button-secondary" onclick="return confirm(\'確定要刪除 debug.log 檔案嗎？\');">
+					刪除 debug.log
+				</button>
+				<a href="#bottom" class="button button-secondary">
+					前往底部
+				</a>
+			</form>
 		</div>
 		',
-		\site_url( '/wp-content/debug.log' )
+		\site_url('/wp-content/debug.log'),
+		\admin_url('admin-post.php?action=delete_debug_log'),
+		\wp_nonce_field('delete_debug_log', '_wpnonce', true, false)
 		);
 
 		echo '<pre style="line-height: 0.75;">' . $this->read_debug_log() . '</pre>';
-		echo '<div id="bottom"></div>'; // 添加底部錨點
+		echo '<div id="bottom"></div>';
 	}
 
 
@@ -142,5 +162,31 @@ final class Debug {
 				'href'   => \admin_url('tools.php?page=debug-log-viewer'),
 			]
 			);
+	}
+
+	/**
+	 * 處理刪除 debug.log 的請求
+	 *
+	 * @return void
+	 */
+	public function handle_delete_debug_log(): void {
+		// 檢查權限
+		if (!\current_user_can('manage_options')) {
+			wp_die('權限不足');
+		}
+
+		// 驗證 nonce
+		if (!\wp_verify_nonce($_REQUEST['_wpnonce'] ?? '', 'delete_debug_log')) { // phpcs:ignore
+			wp_die('無效的請求');
+		}
+
+		$log_path = WP_CONTENT_DIR . '/debug.log';
+		if (\file_exists($log_path) && \unlink($log_path)) {
+			\wp_redirect(\add_query_arg('deleted', '1', \wp_get_referer()));
+			exit;
+		}
+
+		\wp_redirect(\add_query_arg('deleted', '0', \wp_get_referer()));
+		exit;
 	}
 }
