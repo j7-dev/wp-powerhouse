@@ -23,8 +23,8 @@ final class Debug {
 	 */
 	public function __construct() {
 		\add_action( 'admin_menu', [ $this, 'add_debug_submenu_page' ], -10 );
+		\add_action('admin_bar_menu', [ $this, 'add_debug_admin_bar_menu' ], 100);
 	}
-
 
 	/**
 	 * 添加 debug 子選單
@@ -99,5 +99,48 @@ final class Debug {
 			return \nl2br( \esc_html( $log_content ) ); // 將換行符轉換為HTML換行，並轉義內容以避免XSS攻擊
 		}
 		return 'Log file does not exist.';
+	}
+
+	/**
+	 * 在 Admin Bar 添加除錯工具連結
+	 *
+	 * @param \WP_Admin_Bar $wp_admin_bar Admin Bar 實例
+	 * @return void
+	 */
+	public function add_debug_admin_bar_menu( \WP_Admin_Bar $wp_admin_bar ): void {
+		// 只有管理員可以看到這個選單
+		if (!\current_user_can('manage_options')) {
+			return;
+		}
+
+		// 添加主選單到右側
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'debug-tools',
+				'title'  => 'Logs',
+				'parent' => 'top-secondary',
+				'href'   => \admin_url('admin.php?page=wc-status&tab=logs&view=single_file&file_id=debugger-' . \wp_date('Y-m-d')),
+			]
+			);
+
+		// 添加 WC Logger 子選單
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'wc-logger',
+				'parent' => 'debug-tools',
+				'title'  => 'WC Logger',
+				'href'   => \admin_url('admin.php?page=wc-status&tab=logs'),
+			]
+			);
+
+		// 添加 Debug Log 子選單
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'debug-log-viewer',
+				'parent' => 'debug-tools',
+				'title'  => 'Debug Log',
+				'href'   => \admin_url('tools.php?page=debug-log-viewer'),
+			]
+			);
 	}
 }
