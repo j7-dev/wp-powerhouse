@@ -18,9 +18,9 @@ if ( class_exists( 'J7\Powerhouse\Api\Base' ) ) {
 final class Base {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	public $username = ''; // phpcs:ignore
-	public $psw      = ''; // phpcs:ignore
-	public $base_url = ''; // phpcs:ignore
+	public string $username = ''; // phpcs:ignore
+	public string $psw      = ''; // phpcs:ignore
+	public string $base_url = ''; // phpcs:ignore
 
 	/**
 	 * Api url
@@ -58,10 +58,8 @@ final class Base {
 	public function remote_get( string $endpoint, array $url_params = [] ): array|\WP_Error {
 		$endpoint = "{$this->api_url}/{$endpoint}";
 		$endpoint = \add_query_arg($url_params, $endpoint);
+		$config   = $this->default_args;
 
-		$config = $this->default_args;
-
-		// @phpstan-ignore-next-line
 		$response = \wp_remote_get($endpoint, $config);
 
 		return $response;

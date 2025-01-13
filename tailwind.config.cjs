@@ -15,10 +15,10 @@ module.exports = {
 		'./js/src/**/*.ts',
 	],
 	theme: {
-		animation: {
-			pulse: 'tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-		},
 		extend: {
+			animation: {
+				pulse: 'tw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+			},
 			colors: {
 				primary: '#1677ff',
 			},

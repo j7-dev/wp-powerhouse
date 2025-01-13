@@ -369,7 +369,7 @@ final class LC {
 	 * 設置 LC transient
 	 * 儲存 product_slug 和 code 到 option
 	 *
-	 * @param array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $data 成功
+	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string} $data 成功
 	 * @return void
 	 */
 	public static function set_lc_transient( array $data ): void {
@@ -437,7 +437,7 @@ final class LC {
 	/**
 	 * 加密函數
 	 *
-	 * @param array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string} $license_code 單個授權狀態
+	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string} $license_code 單個授權狀態
 	 * @return string|false 加密後的 string，失敗回傳 false
 	 */
 	public static function encode( array $license_code ): string|false {

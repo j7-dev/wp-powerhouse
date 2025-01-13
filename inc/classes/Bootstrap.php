@@ -25,6 +25,7 @@ final class Bootstrap {
 	 */
 	public function __construct() {
 		Settings::instance();
+		Admin\Entry::instance();
 		Admin\Debug::instance();
 		Admin\Account::instance();
 		// Admin\OrderDetail::instance();
