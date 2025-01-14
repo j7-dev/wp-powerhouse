@@ -15,7 +15,7 @@ $default_args = [
 	'wrap_class' => 'bg-gradient-to-t from-gray-50',
 ];
 
-$args = wp_parse_args( $args, $default_args );
+$args = wp_parse_args( $args, $default_args ); // @phpstan-ignore-line
 
 [
 	'children' => $children,

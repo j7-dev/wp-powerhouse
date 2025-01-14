@@ -1,7 +1,7 @@
 <?php
 /**
  * Order 訂單備註轉為傳統編輯器
- * BUG: 編輯器無法顯示
+ * BUG: 編輯器無法顯示，似乎只有 HPOS 可以正常使用
  */
 
 declare(strict_types=1);
@@ -30,10 +30,12 @@ final class OrderDetail {
 
 	/**
 	 * Remove origin order note meta box
+	 *
+	 * @return void
 	 */
-	public static function remove_origin_order_note() {
+	public static function remove_origin_order_note(): void {
 		$screen = \get_current_screen();
-		if ('shop_order' !== $screen->id) {
+		if ('shop_order' !== $screen?->id) {
 			return;
 		}
 		\remove_meta_box( 'woocommerce-order-notes', 'woocommerce_page_wc-orders', 'side' );
@@ -41,10 +43,12 @@ final class OrderDetail {
 
 	/**
 	 * Add custom order note
+	 *
+	 * @return void
 	 */
-	public static function add_custom_order_note() {
+	public static function add_custom_order_note(): void {
 		$screen = \get_current_screen();
-		if ('shop_order' !== $screen->id) {
+		if ('shop_order' !== $screen?->id) {
 			return;
 		}
 

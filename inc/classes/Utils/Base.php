@@ -67,4 +67,23 @@ abstract class Base {
 			'timeout' => 30, // 30 秒
 		];
 	}
+
+	/**
+	 * 取得模組的 URL
+	 *
+	 * @param string $module_name 模組名稱
+	 * @return string
+	 */
+	public static function get_module_url( string $module_name ): string {
+		$base_url = \admin_url('admin.php');
+		$url      = \add_query_arg(
+			[
+				'page'   => 'powerhouse',
+				'module' => $module_name,
+			],
+			$base_url
+			);
+
+		return $url;
+	}
 }

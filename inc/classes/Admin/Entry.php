@@ -1,6 +1,7 @@
 <?php
 /**
  * Admin Entry
+ * 如果要做統一後台才需要，目前為各個外掛各自後台
  */
 
 declare(strict_types=1);
@@ -52,34 +53,36 @@ final class Entry {
 	 * Credit: SliceWP Setup Wizard.
 	 */
 	public static function render_page(): void {
-		// Output header HTML.
-		// Bootstrap::enqueue_script();
+		\do_action('powerhouse_before_render_page');
 		$blog_name = \get_bloginfo('name');
-
 		?>
 		<!doctype html>
 		<html lang="zh_tw">
 
 		<head>
+			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/inc/assets/dist/css/index.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
 			<meta charset="UTF-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<title>Powerhouse 後台 | <?php echo $blog_name; ?></title>
+		<?php \do_action('powerhouse_admin_head'); ?>
 		</head>
 
-		<body class="tailwind">
-			<main id="power_course"></main>
+		<body class="tailwind" style="background-color: #f5f5f5;">
+
 		<?php
+		Plugin::get('powerhouse');
 		/**
 		 * Prints any scripts and data queued for the footer.
 		 *
 		 * @since 2.8.0
 		 */
 		\do_action('admin_print_footer_scripts');
-
+		\do_action('powerhouse_admin_footer');
 		?>
 		</body>
 
 		</html>
 		<?php
+		\do_action('powerhouse_after_render_page');
 	}
 }

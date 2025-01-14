@@ -8,10 +8,10 @@ use J7\Powerhouse\Plugin;
 
 Plugin::safe_get(
 	'settings/checkout',
-	$args
+	$args // @phpstan-ignore-line
 );
 
 Plugin::safe_get(
 	'settings/account',
-	$args
+	$args // @phpstan-ignore-line
 );

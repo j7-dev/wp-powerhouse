@@ -1,5 +1,9 @@
 @import "./global.scss";
-@import "./antd.scss";
+// @import "./antd.scss";
+
+* {
+	box-sizing: border-box;
+}
 
 // @see https://shoelace.style/getting-started/usage#waiting-for-components-to-load
 // 讓 Shoelace 元件在載入完成前不顯示
@@ -7,10 +11,15 @@
 	visibility: hidden;
 }
 
-#toplevel_page_powerhouse {
-	.wp-submenu {
-		.wp-first-item {
-			display: none !important;
-		}
-	}
+#powerhouse-sider {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+// #toplevel_page_powerhouse {
+// 	.wp-submenu {
+// 		.wp-first-item {
+// 			display: none !important;
+// 		}
+// 	}
+// }

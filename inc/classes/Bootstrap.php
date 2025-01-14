@@ -25,7 +25,7 @@ final class Bootstrap {
 	 */
 	public function __construct() {
 		Settings::instance();
-		Admin\Entry::instance();
+		// Admin\Entry::instance();
 		Admin\Debug::instance();
 		Admin\Account::instance();
 		// Admin\OrderDetail::instance();
@@ -45,8 +45,6 @@ final class Bootstrap {
 		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
 
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
-
-		\add_action( 'shutdown', [ __CLASS__ , 'log_error' ], 999 );
 	}
 
 	/**
@@ -155,24 +153,5 @@ final class Bootstrap {
 	 */
 	public static function check_lc_array(): void {
 		$lc_array = LC::get_lc_array();
-	}
-
-	/**
-	 * Log error
-	 *
-	 * @return void
-	 */
-	public static function log_error(): void {
-		$error = error_get_last();
-
-		if (!$error) {
-			return;
-		}
-
-		// 只記錄重大錯誤
-		if (!in_array($error['type'], [ E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_RECOVERABLE_ERROR ])) {
-			return;
-		}
-		\J7\WpUtils\Classes\ErrorLog::error($error, '');
 	}
 }

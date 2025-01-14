@@ -17,7 +17,7 @@ $default_args = [
 	'styles' => [],
 ];
 
-$args = wp_parse_args( $args, $default_args );
+$args = wp_parse_args( $args, $default_args ); // @phpstan-ignore-line
 
 $color = $args['color'];
 
