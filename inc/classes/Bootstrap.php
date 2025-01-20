@@ -24,6 +24,8 @@ final class Bootstrap {
 	 * Constructor
 	 */
 	public function __construct() {
+		Compatibility\Compatibility::instance();
+
 		Settings::instance();
 		// Admin\Entry::instance();
 		Admin\Debug::instance();
