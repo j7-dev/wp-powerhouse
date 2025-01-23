@@ -35,6 +35,7 @@ final class Bootstrap {
 		Admin\DelayEmail::instance();
 		Api\Base::instance();
 		Api\LC::instance();
+		Resources\Loader::instance();
 
 		\add_action( 'init', [ __CLASS__, 'register_assets' ] );
 
