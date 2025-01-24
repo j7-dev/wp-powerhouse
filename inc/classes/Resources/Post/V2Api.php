@@ -99,6 +99,9 @@ final class V2Api extends ApiBase {
 			$default_args,
 		);
 
+		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
+		$args = General::parse( $args );
+
 		[
 			'args' => $args,
 			'meta_keys' => $meta_keys,
@@ -152,7 +155,7 @@ final class V2Api extends ApiBase {
 		return [
 			'args'             => $args,
 			'meta_keys'        => $meta_keys,
-			'with_description' => $with_description,
+			'with_description' => (bool) $with_description,
 			'depth'            => $depth,
 			'recursive_args'   => $recursive_args,
 		];
@@ -182,8 +185,24 @@ final class V2Api extends ApiBase {
 				throw new \Exception("文章不存在 #{$id}");
 			}
 
+			/** @var array<string, mixed>|null $params */
+			$params = $request->get_query_params();
+			$params = is_array($params) ? $params : [];
+			/** @var array<string, mixed> $params */
+			$params = WP::sanitize_text_field_deep( $params, false );
+
+			// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
+			$params = General::parse( $params );
+
+			[
+				'meta_keys' => $meta_keys,
+				'with_description' => $with_description,
+				'depth' => $depth,
+				'recursive_args' => $recursive_args,
+			] = self::handle_args($params);
+
 			/** @var \WP_Post $post */
-			$post_array = Utils::format_post_details( $post );
+			$post_array = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
 
 			$response = new \WP_REST_Response( $post_array );
 
@@ -224,8 +243,8 @@ final class V2Api extends ApiBase {
 		/** @var array<string, mixed> $body_params 過濾字串，防止 XSS 攻擊 */
 		$body_params = WP::sanitize_text_field_deep($body_params, true, $skip_keys);
 
-		// 將 '[]' 轉為 []
-		$body_params = General::format_empty_array( $body_params );
+		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
+		$body_params = General::parse( $body_params );
 
 		$separated_data = WP::separator( $body_params, 'post', $file_params['files'] ?? [] );
 

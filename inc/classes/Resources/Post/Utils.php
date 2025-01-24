@@ -77,16 +77,23 @@ abstract class Utils {
 		$date_created  = $post->post_date;
 		$date_modified = $post->post_modified;
 
-		$image_id  = \get_post_thumbnail_id($post->ID);
-		$image_ids = [ $image_id ];
-		$images    = array_map([ WP::class, 'get_image_info' ], $image_ids); // @phpstan-ignore-line
+		$image_id = \get_post_thumbnail_id($post->ID);
+		/** @var int[] $image_ids */
+		$image_ids = $image_id ? [ $image_id ] : [];
+		$images    = [];
+		foreach ($image_ids as $image_id) {
+			$image_info = WP::get_image_info($image_id);
+			if ($image_info) {
+				$images[] = $image_info;
+			}
+		}
 
 		$description_array = $with_description ? [
 			'description'       => $post->post_content,
 			'short_description' => $post->post_excerpt,
 		] : [];
 
-		$children        = self::get_recursive_array($post, $recursive_args, (int) $depth);
+		$children        = self::get_recursive_array($post, $recursive_args, (int) $depth, $meta_keys);
 		$meta_keys_array = self::get_meta_keys_array($post, $meta_keys);
 
 		$base_array = [
@@ -113,6 +120,7 @@ abstract class Utils {
 			$meta_keys_array
 		);
 
+		// @phpstan-ignore-next-line
 		return $formatted_array;
 	}
 
@@ -144,9 +152,10 @@ abstract class Utils {
 	 * @param \WP_Post                  $post 文章.
 	 * @param array<string, mixed>|null $recursive_args 遞迴參數.
 	 * @param int                       $depth 深度.
+	 * @param array<string>             $meta_keys 要暴露出來的 meta keys.
 	 * @return array<mixed>
 	 */
-	public static function get_recursive_array( \WP_Post $post, ?array $recursive_args = null, int $depth = 0 ): array {
+	public static function get_recursive_array( \WP_Post $post, ?array $recursive_args = null, int $depth = 0, ?array $meta_keys = [] ): array {
 		if (null ===$recursive_args) {
 			return [];
 		}
@@ -165,18 +174,31 @@ abstract class Utils {
 
 		$args = \wp_parse_args( $recursive_args, $default_args );
 
-		$children = \get_children($args );
-		$children = array_values(
-			array_map(
-			[ __CLASS__, 'format_post_details' ], // @phpstan-ignore-line
-			$children,
-			array_fill(0, count($children), false),
-				array_fill(0, count($children), $depth + 1)
-			)
-			);
+		/** @var \WP_Post[] $children */
+		$children = \get_children($args);
 
-		return !!$children ? [
-			'children' => $children,
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log(
+			[
+				'args'     => $args,
+				'children' => $children,
+			],
+			'get_recursive_array'
+			);
+		// ---------- END TEST ---------- //
+		$children_to_array = [];
+		foreach ($children as $child) {
+			$children_to_array[] = self::format_post_details(
+				$child,
+				false,
+				$depth + 1,
+				$recursive_args,
+				$meta_keys
+			);
+		}
+
+		return !!$children_to_array ? [
+			'children' => $children_to_array,
 		] : [];
 	}
 
