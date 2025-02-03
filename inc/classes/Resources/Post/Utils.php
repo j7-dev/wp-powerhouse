@@ -153,7 +153,7 @@ abstract class Utils {
 	 * @param array<string, mixed>|null $recursive_args 遞迴參數.
 	 * @param int                       $depth 深度.
 	 * @param array<string>             $meta_keys 要暴露出來的 meta keys.
-	 * @return array<mixed>
+	 * @return array{children: array<mixed>}|array{}
 	 */
 	public static function get_recursive_array( \WP_Post $post, ?array $recursive_args = null, int $depth = 0, ?array $meta_keys = [] ): array {
 		if (null ===$recursive_args) {
@@ -177,15 +177,6 @@ abstract class Utils {
 		/** @var \WP_Post[] $children */
 		$children = \get_children($args);
 
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log(
-			[
-				'args'     => $args,
-				'children' => $children,
-			],
-			'get_recursive_array'
-			);
-		// ---------- END TEST ---------- //
 		$children_to_array = [];
 		foreach ($children as $child) {
 			$children_to_array[] = self::format_post_details(
