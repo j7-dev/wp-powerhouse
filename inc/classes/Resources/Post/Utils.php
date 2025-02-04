@@ -29,6 +29,7 @@ abstract class Utils {
 	 */
 	public static function create_post( array $args = [] ): int|\WP_Error {
 		$args['post_title']    = $args['post_title'] ?? '新文章';
+		$args['post_name']     = $args['post_name'] ?? 'new';
 		$args['post_status']   = 'publish';
 		$args['post_author']   = \get_current_user_id();
 		$args['page_template'] = self::TEMPLATE;
