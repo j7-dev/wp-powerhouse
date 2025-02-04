@@ -30,6 +30,7 @@ abstract class Utils {
 	public static function create_post( array $args = [] ): int|\WP_Error {
 		$args['post_title']    = $args['post_title'] ?? '新文章';
 		$args['post_name']     = $args['post_name'] ?? 'new';
+		$args['menu_order']    = $args['menu_order'] ?? -1; // 這樣在 sortable list 才會在最上方
 		$args['post_status']   = 'publish';
 		$args['post_author']   = \get_current_user_id();
 		$args['page_template'] = self::TEMPLATE;
