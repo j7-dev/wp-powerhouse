@@ -86,6 +86,7 @@ final class V2Api extends ApiBase {
 		$default_args = [
 			'post_type'      => 'post',
 			'posts_per_page' => - 1,
+			'post_parent'    => 0,
 			'post_status'    => 'any',
 			'orderby'        => [
 				'menu_order' => 'ASC',

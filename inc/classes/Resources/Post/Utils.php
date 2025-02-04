@@ -44,7 +44,7 @@ abstract class Utils {
 	 * @param \WP_Post                  $post             Post.
 	 * @param bool                      $with_description With description.
 	 * @param int                       $depth            Depth.
-	 * @param array<string, mixed>|null $recursive_args 遞迴參數.
+	 * @param array<string, mixed>|null $recursive_args 遞迴參數 預設 null 不遞迴.
 	 * @param array<string>             $meta_keys        要暴露出來的 meta keys.
 	 *
 	 * @return array{
@@ -62,7 +62,7 @@ abstract class Utils {
 	 *  tag_ids: string[],
 	 *  images: array<array{id: string, url: string, width: int, height: int, alt: string}>,
 	 *  parent_id: string,
-	 *  sub_docs?: array<array{id: string, type: string, depth: int, name: string, slug: string, date_created: string, date_modified: string, status: string, menu_order: int, permalink: string, category_ids: string[], tag_ids: string[], images: array<array{id: string, url: string, width: int, height: int, alt: string}>, parent_id: string}>,
+	 *  children?: array<array{id: string, type: string, depth: int, name: string, slug: string, date_created: string, date_modified: string, status: string, menu_order: int, permalink: string, category_ids: string[], tag_ids: string[], images: array<array{id: string, url: string, width: int, height: int, alt: string}>, parent_id: string}>,
 	 *  description?: string,
 	 *  short_description?: string,
 	 * }
@@ -310,5 +310,38 @@ abstract class Utils {
 		}
 		// 取最後一個
 		return $ancestors[ count( $ancestors ) - 1 ] ?? null;
+	}
+
+
+	/**
+	 * 取得扁平的子孫 post ids
+	 * 階層子孫結構都打平
+	 *
+	 * @param int $post_id 文章 ID.
+	 * @return array<int>
+	 */
+	public static function get_flatten_post_ids( int $post_id ): array {
+		$post = \get_post( $post_id );
+		if ( !$post ) {
+			return [];
+		}
+		/** @var \WP_Post $post */
+		$post_array = self::format_post_details( $post, false, 0, [], [] );
+
+		if (!is_array($post_array['children'] ?? null)) {
+			return [];
+		}
+
+		$flatten_post_ids = [];
+		foreach ($post_array['children'] as $child) {
+			$flatten_post_ids[] = (int) $child['id'];
+			if (is_array($child['children'] ?? null)) { // @phpstan-ignore-line
+				$flatten_post_ids = [
+					...$flatten_post_ids,
+					...self::get_flatten_post_ids( (int) $child['id'] ),
+				];
+			}
+		}
+		return $flatten_post_ids;
 	}
 }
