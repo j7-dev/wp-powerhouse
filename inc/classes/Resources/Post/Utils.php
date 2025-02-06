@@ -28,12 +28,16 @@ abstract class Utils {
 	 * @return int|\WP_Error
 	 */
 	public static function create_post( array $args = [] ): int|\WP_Error {
-		$args['post_title']    = $args['post_title'] ?? '新文章';
-		$args['post_name']     = $args['post_name'] ?? 'new';
-		$args['menu_order']    = $args['menu_order'] ?? -1; // 這樣在 sortable list 才會在最上方
-		$args['post_status']   = 'publish';
-		$args['post_author']   = \get_current_user_id();
-		$args['page_template'] = self::TEMPLATE;
+		$default_args = [
+			'post_title'    => '新文章',
+			'post_name'     => 'new',
+			'menu_order'    => -1, // 這樣在 sortable list 才會在最上方
+			'post_status'   => 'publish',
+			'post_author'   => \get_current_user_id(),
+			'page_template' => self::TEMPLATE,
+		];
+
+		$args = \wp_parse_args( $args, $default_args );
 
 		/** @var array{ID?: int, post_author?: int, post_date?: string, post_date_gmt?: string, post_content?: string, post_content_filtered?: string, post_title?: string, post_excerpt?: string, ...} $args */
 		return \wp_insert_post($args);
@@ -286,12 +290,15 @@ abstract class Utils {
 	 * @return integer|\WP_Error
 	 */
 	public static function update_post( string $id, array $args ): int|\WP_Error {
+		$default_args = [
+			'ID'            => $id,
+			'post_title'    => '新文章',
+			'post_status'   => 'publish',
+			'post_author'   => \get_current_user_id(),
+			'page_template' => self::TEMPLATE,
+		];
 
-		$args['ID']            = $id;
-		$args['post_title']    = $args['post_title'] ?? '新文章';
-		$args['post_status']   = $args['status'] ?? 'publish';
-		$args['post_author']   = \get_current_user_id();
-		$args['page_template'] = self::TEMPLATE;
+		$args = \wp_parse_args( $args, $default_args );
 
 		/** @var array{ID?: int, post_author?: int, post_date?: string, post_date_gmt?: string, post_content?: string, post_content_filtered?: string, post_title?: string, post_excerpt?: string, ...} $args */
 		$update_result = \wp_update_post($args);

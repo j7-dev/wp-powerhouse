@@ -249,10 +249,6 @@ final class V2Api extends ApiBase {
 
 		$separated_data = WP::separator( $body_params, 'post', $file_params['files'] ?? [] );
 
-		if (\is_wp_error($separated_data)) {
-			throw new \Exception($separated_data->get_error_message());
-		}
-
 		return $separated_data;
 	}
 
@@ -413,49 +409,6 @@ final class V2Api extends ApiBase {
 	}
 
 	/**
-	 * Delete post callback
-	 * 刪除文章
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @return \WP_REST_Response
-	 * @throws \Exception 當刪除文章失敗時拋出異常
-	 * @phpstan-ignore-next-line
-	 */
-	public function delete_posts_with_id_callback( $request ): \WP_REST_Response {
-		try {
-			$id = $request['id'] ?? null;
-			if (!$id) {
-				throw new \Exception('缺少 id');
-			}
-			$result = \wp_trash_post( (int) $id );
-			if (!$result) {
-				throw new \Exception('刪除失敗');
-			}
-
-			return new \WP_REST_Response(
-			[
-				'code'    => 'delete_success',
-				'message' => '刪除成功',
-				'data'    => [
-					'id' => $id,
-				],
-			]
-			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'delete_failed',
-					'message' => $th->getMessage(),
-					'data'    => [
-						'id' => $id,
-					],
-				],
-				400
-				);
-		}
-	}
-
-	/**
 	 * 批量刪除文章資料
 	 *
 	 * @param \WP_REST_Request $request Request.
@@ -498,6 +451,49 @@ final class V2Api extends ApiBase {
 				],
 				400
 			);
+		}
+	}
+
+	/**
+	 * Delete post callback
+	 * 刪除文章
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 * @throws \Exception 當刪除文章失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	public function delete_posts_with_id_callback( $request ): \WP_REST_Response {
+		try {
+			$id = $request['id'] ?? null;
+			if (!$id) {
+				throw new \Exception('缺少 id');
+			}
+			$result = \wp_trash_post( (int) $id );
+			if (!$result) {
+				throw new \Exception('刪除失敗');
+			}
+
+			return new \WP_REST_Response(
+			[
+				'code'    => 'delete_success',
+				'message' => '刪除成功',
+				'data'    => [
+					'id' => $id,
+				],
+			]
+			);
+		} catch (\Throwable $th) {
+			return new \WP_REST_Response(
+				[
+					'code'    => 'delete_failed',
+					'message' => $th->getMessage(),
+					'data'    => [
+						'id' => $id,
+					],
+				],
+				400
+				);
 		}
 	}
 }
