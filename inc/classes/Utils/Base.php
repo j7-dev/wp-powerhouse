@@ -91,4 +91,26 @@ abstract class Base {
 
 		return $url;
 	}
+
+	/**
+	 * 簡單加密 array
+	 *
+	 * @param array<string, mixed> $data 要加密的陣列
+	 * @return string 加密後的字串
+	 */
+	public static function simple_encrypt( array $data ): string {
+		// 先將陣列轉成 JSON 字串
+		$json_str = json_encode($data, JSON_UNESCAPED_UNICODE);
+		// 先轉成 base64
+		$encoded = $json_str ? base64_encode($json_str) : '[]';
+
+		// 對每個字元做位移
+		$result = '';
+		$strlen = strlen($encoded);
+		for ($i = 0; $i < $strlen; $i++) {
+			$result .= chr(ord($encoded[ $i ]) + 1);
+		}
+
+		return $result;
+	}
 }
