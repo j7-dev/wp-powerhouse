@@ -191,8 +191,7 @@ final class V2Api extends ApiBase {
 
 
 	/**
-	 * Post user callback
-	 * 創建用戶
+	 * 批量創建/更新用戶
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -205,6 +204,38 @@ final class V2Api extends ApiBase {
 			$body_params = $request->get_body_params();
 			$body_params = WP::sanitize_text_field_deep( $body_params, false );
 
+			/**
+			 * 有 ids 就是批量更新
+			 * 有 qty 就是批量新增
+			 */
+
+			/* ---------- 批量更新 ---------- */
+			if (isset($body_params['ids'])) { // 批量更新
+				$ids = $body_params['ids'];
+				$ids = is_array( $ids ) ? $ids : [];
+				unset($body_params['ids']);
+				$success_ids = [];
+				foreach ($ids as $id) {
+					$args       = $body_params;
+					$args['ID'] = $id;
+					$user_id    = Utils::update_user( $args );
+					if (is_numeric($user_id)) {
+						$success_ids[] = $user_id;
+					} else {
+						throw new \Exception( "更新用戶失敗 : {$user_id->get_error_message()}");
+					}
+				}
+
+				return new \WP_REST_Response(
+					[
+						'code'    => 'update_success',
+						'message' => '更新用戶成功',
+						'data'    => $success_ids,
+					],
+				);
+			}
+
+			/* ---------- 批量新增 ---------- */
 			$qty = (int) ( $body_params['qty'] ?? 1 );
 			unset($body_params['qty']);
 
@@ -220,12 +251,13 @@ final class V2Api extends ApiBase {
 			}
 
 			return new \WP_REST_Response(
-				[
-					'code'    => 'create_success',
-					'message' => '新增用戶成功',
-					'data'    => $success_ids,
-				],
-			);
+					[
+						'code'    => 'create_success',
+						'message' => '新增用戶成功',
+						'data'    => $success_ids,
+					],
+				);
+
 		} catch (\Throwable $th) {
 			return new \WP_REST_Response(
 				[
@@ -237,6 +269,7 @@ final class V2Api extends ApiBase {
 			);
 		}
 	}
+
 
 
 	/**
@@ -258,15 +291,9 @@ final class V2Api extends ApiBase {
 			$body_params = WP::sanitize_text_field_deep( $body_params, false );
 			/** @var array<string, mixed> $body_params */
 
-			[
-				'data'      => $data,
-				'meta_data' => $meta_data,
-			] = WP::separator( $body_params );
+			$body_params['ID'] = $id;
 
-			$data['ID']         = $id;
-			$data['meta_input'] = $meta_data;
-
-			$update_result = \wp_update_user($data);
+			$update_result = Utils::update_user( $body_params );
 
 			if ( !is_numeric( $update_result ) ) {
 				return $update_result;

@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Resources\User;
 
+use J7\WpUtils\Classes\WP;
+
 /**
  * Class Utils
  */
@@ -24,8 +26,41 @@ abstract class Utils {
 	 * @return int|\WP_Error
 	 */
 	public static function create_user( array $args = [] ): int|\WP_Error {
-		/** @var array{ID?: int, user_pass?: string, user_login?: string, user_nicename?: string, user_url?: string, user_email?: string, display_name?: string, nickname?: string, ...}|object $args */
-		return \wp_insert_user($args);
+
+		[
+			'data'      => $data,
+			'meta_data' => $meta_data,
+		] = WP::separator( $args );
+
+		$data['meta_input'] = $meta_data;
+
+		/** @var array{ID?: int, user_pass?: string, user_login?: string, user_nicename?: string, user_url?: string, user_email?: string, display_name?: string, nickname?: string, ...}|object $data */
+		return \wp_insert_user($data);
+	}
+
+
+	/**
+	 * Create a new user
+	 *
+	 * @see https://developer.wordpress.org/reference/functions/wp_insert_user/
+	 *
+	 * 簡單的新增，沒有太多參數，所以不使用 Converter
+	 *
+	 * @param array<string, mixed> $args Arguments.
+	 *
+	 * @return int|\WP_Error
+	 */
+	public static function update_user( array $args = [] ): int|\WP_Error {
+
+		[
+			'data'      => $data,
+			'meta_data' => $meta_data,
+		] = WP::separator( $args );
+
+		$data['meta_input'] = $meta_data;
+
+		/** @var array{ID?: int, user_pass?: string, user_login?: string, user_nicename?: string, user_url?: string, user_email?: string, display_name?: string, nickname?: string, ...}|object $data */
+		return \wp_update_user($data);
 	}
 
 	/**
