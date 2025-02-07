@@ -1,16 +1,18 @@
 <?php
 /**
- * Post CRUD API
+ * Product CRUD API
  * 可以用 filter 來 filter 參數
  */
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Resources\Post;
+namespace J7\Powerhouse\Resources\Product;
 
 use J7\WpUtils\Classes\WP;
+use J7\WpUtils\Classes\WC;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
+use J7\Powerhouse\Resources\Post\Utils as PostUtils;
 
 /**
  * Class V2Api
@@ -32,40 +34,46 @@ final class V2Api extends ApiBase {
 	 */
 	protected $apis = [
 		[
-			'endpoint'            => 'posts',
+			'endpoint'            => 'products',
 			'method'              => 'get',
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'posts/(?P<id>\d+)',
+			'endpoint'            => 'products/(?P<id>\d+)',
 			'method'              => 'get',
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'posts',
+			'endpoint'            => 'products',
 			'method'              => 'post',
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'posts/(?P<id>\d+)',
+			'endpoint'            => 'products/(?P<id>\d+)',
 			'method'              => 'post',
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'posts',
+			'endpoint'            => 'products',
 			'method'              => 'delete',
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'posts/(?P<id>\d+)',
+			'endpoint'            => 'products/(?P<id>\d+)',
 			'method'              => 'delete',
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'posts/sort',
-			'method'              => 'post',
+			'endpoint'            => 'products/options',
+			'method'              => 'get',
 			'permission_callback' => null,
 		],
+		// TODO 商品排序
+		// [
+		// 'endpoint'            => 'products/sort',
+		// 'method'              => 'post',
+		// 'permission_callback' => null,
+		// ],
 	];
 
 	/**
@@ -77,17 +85,16 @@ final class V2Api extends ApiBase {
 	 * @return \WP_REST_Response|\WP_Error
 	 * @phpstan-ignore-next-line
 	 */
-	public function get_posts_callback( $request ) { // phpcs:ignore
+	public function get_products_callback( $request ) { // phpcs:ignore
 
 		$params = $request->get_query_params();
 
 		$params = WP::sanitize_text_field_deep( $params, false );
 
 		$default_args = [
-			'post_type'      => 'post',
+			'post_type'      => 'product',
 			'posts_per_page' => 20,
 			'paged'          => 1,
-			'post_parent'    => 0,
 			'post_status'    => 'any',
 			'orderby'        => [
 				'menu_order' => 'ASC',
@@ -108,22 +115,23 @@ final class V2Api extends ApiBase {
 			'args' => $args,
 			'meta_keys' => $meta_keys,
 			'with_description' => $with_description,
-			'depth' => $depth,
-			'recursive_args' => $recursive_args,
-		] = Utils::handle_args($args);
+		] = PostUtils::handle_args($args);
+
+		$args['fields'] = 'ids';  // 確保只返回 id
 
 		$query       = new \WP_Query($args);
-		$posts       = $query->posts;
+		$post_ids    = $query->posts;
 		$total       = $query->found_posts;
 		$total_pages = $query->max_num_pages;
 
-		$formatted_posts = [];
-		foreach ($posts as $post) {
-			/** @var \WP_Post $post */
-			$formatted_posts[] = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+		$formatted_products = [];
+		foreach ($post_ids as $post_id) {
+			/** @var int $post_id */
+			$formatted_products[] = Utils::format_product_details( $post_id, $with_description, $meta_keys );
 		}
+		$formatted_products = array_filter( $formatted_products );
 
-		$response = new \WP_REST_Response( $formatted_posts );
+		$response = new \WP_REST_Response( $formatted_products );
 
 		// set pagination in header
 		$response->header( 'X-WP-Total', (string) $total );
@@ -134,9 +142,6 @@ final class V2Api extends ApiBase {
 		return $response;
 	}
 
-
-
-
 	/**
 	 * Get posts callback
 	 *
@@ -146,28 +151,12 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當文章不存在時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function get_posts_with_id_callback( $request ) { // phpcs:ignore
+	public function get_products_with_id_callback( $request ) { // phpcs:ignore
 
 		try {
 			$id = $request['id'] ?? null;
 			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('post id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
-
-			$post = \get_post( (int) $id );
-
-			if (!$post) {
-				throw new \Exception(
-					sprintf(
-					__('post not found #%s', 'powerhouse'),
-					$id
-				)
-				);
+				throw new \Exception('id 格式不符合');
 			}
 
 			/** @var array<string, mixed>|null $params */
@@ -182,14 +171,11 @@ final class V2Api extends ApiBase {
 			[
 				'meta_keys' => $meta_keys,
 				'with_description' => $with_description,
-				'depth' => $depth,
-				'recursive_args' => $recursive_args,
-			] = Utils::handle_args($params);
+			] = PostUtils::handle_args($params);
 
-			/** @var \WP_Post $post */
-			$post_array = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+			$product_array = Utils::format_product_details( (int) $id, $with_description, $meta_keys );
 
-			$response = new \WP_REST_Response( $post_array );
+			$response = new \WP_REST_Response( $product_array );
 
 			return $response;
 		} catch (\Throwable $th) {
@@ -211,19 +197,44 @@ final class V2Api extends ApiBase {
 	 * 根據請求分離產品資訊，並處理描述欄位。
 	 *
 	 * @param \WP_REST_Request $request 包含產品資訊的請求對象。
+	 * @param bool             $require_id 是否需要 id
 	 * @throws \Exception 當找不到商品時拋出異常。.
-	 * @return array{data: array<string, mixed>, meta_data: array<string, mixed>} 包含產品對象、資料和元數據的陣列。
+	 * @return array{product: \WC_Product|null, data: array<string, mixed>, meta_data: array<string, mixed>} 包含產品對象、資料和元數據的陣列。
 	 * @phpstan-ignore-next-line
 	 */
-	private function separator( $request ): array {
+	private function separator( $request, $require_id = true ): array {
+		$product = null; // 初始值，下面會判斷是否需要 id 塞入 product
+		if ($require_id) {
+			$id = $request['id'] ?? null;
+			if (!is_numeric($id)) {
+				throw new \Exception(
+				sprintf(
+				__('product id format not match #%s', 'powerhouse'),
+				$id
+				)
+				);
+			}
+
+			$product = \wc_get_product( (int) $id );
+			if (!$product) {
+				throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$id
+				)
+				);
+			}
+		}
+
 		$body_params = $request->get_body_params();
 		$file_params = $request->get_file_params();
 
 		// 將前端傳過來的欄位轉換成 wp_update_post 能吃的參數
-		$body_params = Utils::converter( $body_params );
+		// $body_params = Utils::converter( $body_params );
 
 		$skip_keys = [
-			'post_content',
+			'description',
+			'slug',
 		];
 		/** @var array<string, mixed> $body_params 過濾字串，防止 XSS 攻擊 */
 		$body_params = WP::sanitize_text_field_deep($body_params, true, $skip_keys);
@@ -231,81 +242,44 @@ final class V2Api extends ApiBase {
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$body_params = General::parse( $body_params );
 
-		$separated_data = WP::separator( $body_params, 'post', $file_params['files'] ?? [] );
+		$separated_data = WP::separator( $body_params, 'product', $file_params['files'] ?? [] );
+
+		$separated_data['product'] = $product;
 
 		return $separated_data;
 	}
 
 	/**
 	 * Post post callback
-	 * 創建文章
+	 * 創建商品
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
-	 * @throws \Exception 當新增文章失敗時拋出異常
+	 * @throws \Exception 當新增商品失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_posts_callback( $request ): \WP_REST_Response|\WP_Error {
+	public function post_products_callback( $request ): \WP_REST_Response|\WP_Error {
 
 		try {
 			[
 				'data'      => $data,
 				'meta_data' => $meta_data,
-			] = $this->separator( $request );
+			] = $this->separator( $request, false );
 
 			$qty = (int) ( $meta_data['qty'] ?? 1 );
 			unset($meta_data['qty']);
 
-			$post_parents = $meta_data['post_parents'] ?? [];
-			unset($meta_data['post_parents']);
-			$post_parents = is_array( $post_parents ) ? $post_parents : [];
-
-			// 不需要紀錄 depth，深度是由 post_parent 決定的
-			unset($meta_data['depth']);
-			// action 用來區分是 create 還是 update ，目前只有 create ，所以不用判斷
-			unset($meta_data['action']);
-
-			$data['meta_input'] = $meta_data;
-
 			$success_ids = [];
 
-			if (!empty($post_parents)) {
-				foreach ($post_parents as $post_parent) {
-					$data['post_parent'] = $post_parent;
-					for ($i = 0; $i < $qty; $i++) {
-						$post_id = Utils::create_post( $data );
-						if (is_numeric($post_id)) {
-							$success_ids[] = $post_id;
-						} else {
-							throw new \Exception(
-								sprintf(
-								__('create post failed, %s', 'powerhouse'),
-								$post_id->get_error_message()
-							)
-							);
-						}
-					}
-				}
-			} else {
-				for ($i = 0; $i < $qty; $i++) {
-					$post_id = Utils::create_post( $data );
-					if (is_numeric($post_id)) {
-						$success_ids[] = $post_id;
-					} else {
-						throw new \Exception(
-							sprintf(
-							__('create post failed, %s', 'powerhouse'),
-							$post_id->get_error_message()
-						)
-						);
-					}
-				}
+			for ($i = 0; $i < $qty; $i++) {
+				$product_id    = Utils::create_product( $data, $meta_data );
+				$success_ids[] = $product_id;
 			}
 
 			return new \WP_REST_Response(
 				[
 					'code'    => 'create_success',
-					'message' => __('create post success', 'powerhouse'),
+					'message' => __('create products success', 'powerhouse'),
 					'data'    => $success_ids,
 				],
 			);
@@ -322,36 +296,6 @@ final class V2Api extends ApiBase {
 	}
 
 	/**
-	 * Post post sort callback
-	 * 處理排序
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @return \WP_REST_Response|\WP_Error
-	 * @phpstan-ignore-next-line
-	 */
-	public function post_posts_sort_callback( $request ): \WP_REST_Response|\WP_Error {
-
-		$body_params = $request->get_json_params();
-
-		$body_params = WP::sanitize_text_field_deep( $body_params, false );
-
-		/** @var array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $body_params */
-		$sort_result = Utils::sort_posts( $body_params );
-
-		if ( $sort_result !== true ) {
-			return $sort_result;
-		}
-
-		return new \WP_REST_Response(
-			[
-				'code'    => 'sort_success',
-				'message' => __('update post sort success', 'powerhouse'),
-				'data'    => null,
-			]
-		);
-	}
-
-	/**
 	 * Patch post callback
 	 *
 	 * @param \WP_REST_Request $request Request.
@@ -359,39 +303,24 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當更新文章失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_posts_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
+	public function post_products_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
 		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('post id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
 
 			[
-			'data'      => $data,
-			'meta_data' => $meta_data,
+				'product' => $product,
+				'data'      => $data,
+				'meta_data' => $meta_data,
 			] = $this->separator( $request );
 
-			$data['ID']         = $id;
-			$data['meta_input'] = $meta_data;
-
-			// @phpstan-ignore-next-line
-			$update_result = \wp_update_post($data);
-
-			if ( !is_numeric( $update_result ) ) {
-				return $update_result;
-			}
+			/** @var \WC_Product $product */
+			Utils::update_product( $product, $data, $meta_data );
 
 			return new \WP_REST_Response(
 			[
 				'code'    => 'update_success',
-				'message' => __('update post success', 'powerhouse'),
+				'message' => __('update product success', 'powerhouse'),
 				'data'    => [
-					'id' => $id,
+					'id' => $product->get_id(),
 				],
 			]
 			);
@@ -416,7 +345,7 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當刪除文章資料失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function delete_posts_callback( $request ): \WP_REST_Response|\WP_Error {
+	public function delete_products_callback( $request ): \WP_REST_Response|\WP_Error {
 
 		$body_params = $request->get_json_params();
 
@@ -425,15 +354,27 @@ final class V2Api extends ApiBase {
 
 		$ids = $body_params['ids'] ?? [];
 		/** @var array<string> $ids */
-		$ids = is_array( $ids ) ? $ids : [];
+		$ids          = is_array( $ids ) ? $ids : [];
+		$force_delete = $body_params['force_delete'] ?? false;
 
 		try {
 			foreach ($ids as $id) {
-				$result = \wp_trash_post( (int) $id );
+				$product = \wc_get_product( (int) $id );
+
+				if (!$product) {
+					throw new \Exception(
+						sprintf(
+						__('product not found #%s', 'powerhouse'),
+						$id
+					)
+					);
+				}
+
+				$result = $product->delete( (bool) $force_delete );
 				if (!$result) {
 					throw new \Exception(
 						sprintf(
-						__('delete post data failed #%s', 'powerhouse'),
+						__('delete product failed #%s', 'powerhouse'),
 						$id
 					)
 					);
@@ -443,7 +384,7 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
-					'message' => __('delete post data success', 'powerhouse'),
+					'message' => __('delete product success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
@@ -468,22 +409,36 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當刪除文章失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function delete_posts_with_id_callback( $request ): \WP_REST_Response {
+	public function delete_products_with_id_callback( $request ): \WP_REST_Response {
 		try {
 			$id = $request['id'] ?? null;
 			if (!is_numeric($id)) {
 				throw new \Exception(
 					sprintf(
-					__('post id format not match #%s', 'powerhouse'),
+					__('product id format not match #%s', 'powerhouse'),
 					$id
 				)
 				);
 			}
-			$result = \wp_trash_post( (int) $id );
+
+			$product = \wc_get_product( (int) $id );
+
+			if (!$product) {
+				throw new \Exception(
+					sprintf(
+					__('product not found #%s', 'powerhouse'),
+					$id
+				)
+				);
+			}
+
+			$body_params  = $request->get_json_params();
+			$force_delete = $body_params['force_delete'] ?? false;
+			$result       = $product->delete( (bool) $force_delete );
 			if (!$result) {
 				throw new \Exception(
 					sprintf(
-					__('delete post failed #%s', 'powerhouse'),
+					__('delete product failed #%s', 'powerhouse'),
 					$id
 				)
 				);
@@ -492,7 +447,7 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 			[
 				'code'    => 'delete_success',
-				'message' => __('delete post success', 'powerhouse'),
+				'message' => __('delete product success', 'powerhouse'),
 				'data'    => [
 					'id' => $id,
 				],
@@ -510,5 +465,54 @@ final class V2Api extends ApiBase {
 				400
 				);
 		}
+	}
+
+
+	/**
+	 * Get options callback
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 *
+	 * @return array{
+	 *  product_cats: array{id: string, name: string, slug: string}[],
+	 *  product_tags: array{id: string, name: string, slug: string}[],
+	 *  top_sales_products: array{id: string, name: string, slug: string}[],
+	 *  max_price: float,
+	 *  min_price: float,
+	 * ...
+	 * }
+	 * @phpstan-ignore-next-line
+	 */
+	public function get_products_options_callback( $request ) { // phpcs:ignore
+		$formatted_cats = PostUtils::format_terms(
+			[
+				'taxonomy' => 'product_cat',
+			]
+			);
+		$formatted_tags = PostUtils::format_terms(
+			[
+				'taxonomy' => 'product_tag',
+			]
+			);
+
+		$top_sales_products = WC::get_top_sales_products( 5 );
+
+		[
+			'max_price' => $max_price,
+			'min_price' => $min_price,
+		] = Utils::get_max_min_prices();
+
+		// @phpstan-ignore-next-line
+		return \apply_filters(
+			'powerhouse/product/get_options',
+			[
+				'product_cats'       => $formatted_cats,
+				'product_tags'       => $formatted_tags,
+				'top_sales_products' => $top_sales_products,
+				'max_price'          => $max_price,
+				'min_price'          => $min_price,
+			],
+			$request
+			);
 	}
 }

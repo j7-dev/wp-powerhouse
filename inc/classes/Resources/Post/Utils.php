@@ -113,15 +113,25 @@ abstract class Utils {
 			'status'        => $post->post_status,
 			'menu_order'    => (int) $post->menu_order,
 			'permalink'     => \get_permalink($post->ID),
-			'category_ids'  => [],
-			'tag_ids'       => [],
+			'category_ids'  => self::format_terms(
+				[
+					'taxonomy'   => 'category',
+					'object_ids' => $post->ID,
+				]
+				),
+			'tag_ids'       => self::format_terms(
+				[
+					'taxonomy'   => 'post_tag',
+					'object_ids' => $post->ID,
+				]
+				),
 			'images'        => $images,
 			'parent_id'     => (string) $post->post_parent,
 		];
 
 		$formatted_array = array_merge(
-			$description_array,
 			$base_array,
+			$description_array,
 			$children,
 			$meta_keys_array
 		);
@@ -170,7 +180,7 @@ abstract class Utils {
 			'orderby'     => [
 				'menu_order' => 'ASC',
 				'ID'         => 'ASC',
-				'date'       => 'ASC',
+				'date'       => 'DESC',
 			],
 		];
 
@@ -348,5 +358,85 @@ abstract class Utils {
 			}
 		}
 		return $flatten_post_ids;
+	}
+
+	/**
+	 * 分離參數
+	 * 會從前端傳入 'meta_keys', 'with_description', 'depth', 'recursive_args' 等參數
+	 * 這個 function 會將這些參數分離出來，給後續 function 使用
+	 *
+	 * @param array<string, mixed> $args 參數.
+	 * @return array{args: array<string, mixed>, meta_keys: array<string>, with_description: bool, depth: int, recursive_args: ?array<string, mixed>}
+	 */
+	public static function handle_args( array $args ): array {
+		$default = [
+			'meta_keys'        => [],
+			'with_description' => false,
+			'depth'            => 0,
+			'recursive_args'   => null,
+		];
+
+		$args = \wp_parse_args( $args, $default );
+
+		[
+			'meta_keys'        => $meta_keys,
+			'with_description' => $with_description,
+			'depth'            => $depth,
+			'recursive_args'   => $recursive_args,
+		] = $args;
+
+		unset($args['meta_keys']);
+		unset($args['with_description']);
+		unset($args['depth']);
+		unset($args['recursive_args']);
+
+		return [
+			'args'             => $args,
+			'meta_keys'        => $meta_keys,
+			'with_description' => (bool) $with_description,
+			'depth'            => $depth,
+			'recursive_args'   => $recursive_args,
+		];
+	}
+
+
+	/**
+	 * Format terms, 例如 分類、標籤, product_cat, product_tag
+	 * 只回簡單的欄位，通常是做 options 使用
+	 *
+	 * @param array<string, mixed> $params Params.
+	 *
+	 * @return array{id:string, name:string}[]
+	 */
+	public static function format_terms( array $params = [] ): array {
+		// it seems no need to add post_per_page, get_terms will return all terms
+		$default_args = [
+			'taxonomy'   => 'product_cat',
+			'fields'     => 'id=>name',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		];
+
+		$args = \wp_parse_args(
+				$params,
+				$default_args,
+			);
+		/** @var array<int, \WP_Term> $terms */
+		$terms = \get_terms( $args );
+
+		$formatted_terms = [];
+		foreach ($terms as $term) {
+			if (!( $term instanceof \WP_Term )) {
+				continue;
+			}
+
+			$formatted_terms[] = [
+				'id'   => (string) $term->term_id,
+				'name' => $term->name,
+			];
+		}
+
+		return $formatted_terms;
 	}
 }
