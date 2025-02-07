@@ -151,10 +151,9 @@ abstract class Utils {
 		$variation_ids = $product->get_children(); // get variations
 		$children      = [];
 		if ( $variation_ids ) {
-			$variation_products = array_map( 'wc_get_product', $variation_ids );
-			$variation_products = array_filter($variation_products);
-			$children_details   = array_values(array_map( [ __CLASS__, 'format_product_details' ], $variation_products )); // @phpstan-ignore-line
+			$children_details   = array_values(array_map( [ __CLASS__, 'format_product_details' ], $variation_ids ));
 			$children           = [
+				// 可變商品變體
 				'children' => $children_details,
 			];
 		}
@@ -186,7 +185,7 @@ abstract class Utils {
 		$sale_date_range = [ (int) $product->get_date_on_sale_from()?->getTimestamp(), (int) $product->get_date_on_sale_to()?->getTimestamp() ];
 
 		$base_array = [
-			// Get Product General Info
+			// 商品基本資料
 			'id'                 => (string) $product_id,
 			'type'               => $product->get_type(),
 			'name'               => $product->get_name(),
@@ -202,7 +201,7 @@ abstract class Utils {
 			'downloadable'       => $product->get_downloadable(),
 			'permalink'          => \get_permalink( $product_id ),
 
-			// Get Product Prices
+			// 商品價格
 			'price_html'         => $price_html,
 			'regular_price'      => $product->get_regular_price(),
 			'sale_price'         => $product->get_sale_price(),
@@ -212,7 +211,7 @@ abstract class Utils {
 			'date_on_sale_to'    => $sale_date_range[1],
 			'total_sales'        => $product->get_total_sales(),
 
-			// Get Product Stock
+			// 商品庫存
 			'stock'              => $product->get_stock_quantity(),
 			'stock_status'       => $product->get_stock_status(),
 			'manage_stock'       => $product->get_manage_stock(),
@@ -222,14 +221,14 @@ abstract class Utils {
 			'backordered'        => $product->is_on_backorder(),
 			'low_stock_amount'   => $low_stock_amount,
 
-			// Get Linked Products
+			// 交叉銷售商品
 			'upsell_ids'         => array_map( 'strval', $product?->get_upsell_ids() ),
 			'cross_sell_ids'     => array_map( 'strval', $product?->get_cross_sell_ids() ),
 
-			// Get Product Variations and Attributes
+			// 商品屬性
 			'attributes'         => $attributes_arr,
 
-			// Get Product Taxonomies
+			// 商品分類
 			'categories'         => PostUtils::format_terms(
 				[
 					'taxonomy'   => 'product_cat',
@@ -243,8 +242,10 @@ abstract class Utils {
 				]
 				),
 
-			// Get Product Images
+			// 圖片
 			'images'             => $images,
+
+			// 父商品ID
 			'parent_id'          => (string) $product->get_parent_id(),
 		];
 
