@@ -77,14 +77,19 @@ final class Duplicate {
 	public static function duplicate_post( int $post_id, ?bool $copy_terms = true, int|bool $new_parent = false ): int {
 		$post = \get_post($post_id);
 		if (!$post) {
-			throw new \Exception(__('文章不存在', 'power-course'));
+			throw new \Exception(
+				sprintf(
+				__('post not found #%s', 'powerhouse'),
+				$post_id
+			)
+			);
 		}
 
 		// 複製文章並設為草稿
 		/** @var \WP_Post $post */
 		// @phpstan-ignore-next-line
 		$post->ID          = null;
-		$post->post_title .= ' (複製)';
+		$post->post_title .= __(' (copy)', 'powerhouse');
 
 		// $post->post_status = 'draft';
 
@@ -93,7 +98,12 @@ final class Duplicate {
 		$new_id = \wp_insert_post( (array) $post );
 
 		if (!\is_numeric($new_id)) {
-			throw new \Exception(__('複製文章失敗', 'power-course') . ' ' . $new_id->get_error_message());
+			throw new \Exception(
+				sprintf(
+				__('duplicate post failed, %s', 'powerhouse'),
+				$new_id->get_error_message()
+			)
+			);
 		}
 
 		// 複製 meta
@@ -139,7 +149,12 @@ final class Duplicate {
 	public static function duplicate_product( int $post_id, ?bool $copy_terms = true, int|bool $new_parent = false ): int {
 		$product = \wc_get_product($post_id);
 		if (!$product) {
-			throw new \Exception(__('產品不存在', 'power-course'));
+			throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$post_id
+			)
+			);
 		}
 
 		// 使用 WC_Admin_Duplicate_Product 複製產品

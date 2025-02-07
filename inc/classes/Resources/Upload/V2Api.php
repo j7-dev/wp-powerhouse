@@ -85,7 +85,7 @@ final class V2Api extends ApiBase {
 
 			}
 
-			throw new \Exception('找不到檔案');
+			throw new \Exception(__('upload file not found', 'powerhouse'));
 		} catch (\Throwable $th) {
 			return new \WP_REST_Response(
 				[
@@ -112,7 +112,12 @@ final class V2Api extends ApiBase {
 		$_FILES['0'] = $file;
 
 		if (!!$this->allowed_mime_types && !in_array($file['type'], $this->allowed_mime_types)) {
-			throw new \Exception('不允許的 MIME 類型，只允許: ' . implode(', ', $this->allowed_mime_types));
+			throw new \Exception(
+				sprintf(
+				__('not allowed mime type, only allow: %s', 'powerhouse'),
+				implode(', ', $this->allowed_mime_types)
+			)
+				);
 		}
 
 		// 根據 MIME 類型的開頭判斷文件類型
@@ -150,7 +155,7 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 				[
 					'code'    => 'upload_error',
-					'message' => '無法取得圖片尺寸',
+					'message' => __('get image size failed', 'powerhouse'),
 					'data'    => $file,
 				],
 				400
@@ -215,7 +220,7 @@ final class V2Api extends ApiBase {
 		return new \WP_REST_Response(
 			[
 				'code'    => 'upload_success',
-				'message' => '檔案上傳成功',
+				'message' => __('upload file success', 'powerhouse'),
 				'data'    => $upload_result,
 			],
 		);
@@ -285,7 +290,7 @@ final class V2Api extends ApiBase {
 		return new \WP_REST_Response(
 			[
 				'code'    => 'upload_success',
-				'message' => '檔案上傳成功',
+				'message' => __('upload file success', 'powerhouse'),
 				'data'    => $upload_result,
 			],
 		);
@@ -317,7 +322,12 @@ final class V2Api extends ApiBase {
 				];
 
 				if (!!$this->allowed_mime_types && !in_array($files['type'][ $key ], $this->allowed_mime_types)) {
-					throw new \Exception('不允許的 MIME 類型，只允許: ' . implode(', ', $this->allowed_mime_types));
+					throw new \Exception(
+						sprintf(
+						__('not allowed mime type, only allow: %s', 'powerhouse'),
+						implode(', ', $this->allowed_mime_types)
+					)
+					);
 				}
 
 				// 獲取圖片尺寸
@@ -327,7 +337,7 @@ final class V2Api extends ApiBase {
 					return new \WP_REST_Response(
 						[
 							'code'    => 'upload_error',
-							'message' => '無法取得圖片尺寸',
+							'message' => __('get image size failed', 'powerhouse'),
 							'data'    => $file,
 						],
 						400
@@ -396,7 +406,7 @@ final class V2Api extends ApiBase {
 		return new \WP_REST_Response(
 			[
 				'code'    => 'upload_success',
-				'message' => '檔案上傳成功',
+				'message' => __('upload file success', 'powerhouse'),
 				'data'    => $upload_results,
 			],
 		);

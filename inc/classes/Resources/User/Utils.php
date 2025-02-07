@@ -40,7 +40,7 @@ abstract class Utils {
 
 
 	/**
-	 * Create a new user
+	 * Update a user
 	 *
 	 * @see https://developer.wordpress.org/reference/functions/wp_insert_user/
 	 *
@@ -66,21 +66,23 @@ abstract class Utils {
 	/**
 	 * Format user details
 	 *
-	 * @param \WP_User $user  User.
-	 * @return array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...}|array{}
+	 * @param int           $user_id  User ID.
+	 * @param array<string> $meta_keys  要暴露的前端 meta key
+	 * @return array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...}|null
 	 */
-	public static function format_user_details( \WP_User $user ): array {
+	public static function format_user_details( int $user_id, array $meta_keys = [] ): array|null {
+		$user = \get_user_by( 'ID', $user_id );
 
-		if ( ! ( $user instanceof \WP_User ) ) {
-			return [];
+		if ( ! $user ) {
+			return null;
 		}
-		$user_id              = $user->ID;
+
 		$user_registered      = (string) $user->get( 'user_registered' );
 		$user_registered_time = \strtotime($user_registered);
 		$user_avatar_url      = \get_user_meta($user_id, 'user_avatar_url', true);
 		$user_avatar_url      = !!$user_avatar_url ? $user_avatar_url : \get_avatar_url( $user_id );
 
-		$meta_keys_array = self::get_meta_keys_array( $user );
+		$meta_keys_array = self::get_meta_keys_array( $user, $meta_keys );
 
 		$base_array = [
 			'id'                    => (string) $user_id,
@@ -99,7 +101,7 @@ abstract class Utils {
 			$meta_keys_array
 		);
 
-		// TODO 未來可能會有階層  上下限關係的 user!?
+		// ENHANCE 未來可能會有階層  上下限關係的 user!?
 
 		/** @var array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...} $formatted_array */
 		return $formatted_array;
@@ -112,11 +114,7 @@ abstract class Utils {
 	 * @param array<string> $meta_keys 要暴露出來的 meta keys.
 	 * @return array<string, mixed>
 	 */
-	public static function get_meta_keys_array( \WP_User $user, ?array $meta_keys = [] ): array {
-		if (!$meta_keys) {
-			return [];
-		}
-
+	public static function get_meta_keys_array( \WP_User $user, array $meta_keys = [] ): array {
 		$meta_keys_array = [];
 		foreach ($meta_keys as $meta_key) {
 			$meta_keys_array[ $meta_key ] = \get_user_meta( $user->ID, $meta_key, true );

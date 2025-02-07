@@ -80,13 +80,12 @@ final class V2Api extends ApiBase {
 		$params = $request->get_query_params();
 		$params = WP::sanitize_text_field_deep( $params, false );
 
-		// 轉換 posts_per_page 為 number
-		$number  = intval($params['posts_per_page'] ?? 10); // @phpstan-ignore-line
-		$paged   = intval($params['paged'] ?? 1); // @phpstan-ignore-line
-		$offset  = ( $paged - 1 ) * $number;
-		$search  = (string) ( $params['s'] ?? $params['search'] ?? '' ); // @phpstan-ignore-line
-		$orderby = (string) ( $params['orderby'] ?? 'ID' ); // @phpstan-ignore-line
-		$order   = (string) ( $params['order'] ?? 'DESC' ); // @phpstan-ignore-line
+		$posts_per_page = intval($params['posts_per_page'] ?? 20); // @phpstan-ignore-line
+		$paged          = intval($params['paged'] ?? 1); // @phpstan-ignore-line
+		$offset         = ( $paged - 1 ) * $posts_per_page;
+		$search         = (string) ( $params['s'] ?? $params['search'] ?? '' ); // @phpstan-ignore-line
+		$orderby        = (string) ( $params['orderby'] ?? 'ID' ); // @phpstan-ignore-line
+		$order          = (string) ( $params['order'] ?? 'DESC' ); // @phpstan-ignore-line
 
 		global $wpdb;
 
@@ -130,22 +129,27 @@ final class V2Api extends ApiBase {
 		$order_sql = " ORDER BY u.{$orderby} {$order}";
 
 		// 分頁
-		$limit_sql = $wpdb->prepare(' LIMIT %d OFFSET %d', $number, $offset);
+		$limit_sql = $wpdb->prepare(' LIMIT %d OFFSET %d', $posts_per_page, $offset);
 
 		// 執行查詢
 		$total    = $wpdb->get_var($count_sql . $from_sql . $where_sql); // phpcs:ignore
 		$user_ids = $wpdb->get_col($select_sql . $from_sql . $where_sql . $order_sql . $limit_sql); // phpcs:ignore
 
-		$total_pages = ceil($total / $number);
-		$users       = array_filter(array_map( fn( $user_id ) => \get_user_by( 'ID', $user_id ), $user_ids ));
+		$total_pages = ceil($total / $posts_per_page);
 
-		$formatted_users = array_values(array_map( [ Utils::class, 'format_user_details' ], $users ));
+		$formatted_users = [];
+		foreach ($user_ids as $user_id) {
+			$formatted_users[] = Utils::format_user_details( $user_id );
+		}
+		$formatted_users = array_filter( $formatted_users );
 
 		$response = new \WP_REST_Response( $formatted_users );
 
 		// set pagination in header
 		$response->header( 'X-WP-Total', (string) $total );
 		$response->header( 'X-WP-TotalPages', (string) $total_pages );
+		$response->header( 'X-WP-CurrentPage', (string) $paged );
+		$response->header( 'X-WP-PageSize', (string) $posts_per_page );
 
 		return $response;
 	}
@@ -163,16 +167,15 @@ final class V2Api extends ApiBase {
 		try {
 			$id = $request['id'] ?? null;
 			if (!is_numeric($id)) {
-				throw new \Exception('id 格式不符合');
+				throw new \Exception(
+					sprintf(
+					__('user id format not match #%s', 'powerhouse'),
+					$id
+				)
+					);
 			}
 
-			$user = \get_user_by( 'ID', (int) $id );
-
-			if (!$user) {
-				throw new \Exception("用戶不存在 #{$id}");
-			}
-
-			$user_array = Utils::format_user_details( $user );
+			$user_array = Utils::format_user_details( (int) $id );
 
 			$response = new \WP_REST_Response( $user_array );
 
@@ -222,14 +225,20 @@ final class V2Api extends ApiBase {
 					if (is_numeric($user_id)) {
 						$success_ids[] = $user_id;
 					} else {
-						throw new \Exception( "更新用戶失敗 : {$user_id->get_error_message()}");
+						throw new \Exception(
+							sprintf(
+							__('update user failed #%1$s, %2$s', 'powerhouse'),
+							$id,
+							$user_id->get_error_message()
+						)
+						);
 					}
 				}
 
 				return new \WP_REST_Response(
 					[
 						'code'    => 'update_success',
-						'message' => '更新用戶成功',
+						'message' => __('update user success', 'powerhouse'),
 						'data'    => $success_ids,
 					],
 				);
@@ -246,14 +255,19 @@ final class V2Api extends ApiBase {
 				if (is_numeric($user_id)) {
 					$success_ids[] = $user_id;
 				} else {
-					throw new \Exception( "新增用戶失敗 : {$user_id->get_error_message()}");
+					throw new \Exception(
+						sprintf(
+						__('create user failed, %s', 'powerhouse'),
+						$user_id->get_error_message()
+					)
+					);
 				}
 			}
 
 			return new \WP_REST_Response(
 					[
 						'code'    => 'create_success',
-						'message' => '新增用戶成功',
+						'message' => __('create user success', 'powerhouse'),
 						'data'    => $success_ids,
 					],
 				);
@@ -284,7 +298,12 @@ final class V2Api extends ApiBase {
 		try {
 			$id = $request['id'] ?? null;
 			if (!is_numeric($id)) {
-				throw new \Exception('id 格式不符合');
+				throw new \Exception(
+					sprintf(
+					__('user id format not match #%s', 'powerhouse'),
+					$id
+				)
+				);
 			}
 
 			$body_params = $request->get_body_params();
@@ -302,7 +321,7 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 			[
 				'code'    => 'update_success',
-				'message' => '更新成功',
+				'message' => __('update user success', 'powerhouse'),
 				'data'    => [
 					'id' => $id,
 				],
@@ -345,14 +364,19 @@ final class V2Api extends ApiBase {
 			foreach ($ids as $id) {
 				$result = \wp_delete_user( (int) $id );
 				if (!$result) {
-					throw new \Exception(__('刪除用戶失敗', 'power-course') . " #{$id}");
+					throw new \Exception(
+						sprintf(
+						__('delete user failed #%s', 'powerhouse'),
+						$id
+					)
+					);
 				}
 			}
 
 			return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
-					'message' => '刪除成功',
+					'message' => __('delete user success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
@@ -380,17 +404,27 @@ final class V2Api extends ApiBase {
 		try {
 			$id = $request['id'] ?? null;
 			if (!is_numeric($id)) {
-				throw new \Exception('id 格式不符合');
+				throw new \Exception(
+					sprintf(
+					__('user id format not match #%s', 'powerhouse'),
+					$id
+				)
+				);
 			}
 			$result = \wp_delete_user( (int) $id );
 			if (!$result) {
-				throw new \Exception('刪除失敗');
+				throw new \Exception(
+					sprintf(
+					__('delete user failed #%s', 'powerhouse'),
+					$id
+				)
+					);
 			}
 
 			return new \WP_REST_Response(
 			[
 				'code'    => 'delete_success',
-				'message' => '刪除成功',
+				'message' => __('delete user success', 'powerhouse'),
 				'data'    => [
 					'id' => $id,
 				],
