@@ -75,10 +75,10 @@ abstract class Utils {
 	 */
 	public static function format_post_details(
 		\WP_Post $post,
-		?bool $with_description = false,
-		?int $depth = 0,
-		?array $recursive_args = null,
-		?array $meta_keys = []
+		bool $with_description = false,
+		int $depth = 0,
+		array $recursive_args = null,
+		array $meta_keys = []
 	) {
 		$date_created  = $post->post_date;
 		$date_modified = $post->post_modified;
@@ -137,11 +137,7 @@ abstract class Utils {
 	 * @param array<string> $meta_keys 要暴露出來的 meta keys.
 	 * @return array<string, mixed>
 	 */
-	public static function get_meta_keys_array( \WP_Post $post, ?array $meta_keys = [] ): array {
-		if (!$meta_keys) {
-			return [];
-		}
-
+	public static function get_meta_keys_array( \WP_Post $post, array $meta_keys = [] ): array {
 		$meta_keys_array = [];
 		foreach ($meta_keys as $meta_key) {
 			$meta_keys_array[ $meta_key ] = \get_post_meta( $post->ID, $meta_key, true );
@@ -161,7 +157,7 @@ abstract class Utils {
 	 * @param array<string>             $meta_keys 要暴露出來的 meta keys.
 	 * @return array{children: array<mixed>}|array{}
 	 */
-	public static function get_recursive_array( \WP_Post $post, ?array $recursive_args = null, int $depth = 0, ?array $meta_keys = [] ): array {
+	public static function get_recursive_array( \WP_Post $post, array $recursive_args = null, int $depth = 0, array $meta_keys = [] ): array {
 		if (null ===$recursive_args) {
 			return [];
 		}

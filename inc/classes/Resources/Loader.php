@@ -19,6 +19,7 @@ final class Loader {
 	 */
 	public function __construct() {
 		Post\V2Api::instance();
+		User\V2Api::instance();
 		Option\V2Api::instance();
 		Shortcode\V2Api::instance();
 		Upload\V2Api::instance();
