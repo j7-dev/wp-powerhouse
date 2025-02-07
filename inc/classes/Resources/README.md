@@ -18,7 +18,7 @@
 [ ] - Report
 [x] - Shortcode
 [x] - Upload
-[ ] - User
+[x] - User
 [ ] - LicenseCode
 [ ] - Coupon
 [ ] - Term

@@ -74,7 +74,7 @@ abstract class Utils {
 		if ( ! ( $user instanceof \WP_User ) ) {
 			return [];
 		}
-		$user_id              = (int) $user->get( 'ID' );
+		$user_id              = $user->ID;
 		$user_registered      = (string) $user->get( 'user_registered' );
 		$user_registered_time = \strtotime($user_registered);
 		$user_avatar_url      = \get_user_meta($user_id, 'user_avatar_url', true);
@@ -91,6 +91,7 @@ abstract class Utils {
 			'user_registered_human' => $user_registered_time ? \human_time_diff( $user_registered_time ) : null,
 			'user_avatar_url'       => $user_avatar_url,
 			'description'           => $user->description,
+			'roles'                 => $user->roles,
 		];
 
 		$formatted_array = array_merge(
