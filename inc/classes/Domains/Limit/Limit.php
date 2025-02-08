@@ -1,16 +1,14 @@
 <?php
-/**
- * 課程的觀看限制 Limit
- * 可以指定為 "無期限"、"購買後固定時間"、"指定日期"、"跟隨訂閱"
- * 可以自己繼承來加上 prefix 以及覆寫 instance 實例化方法
- */
 
 declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Domains\Limit;
 
 /**
- * Class Limit
+ * 課程的觀看限制 Limit
+ * 可以指定為 "無期限"、"購買後固定時間"、"指定日期"、"跟隨訂閱"
+ * 可以自己繼承來加上 prefix 以及覆寫 instance 實例化方法
+ * prefix 只影響 instance, get_meta_keys 方法
  */
 class Limit {
 
