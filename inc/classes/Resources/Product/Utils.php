@@ -57,9 +57,9 @@ abstract class Utils {
 	/**
 	 * Format product details
 	 *
-	 * @param int           $product_id  Product ID.
-	 * @param bool          $with_description 是否要包含 description.
-	 * @param array<string> $meta_keys 要暴露的前端 meta key.
+	 * @param int|\WC_Product $product  Product ID.
+	 * @param bool            $with_description 是否要包含 description.
+	 * @param array<string>   $meta_keys 要暴露的前端 meta key.
 	 *
 	 * @return array{
 	 *  id: string,
@@ -113,16 +113,19 @@ abstract class Utils {
 	 * }|null
 	 */
 	public static function format_product_details(
-		int $product_id,
+		int|\WC_Product $product,
 		bool $with_description = false,
 		array $meta_keys = []
 	): array|null {
-		$product = \wc_get_product( $product_id );
+		if (\is_numeric($product)) {
+			$product = \wc_get_product( $product );
+		}
 
 		if ( ! ( $product instanceof \WC_Product ) ) {
 			return null;
 		}
 
+		$product_id    = $product->get_id();
 		$date_created  = $product->get_date_created();
 		$date_modified = $product->get_date_modified();
 
@@ -151,8 +154,8 @@ abstract class Utils {
 		$variation_ids = $product->get_children(); // get variations
 		$children      = [];
 		if ( $variation_ids ) {
-			$children_details   = array_values(array_map( [ __CLASS__, 'format_product_details' ], $variation_ids ));
-			$children           = [
+			$children_details = array_values(array_map( [ __CLASS__, 'format_product_details' ], $variation_ids ));
+			$children         = [
 				// 可變商品變體
 				'children' => $children_details,
 			];
@@ -354,5 +357,27 @@ abstract class Utils {
 		\set_transient( $transient_key, $max_min_prices, 1 * DAY_IN_SECONDS );
 
 		return $max_min_prices;
+	}
+
+	/**
+	 * 擴展 wc_get_products 的 meta_query
+	 * 例如你想要讓 wc_get_products 可以篩選某個 product meta key 的值
+	 *
+	 * @see https://github.com/woocommerce/woocommerce/wiki/wc_get_products-and-WC_Product_Query#adding-custom-parameter-support
+	 *
+	 * @param array<string, mixed> $query - Args for WP_Query.
+	 * @param array<string, mixed> $query_vars - Query vars from WC_Product_Query.
+	 * @return array<string, mixed> modified $query
+	 */
+	public static function extend_meta_query( $query, $query_vars ): array {
+		/** @var array<string, array{key:string, value:string, compare:string}> $meta_keys */
+		$meta_keys = \apply_filters('powerhouse/product/extend_meta_query', [], $query, $query_vars);
+
+		foreach ($meta_keys as $meta_key => $condition) {
+			if ( isset($query_vars[ $meta_key ]) ) {
+				$query['meta_query'][] = $condition; // @phpstan-ignore-line
+			}
+		}
+		return $query;
 	}
 }
