@@ -6,7 +6,7 @@
 
 declare ( strict_types=1 );
 
-namespace J7\Powerhouse\Utils\Limit;
+namespace J7\Powerhouse\Domains\Limit;
 
 /**
  * Class ExpireDate
