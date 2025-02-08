@@ -77,8 +77,16 @@ final class V2Api extends ApiBase {
 	];
 
 	/**
-	 * Get posts callback 取得文章列表
-	 * 傳入 post_type 可以取得特定文章類型
+	 * Constructor.
+	 */
+	public function __construct() {
+		parent::__construct();
+		// 擴展 wc_get_products 的 meta_query
+		\add_filter('woocommerce_product_data_store_cpt_get_products_query', [ Utils::class, 'extend_meta_query' ], 10, 2,);
+	}
+
+	/**
+	 * Get products callback 取得商品列表
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 *
@@ -92,15 +100,14 @@ final class V2Api extends ApiBase {
 		$params = WP::sanitize_text_field_deep( $params, false );
 
 		$default_args = [
-			'post_type'      => 'product',
+			'status'         => [ 'publish', 'draft' ],
+			'paginate'       => true,
 			'posts_per_page' => 20,
 			'paged'          => 1,
-			'post_status'    => 'any',
-			'orderby'        => [
-				'menu_order' => 'ASC',
-				'ID'         => 'ASC',
-				'date'       => 'DESC',
-			],
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'meta_key'       => '_is_course',
+			'meta_value'     => 'yes',
 		];
 
 		$args = \wp_parse_args(
@@ -119,15 +126,16 @@ final class V2Api extends ApiBase {
 
 		$args['fields'] = 'ids';  // 確保只返回 id
 
-		$query       = new \WP_Query($args);
-		$post_ids    = $query->posts;
-		$total       = $query->found_posts;
-		$total_pages = $query->max_num_pages;
+		/** @var object{total:int, max_num_pages:int, products:array<int, \WC_Product>} $results */
+		$results     = \wc_get_products( $args );
+		$total       = $results->total;
+		$total_pages = $results->max_num_pages;
+
+		$products = $results->products;
 
 		$formatted_products = [];
-		foreach ($post_ids as $post_id) {
-			/** @var int $post_id */
-			$formatted_products[] = Utils::format_product_details( $post_id, $with_description, $meta_keys );
+		foreach ($products as $product) {
+			$formatted_products[] = Utils::format_product_details( $product, $with_description, $meta_keys );
 		}
 		$formatted_products = array_filter( $formatted_products );
 
