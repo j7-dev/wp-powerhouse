@@ -13,6 +13,8 @@ use J7\WpUtils\Classes\WC;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
 use J7\Powerhouse\Resources\Post\Utils as PostUtils;
+use J7\Powerhouse\Domains\Limit\Limit;
+use J7\WpUtils\Classes\WC\Product as WcProduct;
 
 /**
  * Class V2Api
@@ -68,7 +70,23 @@ final class V2Api extends ApiBase {
 			'method'              => 'get',
 			'permission_callback' => null,
 		],
+		[
+			'endpoint'            => 'products/bind-items', // 綁定觀看權限項目到商品上
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
+		[
+			'endpoint'            => 'products/unbind-items', // 解除綁定觀看權限項目到商品上
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
+		[
+			'endpoint'            => 'products/update-bound-items', // 更新綁定觀看權限項目到商品上
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
 		// TODO 商品排序
+
 		// [
 		// 'endpoint'            => 'products/sort',
 		// 'method'              => 'post',
@@ -106,8 +124,6 @@ final class V2Api extends ApiBase {
 			'paged'          => 1,
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			'meta_key'       => '_is_course',
-			'meta_value'     => 'yes',
 		];
 
 		$args = \wp_parse_args(
@@ -522,5 +538,175 @@ final class V2Api extends ApiBase {
 			],
 			$request
 			);
+	}
+
+
+
+
+	/**
+	 * 綁定課程到商品上
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 */
+	public function post_products_bind_items_callback( $request ) {
+		try {
+			$body_params = $request->get_body_params() ?? [];
+			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type' ] );
+
+			$body_params = WP::sanitize_text_field_deep( $body_params );
+
+			$product_ids = $body_params['product_ids'];
+			$item_ids    = $body_params['item_ids'];
+			$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
+
+			$success_ids = [];
+			$failed_ids  = [];
+			foreach ($product_ids as $product_id) {
+				$result = WcProduct::add_meta_array( (int) $product_id, 'bind_course_ids', $course_ids );
+				if (\is_wp_error($result)) {
+					$failed_ids[] = $product_id;
+					continue;
+				}
+
+				$bind_items_data_instance = BindCoursesData::instance( (int) $product_id );
+
+				foreach ($course_ids as $course_id) {
+					$bind_items_data_instance->add_course_data(
+					(int) $course_id,
+					$limit
+					);
+				}
+
+				$bind_items_data_instance->save();
+
+				$success_ids[] = $product_id;
+			}
+
+			return new \WP_REST_Response(
+			[
+				'code'    => 'success',
+				'message' => '綁定成功',
+				'data'    => [
+					'success_ids' => $success_ids,
+					'failed_ids'  => $failed_ids,
+					'course_ids'  => $course_ids,
+				],
+			],
+				200
+			);
+		} catch (\Throwable $th) {
+			return new \WP_REST_Response(
+				[
+					'code'    => 'error',
+					'message' => $th->getMessage(),
+				],
+				400
+				);
+
+		}
+	}
+
+
+	/**
+	 * 更新已綁定課程觀看權限到商品上
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function post_products_update_bound_items_callback( $request ) {
+		$body_params = $request->get_body_params() ?? [];
+
+		$include_required_params = WP::include_required_params( $body_params, [ 'product_ids', 'course_ids', 'limit_type' ] );
+
+		if ($include_required_params !== true) {
+			return $include_required_params;
+		}
+
+		$body_params = WP::sanitize_text_field_deep( $body_params );
+
+		$product_ids = $body_params['product_ids'];
+		$course_ids  = $body_params['course_ids'];
+
+		$success_ids = [];
+		$failed_ids  = [];
+		foreach ($product_ids as $product_id) {
+
+			$bind_items_data_instance = BindCoursesData::instance( (int) $product_id);
+			foreach ($course_ids as $course_id) {
+				$limit = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
+				$bind_items_data_instance->update_course_data( (int) $course_id, $limit );
+			}
+			$bind_items_data_instance->save();
+			$success_ids[] = $product_id;
+		}
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'success',
+				'message' => '修改成功',
+				'data'    => [
+					'success_ids' => $success_ids,
+					'failed_ids'  => $failed_ids,
+					'course_ids'  => $course_ids,
+				],
+			],
+			200
+		);
+	}
+
+
+	/**
+	 * 解除綁定課程到商品上
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 */
+	public function post_products_unbind_items_callback( $request ) {
+		$body_params = $request->get_body_params() ?? [];
+
+		$include_required_params = WP::include_required_params( $body_params, [ 'product_ids', 'course_ids' ] );
+
+		if ($include_required_params !== true) {
+			return $include_required_params;
+		}
+
+		$body_params = WP::sanitize_text_field_deep( $body_params );
+
+		$product_ids = $body_params['product_ids'];
+		$course_ids  = $body_params['course_ids'];
+
+		$success_ids = [];
+		$failed_ids  = [];
+		foreach ($product_ids as $product_id) {
+			$original_course_ids = \get_post_meta( $product_id, 'bind_course_ids' ) ?: [];
+			$new_course_ids      = \array_filter( $original_course_ids, fn( $original_course_id ) => ! \in_array( $original_course_id, $course_ids ) );
+
+			$result = WcProduct::update_meta_array( (int) $product_id, 'bind_course_ids', $new_course_ids );
+			if (\is_wp_error($result)) {
+				$failed_ids[] = $product_id;
+				continue;
+			}
+
+			$bind_items_data_instance = BindCoursesData::instance( (int) $product_id );
+			foreach ($course_ids as $course_id) {
+				$bind_items_data_instance->remove_course_data( (int) $course_id );
+			}
+			$bind_items_data_instance->save();
+			$success_ids[] = $product_id;
+		}
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'success',
+				'message' => '解除綁定成功',
+				'data'    => [
+					'success_ids' => $success_ids,
+					'failed_ids'  => $failed_ids,
+					'course_ids'  => $course_ids,
+				],
+			],
+			200
+		);
 	}
 }

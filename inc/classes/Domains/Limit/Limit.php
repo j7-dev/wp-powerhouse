@@ -7,7 +7,7 @@
 
 declare ( strict_types=1 );
 
-namespace J7\Powerhouse\Utils\Limit;
+namespace J7\Powerhouse\Domains\Limit;
 
 /**
  * Class Limit
@@ -48,11 +48,29 @@ class Limit {
 	 * @param string      $limit_type 限制類型 'unlimited' | 'fixed' | 'assigned' | 'follow_subscription'
 	 * @param int|null    $limit_value 限制值
 	 * @param string|null $limit_unit 限制單位 'timestamp' | 'day' | 'month' | 'year'
+	 * @param string      $prefix 欄位前綴
 	 */
-	public function __construct( string $limit_type, int|null $limit_value, string|null $limit_unit ) {
+	public function __construct( string $limit_type, int|null $limit_value, string|null $limit_unit, string $prefix = '' ) {
+		self::$prefix = $prefix;
 		$this->set_limit_type($limit_type);
 		$this->set_limit_value($limit_value);
 		$this->set_limit_unit($limit_unit);
+	}
+
+	/**
+	 * 取得限制實例
+	 *
+	 * @param int $post_id 文章 id
+	 * @return self
+	 * @throws \Exception 如果課程不存在
+	 */
+	public static function instance( int $post_id ): self {
+		$prefix      = self::$prefix;
+		$limit_type  = (string) \get_post_meta( $post_id, "{$prefix}limit_type", true );
+		$limit_value = (int) \get_post_meta( $post_id, "{$prefix}limit_value", true ) ?: null;
+		$limit_unit  = (string) \get_post_meta( $post_id, "{$prefix}limit_unit", true ) ?: null;
+
+		return new self($limit_type, $limit_value, $limit_unit);
 	}
 
 	/**
@@ -143,30 +161,6 @@ class Limit {
 			'value' => $limit_value_label,
 		];
 	}
-
-	/**
-	 * 取得限制實例
-	 * 有需要可以自己覆寫
-	 *
-	 * @param \WC_Product|int $product 課程或課程ID
-	 * @return self
-	 * @throws \Exception 如果課程不存在
-	 */
-	public static function instance( \WC_Product|int $product ): self {
-		if (is_numeric($product)) {
-			$product = \wc_get_product($product);
-			if (!$product) {
-				throw new \Exception('Product not found');
-			}
-		}
-		$prefix      = self::$prefix;
-		$limit_type  = (string) $product->get_meta( "{$prefix}limit_type" );
-		$limit_value = (int) $product->get_meta( "{$prefix}limit_value" ) ?: null;
-		$limit_unit  = (string) $product->get_meta( "{$prefix}limit_unit" ) ?: null;
-
-		return new self($limit_type, $limit_value, $limit_unit);
-	}
-
 
 	/**
 	 * 取得限制的 meta keys (存在 post meta 中)
