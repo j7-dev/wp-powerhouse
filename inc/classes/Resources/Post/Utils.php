@@ -422,18 +422,14 @@ abstract class Utils {
 				$params,
 				$default_args,
 			);
-		/** @var array<int, \WP_Term> $terms */
+		/** @var array<int, string> $terms id=>name */
 		$terms = \get_terms( $args );
 
 		$formatted_terms = [];
-		foreach ($terms as $term) {
-			if (!( $term instanceof \WP_Term )) {
-				continue;
-			}
-
+		foreach ($terms as $term_id => $term_name) {
 			$formatted_terms[] = [
-				'id'   => (string) $term->term_id,
-				'name' => $term->name,
+				'id'   => (string) $term_id,
+				'name' => $term_name,
 			];
 		}
 
