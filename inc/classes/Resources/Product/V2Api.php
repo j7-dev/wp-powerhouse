@@ -14,7 +14,8 @@ use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
 use J7\Powerhouse\Resources\Post\Utils as PostUtils;
 use J7\Powerhouse\Domains\Limit\Limit;
-use J7\WpUtils\Classes\WC\Product as WcProduct;
+use J7\Powerhouse\Domains\Limit\BoundItemsData;
+
 
 /**
  * Class V2Api
@@ -497,14 +498,15 @@ final class V2Api extends ApiBase {
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 *
-	 * @return array{
+	 * @return \WP_REST_Response<array{
 	 *  product_cats: array{id: string, name: string, slug: string}[],
 	 *  product_tags: array{id: string, name: string, slug: string}[],
 	 *  top_sales_products: array{id: string, name: string, slug: string}[],
+
 	 *  max_price: float,
 	 *  min_price: float,
 	 * ...
-	 * }
+	 * }>
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_products_options_callback( $request ) { // phpcs:ignore
@@ -526,11 +528,11 @@ final class V2Api extends ApiBase {
 			'min_price' => $min_price,
 		] = Utils::get_max_min_prices();
 
-		// @phpstan-ignore-next-line
-		return \apply_filters(
+		$options = \apply_filters(
 			'powerhouse/product/get_options',
 			[
 				'product_cats'       => $formatted_cats,
+
 				'product_tags'       => $formatted_tags,
 				'top_sales_products' => $top_sales_products,
 				'max_price'          => $max_price,
@@ -538,49 +540,42 @@ final class V2Api extends ApiBase {
 			],
 			$request
 			);
+
+		return new \WP_REST_Response($options);
 	}
 
-
-
-
 	/**
-	 * 綁定課程到商品上
+	 * 綁定項目到商品上
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response
+	 * @throws \Exception 當綁定項目失敗時拋出異常
+	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_bind_items_callback( $request ) {
 		try {
-			$body_params = $request->get_body_params() ?? [];
-			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type' ] );
+			$body_params = $request->get_body_params();
+			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type', 'meta_key' ] );
 
 			$body_params = WP::sanitize_text_field_deep( $body_params );
 
+			/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, limit_type: string, limit_value: int|null, limit_unit: string, meta_key: string} $body_params */
 			$product_ids = $body_params['product_ids'];
 			$item_ids    = $body_params['item_ids'];
 			$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
 
-			$success_ids = [];
-			$failed_ids  = [];
+			$meta_key = $body_params['meta_key'];
+
 			foreach ($product_ids as $product_id) {
-				$result = WcProduct::add_meta_array( (int) $product_id, 'bind_course_ids', $course_ids );
-				if (\is_wp_error($result)) {
-					$failed_ids[] = $product_id;
-					continue;
-				}
+				$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key );
 
-				$bind_items_data_instance = BindCoursesData::instance( (int) $product_id );
-
-				foreach ($course_ids as $course_id) {
-					$bind_items_data_instance->add_course_data(
-					(int) $course_id,
+				foreach ($item_ids as $item_id) {
+					$bind_items_data_instance->add_item_data(
+					(int) $item_id,
 					$limit
 					);
 				}
-
 				$bind_items_data_instance->save();
-
-				$success_ids[] = $product_id;
 			}
 
 			return new \WP_REST_Response(
@@ -588,12 +583,9 @@ final class V2Api extends ApiBase {
 				'code'    => 'success',
 				'message' => '綁定成功',
 				'data'    => [
-					'success_ids' => $success_ids,
-					'failed_ids'  => $failed_ids,
-					'course_ids'  => $course_ids,
+					'product_ids' => $product_ids,
 				],
-			],
-				200
+			]
 			);
 		} catch (\Throwable $th) {
 			return new \WP_REST_Response(
@@ -603,110 +595,112 @@ final class V2Api extends ApiBase {
 				],
 				400
 				);
-
 		}
 	}
 
 
 	/**
-	 * 更新已綁定課程觀看權限到商品上
+	 * 更新已綁定項目權限到商品上
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
+	 * @throws \Exception 當更新項目失敗時拋出異常
+	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_update_bound_items_callback( $request ) {
-		$body_params = $request->get_body_params() ?? [];
+		try {
 
-		$include_required_params = WP::include_required_params( $body_params, [ 'product_ids', 'course_ids', 'limit_type' ] );
+			$body_params = $request->get_body_params();
 
-		if ($include_required_params !== true) {
-			return $include_required_params;
-		}
+			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type', 'meta_key' ] );
 
-		$body_params = WP::sanitize_text_field_deep( $body_params );
+			$body_params = WP::sanitize_text_field_deep( $body_params );
 
-		$product_ids = $body_params['product_ids'];
-		$course_ids  = $body_params['course_ids'];
+			/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, limit_type: string, limit_value: int|null, limit_unit: string, meta_key: string} $body_params */
+			$product_ids = $body_params['product_ids'];
+			$item_ids    = $body_params['item_ids'];
+			$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
+			$meta_key    = $body_params['meta_key'];
 
-		$success_ids = [];
-		$failed_ids  = [];
-		foreach ($product_ids as $product_id) {
-
-			$bind_items_data_instance = BindCoursesData::instance( (int) $product_id);
-			foreach ($course_ids as $course_id) {
-				$limit = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
-				$bind_items_data_instance->update_course_data( (int) $course_id, $limit );
+			foreach ($product_ids as $product_id) {
+				$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key);
+				foreach ($item_ids as $item_id) {
+					$bind_items_data_instance->update_item_data( (int) $item_id, $limit );
+				}
+				$bind_items_data_instance->save();
 			}
-			$bind_items_data_instance->save();
-			$success_ids[] = $product_id;
-		}
 
-		return new \WP_REST_Response(
+			return new \WP_REST_Response(
 			[
 				'code'    => 'success',
 				'message' => '修改成功',
 				'data'    => [
-					'success_ids' => $success_ids,
-					'failed_ids'  => $failed_ids,
-					'course_ids'  => $course_ids,
+					'product_ids' => $product_ids,
 				],
-			],
-			200
-		);
+			]
+			);
+		} catch (\Throwable $th) {
+			return new \WP_REST_Response(
+				[
+					'code'    => 'error',
+					'message' => $th->getMessage(),
+				],
+				400
+				);
+		}
 	}
 
 
+
 	/**
-	 * 解除綁定課程到商品上
+	 * 解除綁定項目到商品上
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response
+	 * @throws \Exception 當解除綁定失敗時拋出異常
+	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_unbind_items_callback( $request ) {
-		$body_params = $request->get_body_params() ?? [];
+		try {
 
-		$include_required_params = WP::include_required_params( $body_params, [ 'product_ids', 'course_ids' ] );
+			$body_params = $request->get_body_params();
 
-		if ($include_required_params !== true) {
-			return $include_required_params;
-		}
+			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'meta_key' ] );
 
-		$body_params = WP::sanitize_text_field_deep( $body_params );
+			$body_params = WP::sanitize_text_field_deep( $body_params );
 
-		$product_ids = $body_params['product_ids'];
-		$course_ids  = $body_params['course_ids'];
+			/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, meta_key: string} $body_params */
+			$product_ids = $body_params['product_ids'];
+			$item_ids    = $body_params['item_ids'];
+			$meta_key    = $body_params['meta_key'];
 
-		$success_ids = [];
-		$failed_ids  = [];
-		foreach ($product_ids as $product_id) {
-			$original_course_ids = \get_post_meta( $product_id, 'bind_course_ids' ) ?: [];
-			$new_course_ids      = \array_filter( $original_course_ids, fn( $original_course_id ) => ! \in_array( $original_course_id, $course_ids ) );
-
-			$result = WcProduct::update_meta_array( (int) $product_id, 'bind_course_ids', $new_course_ids );
-			if (\is_wp_error($result)) {
-				$failed_ids[] = $product_id;
-				continue;
+			foreach ($product_ids as $product_id) {
+				$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key );
+				foreach ($item_ids as $item_id) {
+					$bind_items_data_instance->remove_item_data( (int) $item_id );
+				}
+				$bind_items_data_instance->save();
+				$success_ids[] = $product_id;
 			}
 
-			$bind_items_data_instance = BindCoursesData::instance( (int) $product_id );
-			foreach ($course_ids as $course_id) {
-				$bind_items_data_instance->remove_course_data( (int) $course_id );
-			}
-			$bind_items_data_instance->save();
-			$success_ids[] = $product_id;
-		}
-
-		return new \WP_REST_Response(
+			return new \WP_REST_Response(
 			[
 				'code'    => 'success',
 				'message' => '解除綁定成功',
 				'data'    => [
-					'success_ids' => $success_ids,
-					'failed_ids'  => $failed_ids,
-					'course_ids'  => $course_ids,
+					'product_ids' => $product_ids,
 				],
 			],
 			200
-		);
+			);
+		} catch (\Throwable $th) {
+			return new \WP_REST_Response(
+				[
+					'code'    => 'error',
+					'message' => $th->getMessage(),
+				],
+				400
+				);
+		}
 	}
 }

@@ -2,6 +2,7 @@
 /**
  * 商品如果綁項目權限
  * 相關資料都存在 {bound_items_data} 這個 post meta 中
+ * 還會把 id 個別存到 {bound_items_data}_ids 這個 post meta 中
  */
 
 declare ( strict_types=1 );
@@ -24,42 +25,21 @@ class BoundItemsData {
 	/**
 	 * @var string $meta_key meta key 預設為 bound_items_data
 	 */
-	public static string $meta_key = 'bound_items_data';
+	private string $meta_key = 'bound_items_data';
 
 	/**
 	 * @var BoundItemData[] $bound_items_data 綁定的課程資料
 	 */
 	private array $bound_items_data = [];
 
-
 	/**
 	 * Constructor
 	 * 從有綁項目權限的商品身上拿 bound_items_data 資料
 	 *
-	 * @param array<int, array{id: int, name: string, limit_type: string, limit_value: int|null, limit_unit: string|null}> $bound_items_data 綁定的項目資料，存在 DB 的 array 資料
-
-	 * @param int|null                                                                                                     $product_id 商品 id
+	 * @param int    $product_id 商品 id
+	 * @param string $meta_key meta key 預設為 bound_items_data
 	 */
-	public function __construct( array $bound_items_data, ?int $product_id = null ) {
-		if ($product_id) {
-			$this->product_id = $product_id;
-		}
-
-		foreach ($bound_items_data as $bind_course_data) {
-			$this->bound_items_data[] = new BoundItemData( (int) $bind_course_data['id'], $bind_course_data['limit_type'], (int) $bind_course_data['limit_value'], $bind_course_data['limit_unit'] );
-		}
-	}
-
-
-	/**
-	 * Constructor
-	 * 從有綁項目權限的商品身上拿 bound_items_data 資料
-	 *
-	 * @param int $product_id 商品 id
-	 *
-	 * @return self
-	 */
-	public static function instance( int $product_id ): self {
+	public function __construct( int $product_id, string $meta_key = 'bound_items_data' ) {
 		/**
 		 * @var array<int, array{
 		 *     id: int,
@@ -69,9 +49,14 @@ class BoundItemsData {
 		 *     limit_unit: string|null,
 		 * }> $bound_items_data
 		 */
-		$bound_items_data = \get_post_meta( $product_id, static::$meta_key, true ) ?: [];
+		$bound_items_data = \get_post_meta( $product_id, $meta_key, true ) ?: [];
 
-		return new self( (array) $bound_items_data, $product_id );
+		$this->product_id = $product_id;
+		$this->meta_key   = $meta_key;
+
+		foreach ($bound_items_data as $bind_course_data) {
+			$this->bound_items_data[] = new BoundItemData( (int) $bind_course_data['id'], $bind_course_data['limit_type'], (int) $bind_course_data['limit_value'], $bind_course_data['limit_unit'] );
+		}
 	}
 
 	/**
@@ -175,6 +160,15 @@ class BoundItemsData {
 		}
 		$bound_items_data = $this->get_data( ARRAY_N );
 
-		\update_post_meta( $this->product_id, static::$meta_key, $bound_items_data );
+		// 儲存 array 資料到 post meta
+		\update_post_meta( $this->product_id, $this->meta_key, $bound_items_data );
+
+		// 為了方便檢索，所以把 ids 個別存到 post meta
+		$ids          = $this->get_ids();
+		$ids_meta_key = "{$this->meta_key}_ids";
+		\delete_post_meta( $this->product_id, $ids_meta_key );
+		foreach ($ids as $id) {
+			\add_post_meta( $this->product_id, $ids_meta_key, $id );
+		}
 	}
 }
