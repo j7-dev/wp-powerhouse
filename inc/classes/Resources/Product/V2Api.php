@@ -584,6 +584,7 @@ final class V2Api extends ApiBase {
 				'message' => '綁定成功',
 				'data'    => [
 					'product_ids' => $product_ids,
+					'item_ids'    => $item_ids,
 				],
 			]
 			);
@@ -636,6 +637,7 @@ final class V2Api extends ApiBase {
 				'message' => '修改成功',
 				'data'    => [
 					'product_ids' => $product_ids,
+					'item_ids'    => $item_ids,
 				],
 			]
 			);
@@ -689,6 +691,7 @@ final class V2Api extends ApiBase {
 				'message' => '解除綁定成功',
 				'data'    => [
 					'product_ids' => $product_ids,
+					'item_ids'    => $item_ids,
 				],
 			],
 			200
