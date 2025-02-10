@@ -1,17 +1,16 @@
 <?php
-/**
- * Compatibility 不同版本間的相容性設定
- * from v2.0.17
- */
 
 declare (strict_types = 1);
 
 namespace J7\Powerhouse\Compatibility;
 
 use J7\Powerhouse\Plugin;
+use J7\Powerhouse\Resources\Limit\Utils\CreateTable;
 
 /**
- * Class Compatibility
+ * Compatibility 不同版本間的相容性設定
+ *
+ * @since v2.0.17
  */
 final class Compatibility {
 	use \J7\WpUtils\Traits\SingletonTrait;
@@ -54,6 +53,9 @@ final class Compatibility {
 		/**
 		 * ============== START 相容性代碼 ==============
 		 */
+
+		// 判斷是否已經有 wp_ph_access_itemmeta 這張 table，沒有就建立
+		CreateTable::create_itemmeta_table();
 
 		/**
 		 * ============== END 相容性代碼 ==============

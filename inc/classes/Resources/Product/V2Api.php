@@ -13,8 +13,9 @@ use J7\WpUtils\Classes\WC;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
 use J7\Powerhouse\Resources\Post\Utils as PostUtils;
-use J7\Powerhouse\Domains\Limit\Limit;
-use J7\Powerhouse\Domains\Limit\BoundItemsData;
+use J7\Powerhouse\Resources\Limit\Models\Limit;
+use J7\Powerhouse\Resources\Limit\Models\BoundItemsData;
+
 
 
 /**

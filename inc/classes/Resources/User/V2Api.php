@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Resources\User;
 
 use J7\WpUtils\Classes\WP;
-use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
 
 /**
