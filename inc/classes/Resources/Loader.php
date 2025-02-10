@@ -25,5 +25,6 @@ final class Loader {
 		Shortcode\V2Api::instance();
 		Upload\V2Api::instance();
 		Duplicate\V2Api::instance();
+		Limit\V2Api::instance();
 	}
 }

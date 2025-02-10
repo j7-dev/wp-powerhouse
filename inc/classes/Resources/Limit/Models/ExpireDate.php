@@ -6,12 +6,21 @@
 
 declare ( strict_types=1 );
 
-namespace J7\Powerhouse\Domains\Limit;
+namespace J7\Powerhouse\Resources\Limit\Models;
+
+use J7\Powerhouse\Resources\Limit\Utils\MetaCRUD;
 
 /**
  * Class ExpireDate
  */
 class ExpireDate {
+
+	/**
+	 * 到期日 timestamp
+	 *
+	 * @var ?int $timestamp 到期日 timestamp，0 為無限期，如果是訂閱就會是 null
+	 */
+	public ?int $timestamp = null;
 
 	/**
 	 * 是否為"跟隨訂閱"
@@ -48,7 +57,7 @@ class ExpireDate {
 	 */
 	public function __construct( public int|string $expire_date ) {
 		if (\is_numeric($expire_date)) {
-			$this->expire_date = (int) $expire_date;
+			$this->timestamp = (int) $expire_date;
 		}
 
 		if (class_exists('WC_Subscription')) {
@@ -67,17 +76,23 @@ class ExpireDate {
 	 */
 	public function set_label( ?string $format = 'Y-m-d H:i:s' ): void {
 		if ($this->is_subscription) {
-			$this->expire_date_label = "跟隨訂閱 #{$this->subscription_id}";
+			$this->expire_date_label = $this->is_expired ? "訂閱 #{$this->subscription_id} 已到期" : "跟隨訂閱 #{$this->subscription_id}";
 			return;
 		}
-		/** @var int $expire_date */
-		$expire_date = $this->expire_date;
-		if ( ! $expire_date ) {
+
+		if ( null === $this->timestamp ) {
+			$this->expire_date_label = '無法取得時間';
+			return;
+		}
+
+		if ( 0 === $this->timestamp ) {
 			$this->expire_date_label = '無期限';
 			return;
 		}
-		$this->expire_date_label = \wp_date( $format ?? 'Y-m-d H:i:s', $expire_date ) ?: '無法取得時間';
+
+		$this->expire_date_label = '至' . \wp_date( $format ?? 'Y-m-d H:i:s', $this->timestamp );
 	}
+
 
 	/**
 	 * 是否過期

@@ -7,7 +7,7 @@
 
 declare ( strict_types=1 );
 
-namespace J7\Powerhouse\Domains\Limit;
+namespace J7\Powerhouse\Resources\Limit\Models;
 
 /**
  * Class BoundItemData
