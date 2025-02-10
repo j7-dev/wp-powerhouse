@@ -139,7 +139,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_users = [];
 		foreach ($user_ids as $user_id) {
-			$formatted_users[] = Utils::format_user_details( $user_id );
+			$formatted_users[] = Utils::format_user_details( (int) $user_id );
 		}
 		$formatted_users = array_filter( $formatted_users );
 
