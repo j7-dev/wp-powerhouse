@@ -89,9 +89,8 @@ class BoundItemsData {
 	 */
 	public function add_item_data( int $item_id, Limit $limit ): self {
 		if ($this->included( $item_id )) {
-			// 如果原本的資料裡面有這次新增的，那就跳過不動
-			return $this;
-
+			// 如果原本的資料裡面有這次新增的，那就移除舊有的
+			$this->remove_item_data( $item_id );
 		}
 		// 原本的資料沒有這次新增的，那就新增
 		$this->bound_items_data[] = new BoundItemData( $item_id, $limit->limit_type, $limit->limit_value, $limit->limit_unit );
