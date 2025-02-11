@@ -136,9 +136,12 @@ final class V2Api extends ApiBase {
 
 		$total_pages = ceil($total / $posts_per_page);
 
+		/** @var array<string> $meta_keys 要暴露的 meta keys */
+		$meta_keys = $params['meta_keys'] ?? [];
+
 		$formatted_users = [];
 		foreach ($user_ids as $user_id) {
-			$formatted_users[] = Utils::format_user_details( (int) $user_id );
+			$formatted_users[] = Utils::format_user_details( (int) $user_id, $meta_keys );
 		}
 		$formatted_users = array_filter( $formatted_users );
 

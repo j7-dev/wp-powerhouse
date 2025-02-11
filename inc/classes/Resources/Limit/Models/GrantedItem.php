@@ -9,7 +9,7 @@ use J7\Powerhouse\Resources\Limit\Utils\MetaCRUD;
 /**
  * 用戶與這個項目的關係
  */
-class Item {
+class GrantedItem {
 
 	/**
 	 * 用戶是否可以存取這個項目
@@ -31,11 +31,12 @@ class Item {
 	/**
 	 * 初始化
 	 *
-	 * @param int $post_id 項目ID
-	 * @param int $user_id 用戶ID
+	 * @param int    $post_id 項目ID
+	 * @param int    $user_id 用戶ID
+	 * @param string $meta_key 元數據鍵名
 	 */
-	public function __construct( public int $post_id, public int $user_id ) {
-		$expire_date = MetaCRUD::get( $post_id, $user_id, 'expire_date', true);
+	public function __construct( public int $post_id, public int $user_id, public string $meta_key = 'expire_date' ) {
+		$expire_date = MetaCRUD::get( $post_id, $user_id, $meta_key, true);
 
 		// $expire_date = "" 如果用戶沒有觀看此項目權限
 		if ('' === $expire_date) {
