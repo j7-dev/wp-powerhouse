@@ -119,14 +119,14 @@ class ExpireDate {
 	/**
 	 * 轉換成 array
 	 *
-	 * @return array{is_subscription: bool, subscription_id: int|null, is_expired: bool, timestamp: int|string|null}
+	 * @return array{is_subscription: bool, subscription_id: int|null, is_expired: bool, timestamp: int|null}
 	 */
 	public function to_array(): array {
 		return [
 			'is_subscription' => $this->is_subscription,
 			'subscription_id' => $this->subscription_id,
 			'is_expired'      => $this->is_expired,
-			'timestamp'       => $this->is_subscription ? null : $this->expire_date,
+			'timestamp'       => $this->timestamp,
 		];
 	}
 
