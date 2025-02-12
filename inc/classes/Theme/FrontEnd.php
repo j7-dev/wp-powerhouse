@@ -4,6 +4,8 @@ declare (strict_types = 1);
 
 namespace J7\Powerhouse\Theme;
 
+use J7\Powerhouse\Settings\DTO;
+
 if ( class_exists( 'J7\Powerhouse\Theme\FrontEnd' ) ) {
 	return;
 }
@@ -30,6 +32,12 @@ final class FrontEnd {
 	 * @return string
 	 */
 	public function add_html_attr( string $output, string $doctype ): string {
-		return $output . ' data-theme="power"';
+		// 已經有 data-theme 則不會再新增
+		if (strpos($output, 'data-theme') !== false) {
+			return $output;
+		}
+
+		$theme = DTO::instance()->theme;
+		return "{$output} data-theme=\"{$theme}\"";
 	}
 }

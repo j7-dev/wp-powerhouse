@@ -86,15 +86,15 @@ final class LC {
 		$key = self::KEY;
 
 		// 驗證 nonce
-		if (!isset($_POST[ "{$key}_nonce" ]) || !\wp_verify_nonce($_POST[ "{$key}_nonce" ], "{$key}_action")) {
+		if (!isset($_POST[ "{$key}_nonce" ]) || !\wp_verify_nonce((string) $_POST[ "{$key}_nonce" ], "{$key}_action")) {
 			return [
 				'type'    => 'danger',
 				'message' => '安全檢查失敗',
 				'show_alert' => true,
 			];
 		}
-		$code = str_replace(' ', '', $_POST['code'] ?? '');
-		$product_slug =str_replace(' ', '', $_POST['product_slug'] ?? '');
+		$code = str_replace(' ', '', (string) $_POST['code']);
+		$product_slug = str_replace(' ', '', (string) $_POST['product_slug']);
 
 		// 如果是按下棄用按鈕
 		if('deactivate' === $_POST['submit_button']){
@@ -129,10 +129,7 @@ final class LC {
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
 		$saved_codes = \get_option(self::KEY, []);
-
-		if (!is_array($saved_codes)) {
-			$saved_codes = [];
-		}
+		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 
 		$lc_array = [];
 
@@ -378,9 +375,7 @@ final class LC {
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
 		$saved_codes = \get_option(self::KEY, []);
-		if (!is_array($saved_codes)) {
-			$saved_codes = [];
-		}
+		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 		$saved_codes[ $product_slug ] = $data['code'];
 
 		\update_option(self::KEY, $saved_codes);
@@ -400,9 +395,8 @@ final class LC {
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
 		$saved_codes = \get_option(self::KEY, []);
-		if (!is_array($saved_codes)) {
-			$saved_codes = [];
-		}
+		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
+
 		unset($saved_codes[ $product_slug ]);
 		\update_option(self::KEY, $saved_codes);
 		$delete_transient_result = \delete_transient("lc_{$product_slug}");
@@ -423,13 +417,19 @@ final class LC {
 		 */
 			$lc_status = JsAesPhp::decrypt($value, Plugin::$kebab);
 
-			if (!is_array($lc_status)) {
+			if (!is_array($lc_status)) { // @phpstan-ignore-line
 				return false;
 			}
 
 			return $lc_status;
-		} catch ( \Error $e ) {
-			\J7\WpUtils\Classes\ErrorLog::info('decode error: ' . $value . $e->getMessage());
+		} catch ( \Exception $e ) {
+			\J7\WpUtils\Classes\WC::log(
+					[
+						'getMessage' => $e->getMessage(),
+						'value'      => $value,
+					],
+					'LC::decode error'
+				);
 			return false;
 		}
 	}
@@ -438,9 +438,9 @@ final class LC {
 	 * 加密函數
 	 *
 	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string} $license_code 單個授權狀態
-	 * @return string|false 加密後的 string，失敗回傳 false
+	 * @return string 加密後的 string
 	 */
-	public static function encode( array $license_code ): string|false {
+	public static function encode( array $license_code ): string {
 		return JsAesPhp::encrypt($license_code, Plugin::$kebab, 1);
 	}
 

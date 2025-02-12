@@ -58,6 +58,7 @@ class GrantedItems {
 		$item_ids = \wp_cache_get( $cache_key );
 
 		if ( false !== $item_ids && is_array( $item_ids ) ) {
+			/** @var array<string|int> $item_ids */
 			return $item_ids;
 		}
 
@@ -92,8 +93,6 @@ class GrantedItems {
 			);
 
 		\wp_cache_set( $cache_key, $item_ids );
-
-
 
 		return $item_ids;
 	}
