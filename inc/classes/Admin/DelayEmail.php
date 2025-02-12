@@ -68,6 +68,7 @@ final class DelayEmail {
 				\add_action(
 					$hook,
 					function ( ...$args ) use ( $class_name ) {
+						/** @var array<mixed> $args */
 						\as_enqueue_async_action( 'powerhouse_delay_email', [ $class_name, ...$args ] );
 					},
 					10
@@ -85,15 +86,16 @@ final class DelayEmail {
 	 */
 	public static function schedule_email( $class_name, ...$args ): void {
 		/**
-		 * @var \WC_Email $email_instance
+		 * @var \WC_Email_New_Order $email_instance
+		 * 實際型別為 繼承 \WC_Email 的類別，只是以 \WC_Email_New_Order 舉例
 		 */
 		$email_instance = \WC()->mailer()->emails[ $class_name ];
 
 		// check if the method exists
-		if ( ! method_exists(   $email_instance, 'trigger' ) ) {
+		if ( ! method_exists(   $email_instance, 'trigger' ) ) { // @phpstan-ignore-line
 			return;
 		}
 
-		$email_instance->trigger( ...$args );
+		$email_instance->trigger( ...$args ); // @phpstan-ignore-line
 	}
 }

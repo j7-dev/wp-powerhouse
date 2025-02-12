@@ -1,7 +1,4 @@
 <?php
-/**
- * Debug 選單
- */
 
 declare(strict_types=1);
 
@@ -172,12 +169,12 @@ final class Debug {
 	public function handle_delete_debug_log(): void {
 		// 檢查權限
 		if (!\current_user_can('manage_options')) {
-			wp_die('權限不足');
+			\wp_die('權限不足');
 		}
 
 		// 驗證 nonce
-		if (!\wp_verify_nonce($_REQUEST['_wpnonce'] ?? '', 'delete_debug_log')) { // phpcs:ignore
-			wp_die('無效的請求');
+		if (!\wp_verify_nonce((string) $_REQUEST['_wpnonce'], 'delete_debug_log')) { // phpcs:ignore
+			\wp_die('無效的請求');
 		}
 
 		$log_path = WP_CONTENT_DIR . '/debug.log';

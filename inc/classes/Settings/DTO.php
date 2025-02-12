@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace J7\PowerContract\Settings;
+namespace J7\Powerhouse\Settings;
 
 use J7\WpUtils\Classes\DTO as BaseDTO;
 
-if (class_exists('J7\PowerContract\Settings\DTO')) {
+if (class_exists('J7\Powerhouse\Settings\DTO')) {
 	return;
 }
 /**

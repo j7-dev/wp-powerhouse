@@ -57,7 +57,7 @@ final class Duplicate {
 		$duplicate_callback = \apply_filters( 'powerhouse/duplicate/callback', $duplicate_callback, $post_id, $copy_terms, $new_parent );
 
 		/** @var callable(int, bool, int|bool): int $duplicate_callback */
-		$new_id = call_user_func( $duplicate_callback, $post_id, $copy_terms, $new_parent );
+		$new_id = call_user_func( $duplicate_callback, $post_id, $copy_terms, $new_parent ); // @phpstan-ignore-line
 
 		\do_action( 'powerhouse_after_duplicate_post', $this, $post_id, $new_id, $new_parent );
 

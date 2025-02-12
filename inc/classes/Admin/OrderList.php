@@ -52,7 +52,7 @@ final class OrderList {
 	 * @return void
 	 */
 	public static function render_order_column_hpos( $column, $order ): void {
-		if (method_exists($order, 'get_id')) {
+		if (method_exists($order, 'get_id')) { // @phpstan-ignore-line
 			$order_id = (int) $order->get_id();
 			self::render_order_column( $column, $order_id );
 		}
