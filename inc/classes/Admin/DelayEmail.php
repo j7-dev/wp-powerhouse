@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Admin;
 
-use J7\Powerhouse\Settings;
+use J7\Powerhouse\Settings\DTO;
 
 if ( class_exists( 'J7\Powerhouse\Admin\DelayEmail' ) ) {
 	return;
@@ -22,7 +22,7 @@ final class DelayEmail {
 	 * Constructor
 	 */
 	public function __construct() {
-		$delay_email = Settings::get('delay_email');
+		$delay_email = DTO::instance()->delay_email;
 
 		if ($delay_email !== 'yes') {
 			return;

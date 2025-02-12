@@ -19,6 +19,12 @@ final class DTO extends BaseDTO {
 	/** @var string $theme 主題 */
 	public string $theme = 'power';
 
+	/** @var string $delay_email 延遲寄信 */
+	public string $delay_email = 'yes';
+
+	/** @var string $last_name_optional 姓氏可選 */
+	public string $last_name_optional = 'yes';
+
 	/** @var self 實例 */
 	private static $instance = null;
 
@@ -52,12 +58,15 @@ final class DTO extends BaseDTO {
 
 
 	/**
-	 * 取得 input name 表單用
+	 * 取得 input name 表單 field_name 還有預設值
+	 * 可以用 list($field_name, $default_value) 解構
 	 *
 	 * @param string $key 欄位名稱
-	 * @return string 欄位名稱
+	 * @return array{0: string, 1: string} [欄位名稱, 預設值]
 	 */
-	// public static function get_field_name( string $key ): string {
-	// return self::SETTINGS_KEY . "[$key]";
-	// }
+	public static function get_field_name_and_value( string $key ): array {
+		$field_name  = self::SETTINGS_KEY . "[$key]";
+		$field_value = self::instance()->$key;
+		return [ $field_name, $field_value ];
+	}
 }

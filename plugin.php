@@ -81,7 +81,7 @@ final class Plugin {
 	 * @throws \Exception Exception.
 	 */
 	public function activate(): void {
-		require_once __DIR__ . '/inc/classes/Domains/Limit/Utils/CreateTable.php';
+		require_once __DIR__ . '/inc/classes/Resources/Limit/Utils/CreateTable.php';
 		Resources\Limit\Utils\CreateTable::create_itemmeta_table();
 	}
 }

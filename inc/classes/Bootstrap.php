@@ -26,7 +26,7 @@ final class Bootstrap {
 	public function __construct() {
 		Compatibility\Compatibility::instance();
 
-		Settings::instance();
+		Settings\FrontEnd::instance();
 		// Admin\Entry::instance();
 		Admin\Debug::instance();
 		Admin\Account::instance();
@@ -70,7 +70,7 @@ final class Bootstrap {
 		__( 'Powerhouse', 'powerhouse' ),
 		'manage_options',
 		'powerhouse',
-		[ Settings::class, 'powerhouse_settings_page_callback' ],
+		[ Settings\FrontEnd::class, 'powerhouse_settings_page_callback' ],
 		'dashicons-superhero',
 		3
 		);
@@ -82,7 +82,7 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function add_submenu(): void {
-		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings::class, 'powerhouse_settings_page_callback' ] );
+		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse-settings', [ Settings\FrontEnd::class, 'powerhouse_settings_page_callback' ] );
 
 		// 如果沒有註冊產品資訊，就不用顯示授權碼
 		$product_infos = \apply_filters( 'powerhouse_product_infos', [] );

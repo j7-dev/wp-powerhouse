@@ -5,9 +5,9 @@
  */
 
 use J7\Powerhouse\Plugin;
-use J7\Powerhouse\Settings;
+use J7\Powerhouse\Settings\DTO;
 
-$fields = $args['fields'] ?? [];
+[$field_name, $field_value] = DTO::instance()->get_field_name_and_value('delay_email');
 
 $field_args = [
 	'label'       => '使用非同步方式寄送 Email，加快結帳速度',
@@ -15,8 +15,8 @@ $field_args = [
 	/*html*/'可以前往 <a href="%1$s" target="_blank">Scheduled Actions</a> 查看信件寄送的狀況',
 	\admin_url('admin.php?page=wc-status&tab=action-scheduler&s=powerhouse_delay_email&action=-1&paged=1&action2=-1')
 	),
-	'name'        => $fields[0],
-	'value'       => Settings::get($fields[0]),
+	'name'        => $field_name,
+	'value'       => $field_value,
 ];
 
 Plugin::safe_get(
