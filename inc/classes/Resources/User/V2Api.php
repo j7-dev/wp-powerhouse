@@ -97,14 +97,7 @@ final class V2Api extends ApiBase {
 		// 搜尋條件，'ID', 'user_login', 'user_email', 'user_nicename', 'display_name'
 		if ($search) {
 			$search     = '%' . $wpdb->esc_like($search) . '%';
-			$where_sql .= $wpdb->prepare(
-				' AND (u.ID LIKE %s OR u.user_login LIKE %s OR u.user_email LIKE %s OR u.user_nicename LIKE %s OR u.display_name LIKE %s)',
-				$search,
-				$search,
-				$search,
-				$search,
-				$search
-			);
+			$where_sql .= " AND (u.ID LIKE '{$search}' OR u.user_login LIKE '{$search}' OR u.user_email LIKE '{$search}' OR u.user_nicename LIKE '{$search}' OR u.display_name LIKE '{$search}')";
 		}
 
 		// Meta 查詢
@@ -131,8 +124,8 @@ final class V2Api extends ApiBase {
 		$limit_sql = $wpdb->prepare(' LIMIT %d OFFSET %d', $posts_per_page, $offset);
 
 		// 執行查詢
-		$total    = $wpdb->get_var($count_sql . $from_sql . $where_sql); // phpcs:ignore
-		$user_ids = $wpdb->get_col($select_sql . $from_sql . $where_sql . $order_sql . $limit_sql); // phpcs:ignore
+		$total    = $wpdb->get_var(\wp_unslash($count_sql . $from_sql . $where_sql)); // phpcs:ignore
+		$user_ids = $wpdb->get_col(\wp_unslash($select_sql . $from_sql . $where_sql . $order_sql . $limit_sql)); // phpcs:ignore
 
 		$total_pages = ceil($total / $posts_per_page);
 
@@ -221,6 +214,7 @@ final class V2Api extends ApiBase {
 				unset($body_params['ids']);
 				$success_ids = [];
 				foreach ($ids as $id) {
+					/** @var int|string $id */
 					$args       = $body_params;
 					$args['ID'] = $id;
 					$user_id    = Utils::update_user( $args );

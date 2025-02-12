@@ -36,6 +36,7 @@ final class Bootstrap {
 		Api\Base::instance();
 		Api\LC::instance();
 		Resources\Loader::instance();
+		Theme\FrontEnd::instance();
 
 		\add_action( 'init', [ __CLASS__, 'register_assets' ] );
 

@@ -37,7 +37,8 @@ $styles = \array_merge( $styles, $args_styles );
 
 $style = '';
 foreach ( $styles as $key => $value ) {
-	$style .= $key . ':' . $value . ';';
+	/** @var string $value */
+	$style .= "{$key}:{$value};";
 }
 
 $html = sprintf(
