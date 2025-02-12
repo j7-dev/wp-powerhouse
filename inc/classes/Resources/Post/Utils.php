@@ -83,8 +83,7 @@ abstract class Utils {
 		$date_created  = $post->post_date;
 		$date_modified = $post->post_modified;
 
-		$image_id = \get_post_thumbnail_id($post->ID);
-		/** @var int[] $image_ids */
+		$image_id  = \get_post_thumbnail_id($post->ID);
 		$image_ids = $image_id ? [ $image_id ] : [];
 		$images    = [];
 		foreach ($image_ids as $image_id) {
@@ -200,7 +199,7 @@ abstract class Utils {
 			);
 		}
 
-		return !!$children_to_array ? [
+		return $children_to_array ? [
 			'children' => $children_to_array,
 		] : [];
 	}
@@ -319,17 +318,27 @@ abstract class Utils {
 	 * @return int|null
 	 */
 	public static function get_top_post_id( int $post_id ): int|null {
+
+		$cache_key   = "top_post_id_{$post_id}";
+		$top_post_id = \wp_cache_get( $cache_key );
+		if ( $top_post_id ) {
+			return (int) $top_post_id;
+		}
+
 		$ancestors = \get_post_ancestors( $post_id );
 		if ( empty( $ancestors ) ) {
 			return null;
 		}
 		// 取最後一個
-		return $ancestors[ count( $ancestors ) - 1 ] ?? null;
+		$top_post_id = $ancestors[ count( $ancestors ) - 1 ];
+
+		\wp_cache_set( $cache_key, $top_post_id );
+		return $top_post_id;
 	}
 
 
 	/**
-	 * 取得扁平的子孫 post ids
+	 * 取得扁平的子孫 post ids，不包含頂層 id
 	 * 階層子孫結構都打平
 	 *
 	 * @param int $post_id 文章 ID.
@@ -362,7 +371,7 @@ abstract class Utils {
 
 	/**
 	 * 分離參數
-	 * 會從前端傳入 'meta_keys', 'with_description', 'depth', 'recursive_args' 等參數
+	 * 會從前端傳入 'meta_keys', 'with_description', 'depth', 'recursive_args' 等 array 參數
 	 * 這個 function 會將這些參數分離出來，給後續 function 使用
 	 *
 	 * @param array<string, mixed> $args 參數.

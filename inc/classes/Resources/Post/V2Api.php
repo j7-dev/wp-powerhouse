@@ -382,6 +382,7 @@ final class V2Api extends ApiBase {
 			// @phpstan-ignore-next-line
 			$update_result = \wp_update_post($data);
 
+			/** @var int|\WP_Error $update_result */
 			if ( !is_numeric( $update_result ) ) {
 				return $update_result;
 			}

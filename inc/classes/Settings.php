@@ -107,14 +107,14 @@ final class Settings {
 		$key = self::KEY;
 
 		// 驗證 nonce
-		if (!isset($_POST[ "{$key}_nonce" ]) || !\wp_verify_nonce($_POST[ "{$key}_nonce" ], "{$key}_action")) {
+		if (!isset($_POST[ "{$key}_nonce" ]) || !\wp_verify_nonce((string) $_POST[ "{$key}_nonce" ], "{$key}_action")) {
 			\wp_die('安全檢查失敗');
 		}
 
 		// 獲取並清理表單數據
 		$data = [];
 		foreach ($fields as $field) {
-			$data[ $field ] = \sanitize_text_field($_POST[ $field ] ?? '');
+			$data[ $field ] = \sanitize_text_field((string) $_POST[ $field ]);
 		}
 
 		$update_success = \update_option($key, $data);

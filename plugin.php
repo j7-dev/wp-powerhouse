@@ -82,7 +82,7 @@ final class Plugin {
 	 */
 	public function activate(): void {
 		require_once __DIR__ . '/inc/classes/Domains/Limit/Utils/CreateTable.php';
-		Domains\Limit\Utils\CreateTable::create_itemmeta_table();
+		Resources\Limit\Utils\CreateTable::create_itemmeta_table();
 	}
 }
 

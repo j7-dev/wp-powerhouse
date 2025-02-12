@@ -503,7 +503,6 @@ final class V2Api extends ApiBase {
 	 *  product_cats: array{id: string, name: string, slug: string}[],
 	 *  product_tags: array{id: string, name: string, slug: string}[],
 	 *  top_sales_products: array{id: string, name: string, slug: string}[],
-
 	 *  max_price: float,
 	 *  min_price: float,
 	 * ...
@@ -529,11 +528,19 @@ final class V2Api extends ApiBase {
 			'min_price' => $min_price,
 		] = Utils::get_max_min_prices();
 
+		/** @var array{
+		 *  product_cats: array{id: string, name: string, slug: string}[],
+		 *  product_tags: array{id: string, name: string, slug: string}[],
+		 *  top_sales_products: array{id: string, name: string, slug: string}[],
+		 *  max_price: float,
+		 *  min_price: float,
+		 * ...
+		 * } $options
+		*/
 		$options = \apply_filters(
 			'powerhouse/product/get_options',
 			[
 				'product_cats'       => $formatted_cats,
-
 				'product_tags'       => $formatted_tags,
 				'top_sales_products' => $top_sales_products,
 				'max_price'          => $max_price,

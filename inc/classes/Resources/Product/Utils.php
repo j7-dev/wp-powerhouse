@@ -136,6 +136,7 @@ abstract class Utils {
 		$images            = [];
 		foreach ($image_ids as $image_id) {
 			$image_info = WP::get_image_info($image_id);
+			/** @var array{id: string, url: string}|null $image_info */
 			if ($image_info) {
 				$images[] = $image_info;
 			}
