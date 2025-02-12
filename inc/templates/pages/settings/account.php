@@ -5,15 +5,15 @@
  */
 
 use J7\Powerhouse\Plugin;
-use J7\Powerhouse\Settings;
+use J7\Powerhouse\Settings\DTO;
 
-$fields = $args['fields'] ?? [];
+[$field_name, $field_value] = DTO::instance()->get_field_name_and_value('last_name_optional');
 
 $field_args = [
 	'label'       => '使姓氏欄位為非必填',
 	'description' => '啟用後，不再強制要求用戶必須填寫姓氏',
-	'name'        => $fields[1],
-	'value'       => Settings::get($fields[1]),
+	'name'        => $field_name,
+	'value'       => $field_value,
 ];
 
 Plugin::safe_get(

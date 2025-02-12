@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Admin;
 
-use J7\Powerhouse\Settings;
+use J7\Powerhouse\Settings\DTO;
 
 if ( class_exists( 'J7\Powerhouse\Admin\Account' ) ) {
 	return;
@@ -22,7 +22,7 @@ final class Account {
 	 * Constructor
 	 */
 	public function __construct() {
-		$last_name_optional = Settings::get('last_name_optional');
+		$last_name_optional = DTO::instance()->last_name_optional;
 
 		if ($last_name_optional !== 'yes') {
 			return;

@@ -1,25 +1,22 @@
 <?php
-/**
- * Settings
- */
 
 declare (strict_types = 1);
 
-namespace J7\Powerhouse;
+namespace J7\Powerhouse\Settings;
 
 use J7\Powerhouse\Plugin;
+use J7\WpUtils\Classes\WP;
 
 
-if ( class_exists( 'J7\Powerhouse\Settings' ) ) {
+if ( class_exists( 'J7\Powerhouse\Settings\FrontEnd' ) ) {
 	return;
 }
 /**
- * Class Settings
+ * Class FrontEnd
  */
-final class Settings {
+final class FrontEnd {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	const KEY = 'powerhouse_settings';
 
 	/**
 	 * @var array<string, mixed>
@@ -27,41 +24,12 @@ final class Settings {
 	 */
 	public static $settings = [];
 
-
-	/**
-	 * 取得設定值
-	 *
-	 * @param string|null $key 設定值的鍵
-	 *
-	 * @return mixed 設定值
-	 */
-	public static function get( ?string $key = null ) {
-
-		$default_value = [
-			'delay_email' => 'yes',
-		];
-
-		if (!self::$settings) {
-			$settings = (array) \get_option(self::KEY, $default_value);
-			$settings = \wp_parse_args($settings, $default_value);
-		} else {
-			$settings = self::$settings;
-		}
-
-		if (!$key) {
-			return $settings;
-		}
-
-		return $settings[ $key ] ?? '';
-	}
-
 	/**
 	 * Render Powerhouse Page Callback
 	 */
 	public static function powerhouse_settings_page_callback(): void {
-		$key      = self::KEY;
-		$fields   = [ 'delay_email', 'last_name_optional' ];
-		$is_saved = self::handle_save($fields);
+		$key      = DTO::SETTINGS_KEY;
+		$is_saved = self::handle_save();
 
 		printf(
 		/*html*/'
@@ -79,13 +47,7 @@ final class Settings {
 		',
 		$is_saved ? 'open' : '',
 		\wp_nonce_field("{$key}_action", "{$key}_nonce", true, false),
-		Plugin::safe_get(
-			'settings',
-			[
-				'fields' => $fields,
-			],
-			false
-		)
+		Plugin::safe_get('settings', null, false)
 		);
 	}
 
@@ -93,34 +55,30 @@ final class Settings {
 	/**
 	 * 儲存表單
 	 *
-	 * @param array<string> $fields 表單欄位
-	 *
 	 * @return bool 是否儲存
 	 */
-	private static function handle_save( $fields = [] ): bool {
+	private static function handle_save(): bool {
 		// phpcs:disable
 		// 檢查是否提交了表單
-		if (($_POST['submit_button'] ?? '') !== '1' || !$fields) {
+		if (($_POST['submit_button'] ?? '') !== '1') {
 			return false;
 		}
 
-		$key = self::KEY;
+		$key = DTO::SETTINGS_KEY;
 
 		// 驗證 nonce
 		if (!isset($_POST[ "{$key}_nonce" ]) || !\wp_verify_nonce((string) $_POST[ "{$key}_nonce" ], "{$key}_action")) {
 			\wp_die('安全檢查失敗');
 		}
 
-		// 獲取並清理表單數據
-		$data = [];
-		foreach ($fields as $field) {
-			$data[ $field ] = \sanitize_text_field((string) $_POST[ $field ]);
+
+		if(!isset($_POST[$key])){
+			return false;
 		}
 
+		$data = WP::sanitize_text_field_deep($_POST[$key], false);
+
 		$update_success = \update_option($key, $data);
-		if($update_success){
-			self::$settings = $data;
-		}
 
 		return $update_success;
 		// phpcs:enable
