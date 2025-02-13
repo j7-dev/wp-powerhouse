@@ -80,7 +80,7 @@ abstract class Utils {
 		$user_registered      = (string) $user->get( 'user_registered' );
 		$user_registered_time = \strtotime($user_registered);
 		$user_avatar_url      = \get_user_meta($user_id, 'user_avatar_url', true);
-		$user_avatar_url      = !!$user_avatar_url ? $user_avatar_url : \get_avatar_url( $user_id );
+		$user_avatar_url      = $user_avatar_url ? $user_avatar_url : \get_avatar_url( $user_id );
 
 		$meta_keys_array = self::get_meta_keys_array( $user, $meta_keys );
 
