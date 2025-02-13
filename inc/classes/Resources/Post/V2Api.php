@@ -91,7 +91,7 @@ final class V2Api extends ApiBase {
 			'post_status'    => 'any',
 			'orderby'        => [
 				'menu_order' => 'ASC',
-				'ID'         => 'ASC',
+				'ID'         => 'DESC',
 				'date'       => 'DESC',
 			],
 		];
@@ -231,7 +231,14 @@ final class V2Api extends ApiBase {
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$body_params = General::parse( $body_params );
 
-		$separated_data = WP::separator( $body_params, 'post', $file_params['files'] ?? [] );
+		$body_params = \apply_filters('powerhouse/post/separator_body_params', $body_params, $request);
+
+		$separated_data = WP::separator( $body_params, 'post', $file_params['images'] ?? [] );
+
+		if ('delete' === ( $separated_data['meta_data']['images'] ?? '' )) {
+			$separated_data['meta_data']['_thumbnail_id'] = '';
+		}
+		unset($separated_data['meta_data']['images']);
 
 		return $separated_data;
 	}
@@ -376,11 +383,12 @@ final class V2Api extends ApiBase {
 			'meta_data' => $meta_data,
 			] = $this->separator( $request );
 
-			$data['ID']         = $id;
 			$data['meta_input'] = $meta_data;
 
-			// @phpstan-ignore-next-line
-			$update_result = \wp_update_post($data);
+			$update_result = Utils::update_post(
+				(int) $id,
+				$data
+			);
 
 			/** @var int|\WP_Error $update_result */
 			if ( !is_numeric( $update_result ) ) {
