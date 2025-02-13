@@ -39,6 +39,8 @@ abstract class Utils {
 
 		$args = \wp_parse_args( $args, $default_args );
 
+		$args = \apply_filters('powerhouse/post/create_post_args', $args);
+
 		/** @var array{ID?: int, post_author?: int, post_date?: string, post_date_gmt?: string, post_content?: string, post_content_filtered?: string, post_title?: string, post_excerpt?: string, ...} $args */
 		return \wp_insert_post($args);
 	}
@@ -178,7 +180,7 @@ abstract class Utils {
 			'post_status' => 'any',
 			'orderby'     => [
 				'menu_order' => 'ASC',
-				'ID'         => 'ASC',
+				'ID'         => 'DESC',
 				'date'       => 'DESC',
 			],
 		];
@@ -289,12 +291,12 @@ abstract class Utils {
 	/**
 	 * Update a post
 	 *
-	 * @param string               $id   post id.
+	 * @param string|int           $id   post id.
 	 * @param array<string, mixed> $args Arguments.
 	 *
 	 * @return integer|\WP_Error
 	 */
-	public static function update_post( string $id, array $args ): int|\WP_Error {
+	public static function update_post( string|int $id, array $args ): int|\WP_Error {
 		$default_args = [
 			'ID'            => $id,
 			'post_title'    => '新文章',
