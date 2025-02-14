@@ -5,7 +5,7 @@ declare (strict_types = 1);
 namespace J7\Powerhouse\Compatibility;
 
 use J7\Powerhouse\Plugin;
-use J7\Powerhouse\Resources\Limit\Utils\CreateTable;
+use J7\Powerhouse\Domains\Limit\Utils\CreateTable;
 
 /**
  * Compatibility 不同版本間的相容性設定
