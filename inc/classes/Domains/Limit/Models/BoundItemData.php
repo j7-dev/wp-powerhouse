@@ -9,6 +9,8 @@ declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Domains\Limit\Models;
 
+use J7\Powerhouse\Domains\Limit\Utils\MetaCRUD;
+
 /**
  * Class BoundItemData
  */
@@ -65,5 +67,62 @@ class BoundItemData extends Limit {
 			'limit_value' => $this->limit_value,
 			'limit_unit'  => $this->limit_unit,
 		];
+	}
+
+	/**
+	 * 添加使用者 到 ph_access_itemmeta table
+	 *
+	 * @param int        $user_id 使用者 id
+	 * @param ?\WC_Order $order 訂單，不一定有訂單
+	 * @param string     $meta_key meta key 預設為 expire_date
+	 * @return void
+	 * @throws \Exception 授權失敗時拋出例外
+	 */
+	public function grant_user( int $user_id, ?\WC_Order $order = null, $meta_key = 'expire_date' ): void {
+
+		$success = MetaCRUD::update( $this->id, $user_id, $meta_key, $this->calc_expire_date( $order ) );
+
+		if ($success) {
+			\do_action( 'powerhouse/limit/grant_user_success', $user_id, $order, $this, $meta_key );
+		} else {
+			\do_action( 'powerhouse/limit/grant_user_failed', $user_id, $order, $this, $meta_key );
+			throw new \Exception(
+			\sprintf(
+			__( 'Grant user access failed, item id: %1$d, user id: #%2$d, order id: %3$s, meta_key: %4$s', 'powerhouse' ),
+			$this->id,
+			$user_id,
+			$order ? "#{$order->get_id()}" : '',
+			$meta_key
+			)
+			);
+
+		}
+	}
+
+	/**
+	 * 撤銷使用者
+	 *
+	 * @param int        $user_id 使用者 id
+	 * @param ?\WC_Order $order 訂單，不一定有訂單
+	 * @param string     $meta_key meta key 預設為 expire_date
+	 * @return void
+	 * @throws \Exception 撤銷失敗時拋出例外
+	 */
+	public function revoke_user( int $user_id, ?\WC_Order $order = null, $meta_key = 'expire_date' ): void {
+		$success = MetaCRUD::delete( $this->id, $user_id, $meta_key );
+		if ($success) {
+			\do_action( 'powerhouse/limit/revoke_user_success', $user_id, $order, $this, $meta_key );
+		} else {
+			\do_action( 'powerhouse/limit/revoke_user_failed', $user_id, $order, $this, $meta_key );
+			throw new \Exception(
+			\sprintf(
+			__( 'Revoke user access failed, item id: %1$d, user id: #%2$d, order id: %3$s, meta_key: %4$s', 'powerhouse' ),
+			$this->id,
+			$user_id,
+			$order ? "#{$order->get_id()}" : '',
+			$meta_key
+			)
+				);
+		}
 	}
 }
