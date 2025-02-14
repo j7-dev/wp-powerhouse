@@ -41,7 +41,7 @@ final class FrontEnd {
 
 		printf(
 		/*html*/'
-		<div id="powerhouse-settings" class="tailwind">
+		<div id="powerhouse-settings">
 			<form id="powerhouse-settings-form" class="pr-5 mt-8" method="post" action="%4$s">
 				<sl-alert class="mb-8" variant="success" %1$s>
 					<sl-icon slot="icon" name="check2-circle"></sl-icon>

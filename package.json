@@ -39,6 +39,7 @@
 		"archiver": "^7.0.1",
 		"autoprefixer": "^10.4.13",
 		"change-case-all": "^2.1.0",
+		"daisyui": "^4.12.23",
 		"env-cmd": "^10.1.0",
 		"eslint": "^8.34.0",
 		"eslint-config-airbnb": "^19.0.4",

@@ -4,6 +4,7 @@ declare (strict_types = 1);
 
 namespace J7\Powerhouse\Theme;
 
+use J7\Powerhouse\Plugin;
 use J7\Powerhouse\Settings\DTO;
 
 if ( class_exists( 'J7\Powerhouse\Theme\FrontEnd' ) ) {
@@ -38,6 +39,16 @@ final class FrontEnd {
 		}
 
 		$theme = DTO::instance()->theme;
-		return "{$output} data-theme=\"{$theme}\"";
+		return "{$output} id=\"tw\" data-theme=\"{$theme}\"";
+	}
+
+
+	/**
+	 * 渲染主題按鈕
+	 *
+	 * @return void
+	 */
+	public static function render_button() {
+		Plugin::get('theme');
 	}
 }

@@ -2,17 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-	margin: 0 !important;
-}
-
-@media print {
-	html,
+#tw {
 	body {
-		height: 100%; /* Use 100% here to support printing more than a single page*/
-		width: 297mm;
 		margin: 0 !important;
-		padding: 10mm !important;
-		overflow: hidden;
+	}
+
+	@media print {
+		html,
+		body {
+			height: 100%; /* Use 100% here to support printing more than a single page*/
+			width: 297mm;
+			margin: 0 !important;
+			padding: 10mm !important;
+			overflow: hidden;
+		}
 	}
 }

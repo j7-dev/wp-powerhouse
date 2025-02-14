@@ -57,7 +57,7 @@ final class Entry {
 		$blog_name = \get_bloginfo('name');
 		?>
 		<!doctype html>
-		<html lang="zh_tw">
+		<html id="tw" lang="zh_tw">
 
 		<head>
 			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/inc/assets/dist/css/index.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
@@ -67,7 +67,7 @@ final class Entry {
 		<?php \do_action('powerhouse_admin_head'); ?>
 		</head>
 
-		<body class="tailwind" style="background-color: #f5f5f5;">
+		<body style="background-color: #f5f5f5;">
 
 		<?php
 		Plugin::get('powerhouse');

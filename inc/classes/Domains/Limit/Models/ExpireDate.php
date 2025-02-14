@@ -8,8 +8,6 @@ declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Domains\Limit\Models;
 
-use J7\Powerhouse\Domains\Limit\Utils\MetaCRUD;
-
 /**
  * Class ExpireDate
  */
@@ -52,14 +50,13 @@ class ExpireDate {
 
 	/**
 	 * Constructor
+	 * 0 = 無期限
+	 * timestamp = 到期日
+	 * subscription_{訂閱id} = 綁定訂閱
 	 *
 	 * @param int|string $expire_date 到期日 timestamp | subscription_{訂閱id}
 	 */
 	public function __construct( public int|string $expire_date ) {
-		if (\is_numeric($expire_date)) {
-			$this->timestamp = (int) $expire_date;
-		}
-
 		if (class_exists('WC_Subscription')) {
 			$this->set_subscription();
 		}
@@ -100,13 +97,26 @@ class ExpireDate {
 	 * @return void
 	 */
 	public function set_is_expired(): void {
+		// 先判斷非訂閱情況
 		if (!$this->is_subscription) {
-			$expire_date = (int) $this->expire_date;
-			// 0 = 無期限，不會過期
-			$this->is_expired = $expire_date && $expire_date < time();
+			if (\is_numeric($this->expire_date)) {
+				$this->timestamp = (int) $this->expire_date;
+				// 0 = 無期限，不會過期
+				if (0 === $this->timestamp) {
+					$this->is_expired = false;
+					return;
+				}
+				// 到期日小於現在時間，就會過期
+				$this->is_expired = $this->timestamp < time();
+				return;
+			}
+
+			// 其他非數字都會過期
+			$this->is_expired = true;
 			return;
 		}
 
+		// 如果是訂閱
 		$subscription = \wcs_get_subscription($this->subscription_id);
 		if (!$subscription) {
 			$this->is_expired = true;
