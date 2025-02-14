@@ -19,6 +19,7 @@ final class Loader {
 	private $traits = [
 		'J7\WpUtils\Traits\PluginTrait',
 		'J7\WpUtils\Traits\SingletonTrait',
+		'J7\WpUtils\Traits\LogTableCreationTrait',
 	];
 
 	/**
@@ -26,7 +27,25 @@ final class Loader {
 	 *
 	 * @var array<string>
 	 */
-	private $classes = [];
+	private $classes = [
+		'J7\WpUtils\Classes\ApiBase',
+		'J7\WpUtils\Classes\Auth',
+		'J7\WpUtils\Classes\DB',
+		'J7\WpUtils\Classes\DTO',
+		'J7\WpUtils\Classes\ErrorLog',
+		'J7\WpUtils\Classes\File',
+		'J7\WpUtils\Classes\General',
+		'J7\WpUtils\Classes\Log',
+		'J7\WpUtils\Classes\LogService',
+		'J7\WpUtils\Classes\Meta',
+		'J7\WpUtils\Classes\Point',
+		'J7\WpUtils\Classes\PointService',
+		'J7\WpUtils\Classes\Statement',
+		'J7\WpUtils\Classes\UniqueArray',
+		'J7\WpUtils\Classes\WC',
+		'J7\WpUtils\Classes\WC\Product',
+		'J7\WpUtils\Classes\WP',
+	];
 
 	/**
 	 * Constructor.
