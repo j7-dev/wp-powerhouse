@@ -43,10 +43,8 @@ final class Bootstrap {
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
 
-		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
-
-		\add_filter( 'body_class', [ __CLASS__, 'add_tailwind_class' ] );
-		\add_filter( 'admin_body_class', [ __CLASS__, 'add_tailwind_class_admin' ] );
+		\add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_frontend_assets' ] );
+		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_admin_assets' ] );
 
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
 	}
@@ -93,11 +91,23 @@ final class Bootstrap {
 	}
 
 	/**
-	 * Enqueue assets
+	 * 前端 css
 	 *
 	 * @return void
 	 */
-	public static function enqueue_assets(): void {
+	public static function enqueue_frontend_assets(): void {
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
+	}
+
+	/**
+	 * 後台 css
+	 *
+	 * @return void
+	 */
+	public static function enqueue_admin_assets(): void {
+
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
+
 		if (\method_exists(General::class, 'in_url')) { // @phpstan-ignore-line
 			if (!General::in_url(
 			[
@@ -107,8 +117,6 @@ final class Bootstrap {
 				return;
 			}
 		}
-
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
 
 		$admin_handle = Plugin::$kebab . '-admin';
 		\wp_enqueue_script(
@@ -129,26 +137,6 @@ final class Bootstrap {
 		}
 	}
 
-	/**
-	 * 為前台 body 添加 tailwind class
-	 *
-	 * @param array<string> $classes 現有的 body classes
-	 * @return array<string> 修改後的 body classes
-	 */
-	public static function add_tailwind_class( array $classes ): array {
-		$classes[] = 'tailwind';
-		return $classes;
-	}
-
-	/**
-	 * 為後台 body 添加 tailwind class
-	 *
-	 * @param string $classes 現有的 admin body classes
-	 * @return string 修改後的 admin body classes
-	 */
-	public static function add_tailwind_class_admin( $classes ) {
-		return $classes . ' tailwind';
-	}
 
 	/**
 	 * Check LC array
