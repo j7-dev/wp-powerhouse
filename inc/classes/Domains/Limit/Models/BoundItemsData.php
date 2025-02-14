@@ -9,8 +9,6 @@ declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Domains\Limit\Models;
 
-use J7\Powerhouse\Domains\Limit\Utils\MetaCRUD;
-
 /**
  * Class BoundItemsData
  */
@@ -170,72 +168,6 @@ class BoundItemsData {
 		\delete_post_meta( $this->product_id, $ids_meta_key );
 		foreach ($ids as $id) {
 			\add_post_meta( $this->product_id, $ids_meta_key, $id );
-		}
-	}
-
-
-	/**
-	 * 添加使用者 到 ph_access_itemmeta table
-	 *
-	 * @param int        $user_id 使用者 id
-	 * @param ?\WC_Order $order 訂單，不一定有訂單
-	 * @param string     $meta_key meta key 預設為 expire_date
-	 * @return void
-	 * @throws \Exception 授權失敗時拋出例外
-	 */
-	public function grant_user( int $user_id, ?\WC_Order $order = null, $meta_key = 'expire_date' ): void {
-		/** @var BoundItemData[] $bound_items_data */
-		$bound_items_data = $this->get_data();
-
-		foreach ($bound_items_data as $bound_item_data) {
-			$success = MetaCRUD::update( $bound_item_data->id, $user_id, $meta_key, $bound_item_data->calc_expire_date( $order ) );
-
-			if ($success) {
-				\do_action( 'powerhouse/limit/grant_user_success', $user_id, $order, $bound_item_data, $meta_key );
-			} else {
-				\do_action( 'powerhouse/limit/grant_user_failed', $user_id, $order, $bound_item_data, $meta_key );
-				throw new \Exception(
-				\sprintf(
-				__( 'Grant user access failed, item id: %1$d, user id: #%2$d, order id: %3$s, meta_key: %4$s', 'powerhouse' ),
-				$bound_item_data->id,
-				$user_id,
-				$order ? "#{$order->get_id()}" : '',
-				$meta_key
-				)
-				);
-			}
-		}
-	}
-
-	/**
-	 * 撤銷使用者
-	 *
-	 * @param int        $user_id 使用者 id
-	 * @param ?\WC_Order $order 訂單，不一定有訂單
-	 * @param string     $meta_key meta key 預設為 expire_date
-	 * @return void
-	 * @throws \Exception 撤銷失敗時拋出例外
-	 */
-	public function revoke_user( int $user_id, ?\WC_Order $order = null, $meta_key = 'expire_date' ): void {
-		/** @var BoundItemData[] $bound_items_data */
-		$bound_items_data = $this->get_data();
-
-		foreach ($bound_items_data as $bound_item_data) {
-			$success = MetaCRUD::delete( $bound_item_data->id, $user_id, $meta_key );
-			if ($success) {
-				\do_action( 'powerhouse/limit/revoke_user_success', $user_id, $order, $bound_item_data, $meta_key );
-			} else {
-				\do_action( 'powerhouse/limit/revoke_user_failed', $user_id, $order, $bound_item_data, $meta_key );
-				throw new \Exception(
-				\sprintf(
-				__( 'Revoke user access failed, item id: %1$d, user id: #%2$d, order id: %3$s, meta_key: %4$s', 'powerhouse' ),
-				$bound_item_data->id,
-				$user_id,
-				$order ? "#{$order->get_id()}" : '',
-				$meta_key
-				)
-					);
-			}
 		}
 	}
 }
