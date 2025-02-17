@@ -61,14 +61,21 @@ module.exports = {
 					display: 'block',
 				},
 				'.tw-inline': {
-					display: 'inline'
-				}
+					display: 'inline',
+				},
 			}
 			addUtilities(newUtilities, ['responsive', 'hover'])
 		},
 	],
 	safelist: ['opacity-50'],
-	blocklist: ['hidden', 'columns-1', 'columns-2', 'fixed', 'block', 'inline'],
+	blocklist: [
+		'hidden',
+		'columns-1',
+		'columns-2',
+		'fixed',
+		'block',
+		'inline',
+	],
 	daisyui: {
 		themes: [
 			{

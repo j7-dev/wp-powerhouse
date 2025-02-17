@@ -16,8 +16,11 @@ final class DTO extends BaseDTO {
 
 	const SETTINGS_KEY = 'powerhouse_settings';
 
-	/** @var string $theme 主題 */
+	/** @var string $theme 選擇主題 */
 	public string $theme = 'power';
+
+	/** @var array<string, string> $theme_css 當選擇 custom 主題時，使用自訂的 css */
+	public array $theme_css = [];
 
 	/** @var string $delay_email 延遲寄信 */
 	public string $delay_email = 'yes';
@@ -27,6 +30,8 @@ final class DTO extends BaseDTO {
 
 	/** @var string $enable_api_booster 啟用 API 加速器 */
 	public string $enable_api_booster = 'no';
+
+
 
 	/** @var self 實例 */
 	private static $instance = null;

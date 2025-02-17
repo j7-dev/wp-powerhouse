@@ -2,7 +2,8 @@ import { cn } from 'antd-toolkit'
 import { Form, FormInstance } from 'antd'
 
 const Option = ({ theme, form }: { theme: string; form: FormInstance }) => {
-	const watchTheme = Form.useWatch(['powerhouse_settings', 'theme'], form)
+	const watchTheme =
+		Form.useWatch(['powerhouse_settings', 'theme'], form) || 'light'
 	return (
 		<div className="relative cursor-pointer ">
 			<div

@@ -2,46 +2,28 @@ import { memo } from 'react'
 import { Heading } from 'antd-toolkit'
 import { Form } from 'antd'
 import Option from './Option'
+import Custom from './Custom'
+import { THEME_MAPPER } from './constants'
+import { getStyle } from './utils'
+import hoodie from '@/assets/images/hoodie.jpg'
 
 const { Item } = Form
 
-const themes = [
-	'power',
-	'light',
-	'dark',
-	'cupcake',
-	'bumblebee',
-	'emerald',
-	'corporate',
-	'synthwave',
-	'retro',
-	'cyberpunk',
-	'valentine',
-	'halloween',
-	'garden',
-	'forest',
-	'aqua',
-	'lofi',
-	'pastel',
-	'fantasy',
-	'wireframe',
-	'black',
-	'luxury',
-	'dracula',
-	'cmyk',
-	'autumn',
-	'business',
-	'night',
-	'winter',
-	'dim',
-	'nord',
-	'sunset',
-]
-
 const index = () => {
 	const form = Form.useFormInstance()
-	const watchTheme = Form.useWatch(['powerhouse_settings', 'theme'], form)
+	const watchTheme =
+		Form.useWatch(['powerhouse_settings', 'theme'], form) || 'light'
+	// 自訂的
+	const watchCustomThemeOKLCH =
+		Form.useWatch(['powerhouse_settings', 'theme_css'], form) || {}
 
+	//	選中的
+	const theme =
+		THEME_MAPPER.find(({ theme }) => theme === watchTheme) || THEME_MAPPER?.[0]
+
+	const mergedTheme = { ...theme, ...watchCustomThemeOKLCH }
+
+	const themeStyle = getStyle(mergedTheme)
 	return (
 		<>
 			<Item
@@ -51,14 +33,17 @@ const index = () => {
 			/>
 			<div className="flex flex-col md:flex-row gap-8">
 				<div className="w-full max-w-[400px]">
+					<Custom />
 					<Heading className="mt-8">選擇主題</Heading>
 					<div className="rounded-box grid grid-cols-2 gap-4">
-						{themes.map((theme) => (
+						<Option theme="custom" form={form} />
+						{THEME_MAPPER.map(({ theme }) => (
 							<Option key={theme} theme={theme} form={form} />
 						))}
 					</div>
 				</div>
-				<div data-theme={watchTheme} className="flex-1 bg-transparent">
+				<div data-theme="custom" className="flex-1 bg-transparent">
+					<style>{themeStyle}</style>
 					<div className="pc-mockup-browser bg-base-300 border">
 						<div className="pc-mockup-browser-toolbar">
 							<div className="pc-input text-center">preview</div>
@@ -70,7 +55,7 @@ const index = () => {
 									<figure>
 										<img
 											className="w-full h-full object-cover"
-											src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+											src={hoodie}
 											alt="Shoes"
 										/>
 									</figure>
