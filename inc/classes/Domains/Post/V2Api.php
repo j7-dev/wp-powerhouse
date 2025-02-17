@@ -231,6 +231,7 @@ final class V2Api extends ApiBase {
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$body_params = General::parse( $body_params );
 
+		/** @var array<string, mixed> $body_params */
 		$body_params = \apply_filters('powerhouse/post/separator_body_params', $body_params, $request);
 
 		$separated_data = WP::separator( $body_params, 'post', $file_params['images'] ?? [] );

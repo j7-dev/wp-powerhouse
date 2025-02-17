@@ -108,7 +108,7 @@ final class Bootstrap {
 
 		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
 
-		if (\method_exists(General::class, 'in_url')) { // @phpstan-ignore-line
+		if (\method_exists(General::class, 'in_url')) {
 			if (!General::in_url(
 			[
 				'admin.php?page=powerhouse',
@@ -131,7 +131,7 @@ final class Bootstrap {
 		\wp_enqueue_style( 'shoelace' );
 		\wp_enqueue_script( 'shoelace' );
 
-		if (\method_exists(Plugin::class, 'add_module_handle')) { // @phpstan-ignore-line
+		if (\method_exists(Plugin::class, 'add_module_handle')) {
 			Plugin::instance()->add_module_handle($admin_handle, 'defer');
 			Plugin::instance()->add_module_handle('shoelace', '');
 		}

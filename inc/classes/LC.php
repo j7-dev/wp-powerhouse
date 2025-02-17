@@ -374,8 +374,8 @@ final class LC {
 		/**
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
-		$saved_codes = \get_option(self::KEY, []);
-		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
+		$saved_codes                  = \get_option(self::KEY, []);
+		$saved_codes                  = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 		$saved_codes[ $product_slug ] = $data['code'];
 
 		\update_option(self::KEY, $saved_codes);
@@ -417,7 +417,7 @@ final class LC {
 		 */
 			$lc_status = JsAesPhp::decrypt($value, Plugin::$kebab);
 
-			if (!is_array($lc_status)) { // @phpstan-ignore-line
+			if (!is_array($lc_status)) {
 				return false;
 			}
 
