@@ -4,12 +4,18 @@ import useOptions from './hooks/useOptions'
 import useSave from './hooks/useSave'
 import General from './General'
 import Lab from './Lab'
+import Theme from './Theme'
 
 const items: TabsProps['items'] = [
 	{
 		key: 'general',
 		label: '一般設定',
 		children: <General />,
+	},
+	{
+		key: 'theme',
+		label: '主題顏色',
+		children: <Theme />,
 	},
 	{
 		key: 'lab',
