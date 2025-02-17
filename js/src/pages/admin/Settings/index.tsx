@@ -3,7 +3,6 @@ import { Form, Button, Tabs, TabsProps } from 'antd'
 import useOptions from './hooks/useOptions'
 import useSave from './hooks/useSave'
 import General from './General'
-import Appearance from './Appearance'
 import Lab from './Lab'
 
 const items: TabsProps['items'] = [
@@ -11,11 +10,6 @@ const items: TabsProps['items'] = [
 		key: 'general',
 		label: '一般設定',
 		children: <General />,
-	},
-	{
-		key: 'appearance',
-		label: '外觀設定',
-		children: <Appearance />,
 	},
 	{
 		key: 'lab',

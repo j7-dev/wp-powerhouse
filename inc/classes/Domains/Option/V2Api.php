@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Option;
 
+use J7\Powerhouse\Settings\DTO;
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\ApiBase;
 
@@ -16,18 +17,10 @@ use J7\WpUtils\Classes\ApiBase;
 final class V2Api extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Namespace
-	 *
-	 * @var string
-	 */
+	/** @var string Namespace */
 	protected $namespace = 'v2/powerhouse';
 
-	/**
-	 * APIs
-	 *
-	 * @var array{endpoint:string,method:string,permission_callback: ?callable }[]
-	 */
+	/** @var array{endpoint:string,method:string,permission_callback: ?callable }[] */
 	protected $apis = [
 		[
 			'endpoint'            => 'options',
@@ -46,16 +39,8 @@ final class V2Api extends ApiBase {
 		],
 	];
 
-	/**
-	 * Fields
-	 *
-	 * @var array<string, string|int> $fields 允許獲取 & 預設值
-	 */
-	private $fields = [
-		'bunny_library_id'     => '',
-		'bunny_cdn_hostname'   => '',
-		'bunny_stream_api_key' => '',
-	];
+	/** @var array<string, mixed> $fields 允許獲取 & 預設值，預設與 DTO 同步 */
+	private $fields = [];
 
 	/**
 	 * 不需要 sanitize 的 key
@@ -69,6 +54,13 @@ final class V2Api extends ApiBase {
 	 */
 	public function __construct() {
 		parent::__construct();
+
+		$this->fields             = [
+			'bunny_library_id'     => '',
+			'bunny_cdn_hostname'   => '',
+			'bunny_stream_api_key' => '',
+			DTO::SETTINGS_KEY      => [],
+		];
 		$this->fields             = \apply_filters( 'powerhouse/option/allowed_fields', $this->fields ); // @phpstan-ignore-line
 		$this->skip_sanitize_keys = \apply_filters( 'powerhouse/option/skip_sanitize_keys', $this->skip_sanitize_keys ); // @phpstan-ignore-line
 	}

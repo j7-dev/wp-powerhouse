@@ -27,6 +27,7 @@ final class Compatibility {
 		}
 
 		Loader::instance();
+		ApiOptimize::instance();
 
 		// 排程只執行一次的兼容設定
 		\add_action( 'init', [ __CLASS__, 'compatibility_action_scheduler' ] );

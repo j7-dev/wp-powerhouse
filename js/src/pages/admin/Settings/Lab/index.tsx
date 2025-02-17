@@ -8,7 +8,7 @@ const index = () => {
 				<Heading className="mt-8">性能提升</Heading>
 				<Switch
 					formItemProps={{
-						name: ['pc_enable_api_booster'],
+						name: ['powerhouse_settings', 'enable_api_booster'],
 						label: '啟用後台 API 加速器，約提速 60% ~ 100%',
 						tooltip:
 							'開啟後，只會在 Power Course 後台加載 Woocommerce, Woocommerce Subscriptions, Power Course, Powerhouse4個外掛，其餘外掛不會加載，實現加速效果',

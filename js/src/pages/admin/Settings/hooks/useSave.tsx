@@ -1,11 +1,10 @@
-import { useCustomMutation, useApiUrl, useInvalidate } from '@refinedev/core'
+import { useCustomMutation, useApiUrl } from '@refinedev/core'
 import { FormInstance, message } from 'antd'
 import { useCallback } from 'react'
 
 const useSave = ({ form }: { form: FormInstance }) => {
 	const apiUrl = useApiUrl()
 	const mutation = useCustomMutation()
-	const invalidate = useInvalidate()
 	const { mutate } = mutation
 
 	const handleSave = useCallback(() => {
@@ -30,11 +29,6 @@ const useSave = ({ form }: { form: FormInstance }) => {
 
 						// 刷新頁面
 						window.location.reload()
-
-						// 使所有的query cache失效
-						// invalidate({
-						// 	invalidates: ['all'],
-						// })
 					},
 				},
 			)

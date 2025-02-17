@@ -25,6 +25,9 @@ final class DTO extends BaseDTO {
 	/** @var string $last_name_optional 姓氏可選 */
 	public string $last_name_optional = 'yes';
 
+	/** @var string $enable_api_booster 啟用 API 加速器 */
+	public string $enable_api_booster = 'no';
+
 	/** @var self 實例 */
 	private static $instance = null;
 
