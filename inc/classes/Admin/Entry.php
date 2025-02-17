@@ -10,7 +10,7 @@ namespace J7\Powerhouse\Admin;
 
 use J7\Powerhouse\Plugin;
 use J7\Powerhouse\Bootstrap;
-
+use J7\Powerhouse\Utils\Base;
 
 /**
  * Class Entry
@@ -38,7 +38,7 @@ final class Entry {
 		// Make sure we're on the right screen.
 		$screen = \get_current_screen();
 
-		if ('toplevel_page_' . Plugin::$kebab !== $screen?->id) {
+		if ( 'powerhouse_page_powerhouse-settings' !== $screen?->id) {
 			return;
 		}
 
@@ -53,36 +53,34 @@ final class Entry {
 	 * Credit: SliceWP Setup Wizard.
 	 */
 	public static function render_page(): void {
-		\do_action('powerhouse_before_render_page');
+		Bootstrap::enqueue_admin_assets();
+		$id        = substr(Base::APP1_SELECTOR, 1);
 		$blog_name = \get_bloginfo('name');
 		?>
 		<!doctype html>
-		<html id="tw" lang="zh_tw">
+		<html <?php language_attributes(); ?>>
 
 		<head>
-			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/inc/assets/dist/css/index.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
+			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/js/dist/css/style.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
 			<meta charset="UTF-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<title>Powerhouse 後台 | <?php echo $blog_name; ?></title>
-		<?php \do_action('powerhouse_admin_head'); ?>
 		</head>
 
-		<body style="background-color: #f5f5f5;">
-
+		<body>
+			<main id="<?php echo $id; ?>"></main>
 		<?php
-		Plugin::get('powerhouse');
 		/**
 		 * Prints any scripts and data queued for the footer.
 		 *
 		 * @since 2.8.0
 		 */
 		\do_action('admin_print_footer_scripts');
-		\do_action('powerhouse_admin_footer');
+
 		?>
 		</body>
 
 		</html>
 		<?php
-		\do_action('powerhouse_after_render_page');
 	}
 }

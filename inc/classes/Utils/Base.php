@@ -17,7 +17,8 @@ if ( class_exists( 'J7\Powerhouse\Utils\Base' ) ) {
  * Class Base
  */
 abstract class Base {
-	public const PRIMARY_COLOR = 'var(--fallback-p,oklch(var(--p)/1))';
+	const PRIMARY_COLOR = 'var(--fallback-p,oklch(var(--p)/1))';
+	const APP1_SELECTOR = '#powerhouse_settings';
 
 	/**
 	 * Set API auth

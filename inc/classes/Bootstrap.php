@@ -8,6 +8,8 @@ declare (strict_types = 1);
 namespace J7\Powerhouse;
 
 use J7\WpUtils\Classes\General;
+use J7\Powerhouse\Utils\Base;
+use Kucrut\Vite;
 
 if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
 	return;
@@ -27,7 +29,7 @@ final class Bootstrap {
 		Compatibility\Compatibility::instance();
 
 		Settings\FrontEnd::instance();
-		// Admin\Entry::instance();
+		Admin\Entry::instance();
 		Admin\Debug::instance();
 		Admin\Account::instance();
 		// Admin\OrderDetail::instance();
@@ -91,12 +93,12 @@ final class Bootstrap {
 	}
 
 	/**
-	 * 前端 css
+	 * 前端載入統一樣式 css
 	 *
 	 * @return void
 	 */
 	public static function enqueue_frontend_assets(): void {
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/front.min.css', [], Plugin::$version );
 	}
 
 	/**
@@ -106,35 +108,59 @@ final class Bootstrap {
 	 */
 	public static function enqueue_admin_assets(): void {
 
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/inc/assets/dist/css/index.css', [], Plugin::$version );
+		// 後台載入統一樣式
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/admin.min.css', [], Plugin::$version );
 
-		if (\method_exists(General::class, 'in_url')) {
-			if (!General::in_url(
+		if (!General::in_url(
 			[
 				'admin.php?page=powerhouse',
 			]
 			)) {
-				return;
-			}
+			return;
 		}
 
-		$admin_handle = Plugin::$kebab . '-admin';
-		\wp_enqueue_script(
-		$admin_handle,
-		Plugin::$url . '/inc/assets/dist/admin.js',
-		[ 'jquery' ],
-		Plugin::$version,
-		true
+		// JS 按需載入
+		Vite\enqueue_asset(
+			Plugin::$dir . '/js/dist',
+			'js/src/main.tsx',
+			[
+				'handle'    => Plugin::$kebab,
+				'in-footer' => true,
+			]
 		);
 
-		// CDN shoelace
-		\wp_enqueue_style( 'shoelace' );
-		\wp_enqueue_script( 'shoelace' );
+		$post_id   = \get_the_ID();
+		$permalink = $post_id ? \get_permalink( $post_id ) : '';
 
-		if (\method_exists(Plugin::class, 'add_module_handle')) {
-			Plugin::instance()->add_module_handle($admin_handle, 'defer');
-			Plugin::instance()->add_module_handle('shoelace', '');
-		}
+		/** @var array<string> $active_plugins */
+		$active_plugins = \get_option( 'active_plugins', [] );
+
+		$encrypt_env = Base::simple_encrypt(
+			[
+				'SITE_URL'             => \untrailingslashit( \site_url() ),
+				'API_URL'              => \untrailingslashit( \esc_url_raw( rest_url() ) ),
+				'CURRENT_USER_ID'      => \get_current_user_id(),
+				'CURRENT_POST_ID'      => $post_id,
+				'PERMALINK'            => \untrailingslashit( $permalink ),
+				'APP_NAME'             => Plugin::$app_name,
+				'KEBAB'                => Plugin::$kebab,
+				'SNAKE'                => Plugin::$snake,
+				'BUNNY_LIBRARY_ID'     => \get_option( 'bunny_library_id', '' ),
+				'BUNNY_CDN_HOSTNAME'   => \get_option( 'bunny_cdn_hostname', '' ),
+				'BUNNY_STREAM_API_KEY' => \get_option( 'bunny_stream_api_key', '' ),
+				'NONCE'                => \wp_create_nonce( 'wp_rest' ),
+				'APP1_SELECTOR'        => Base::APP1_SELECTOR,
+				'ELEMENTOR_ENABLED'    => \in_array( 'elementor/elementor.php', $active_plugins, true ), // 檢查 elementor 是否啟用
+			]
+		);
+
+		\wp_localize_script(
+			Plugin::$kebab,
+			Plugin::$snake . '_data',
+			[
+				'env' => $encrypt_env,
+			]
+		);
 	}
 
 

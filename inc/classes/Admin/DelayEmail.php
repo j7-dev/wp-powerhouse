@@ -92,7 +92,7 @@ final class DelayEmail {
 		$email_instance = \WC()->mailer()->emails[ $class_name ];
 
 		// check if the method exists
-		if ( ! method_exists(   $email_instance, 'trigger' ) ) {
+		if ( ! method_exists(   $email_instance, 'trigger' ) ) { // @phpstan-ignore-line
 			return;
 		}
 
