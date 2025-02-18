@@ -1,0 +1,114 @@
+div[class^="ant-"] {
+	a {
+		&:focus {
+			box-shadow: none;
+		}
+	}
+
+	ins {
+		@apply text-red-500 ml-1 no-underline;
+	}
+	del {
+		@apply text-gray-400;
+	}
+	input[class*="ant-select"] {
+		box-shadow: none !important;
+		border: none !important;
+		outline: none !important;
+	}
+	span.from {
+		display: none;
+	}
+
+	input[class*="ant-input"],
+	input.ant-select-selection-search-input {
+		min-height: unset;
+		line-height: 1.5;
+	}
+
+	.antd-form-sm {
+		div.ant-form-item {
+			@apply mb-2;
+		}
+		div.ant-form-item-label {
+			@apply pb-0 text-xs;
+		}
+	}
+
+	&:focus-visible {
+		outline: unset;
+	}
+
+	// Radio Group 平均寬度
+	.ant-radio-group {
+		&.w-avg {
+			display: flex;
+			> label {
+				flex: 1;
+				overflow: hidden;
+				position: relative;
+				span {
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					position: absolute;
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+				}
+			}
+		}
+	}
+}
+
+.pc-media-library {
+	&__tabs {
+		.ant-tabs-nav {
+			z-index: 60;
+		}
+
+		&__filter {
+			margin-top: -2rem;
+			padding-top: 2rem;
+		}
+	}
+}
+
+.ant-modal {
+	.pc-media-library {
+		&__tabs {
+			&__filter {
+				margin-top: -1rem;
+				padding-top: 1rem;
+			}
+		}
+	}
+}
+.ant-editor-sortable-tree-node
+	.ant-editor-icon:not([aria-roledescription="sortable"]) {
+	min-width: 28px;
+}
+
+.sticky-card-actions {
+	.ant-card {
+		ul.ant-card-actions {
+			position: sticky;
+			bottom: 0;
+			z-index: 10;
+		}
+		.ant-card {
+			ul.ant-card-actions {
+				bottom: 3.5rem;
+				z-index: 11;
+			}
+		}
+	}
+}
+
+.sticky-tabs-nav {
+	.ant-tabs-nav {
+		position: sticky;
+		top: 0px;
+		z-index: 10;
+		background: #fff;
+	}
+}

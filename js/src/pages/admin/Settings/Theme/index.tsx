@@ -31,8 +31,8 @@ const index = () => {
 				hidden
 				initialValue={'power'}
 			/>
-			<div className="flex flex-col md:flex-row gap-8">
-				<div className="w-full max-w-[400px]">
+			<div className="flex flex-col md:flex-row gap-4">
+				<div className="w-full max-w-[400px] px-3 h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden">
 					<Custom />
 					<Heading className="mt-8">選擇主題</Heading>
 					<div className="rounded-box grid grid-cols-2 gap-4">
@@ -42,7 +42,10 @@ const index = () => {
 						))}
 					</div>
 				</div>
-				<div data-theme="custom" className="flex-1 bg-transparent">
+				<div
+					data-theme="custom"
+					className="flex-1 bg-transparent h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden pr-3"
+				>
 					<style>{themeStyle}</style>
 					<div className="pc-mockup-browser bg-base-300 border">
 						<div className="pc-mockup-browser-toolbar">

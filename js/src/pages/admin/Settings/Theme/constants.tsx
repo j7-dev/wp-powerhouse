@@ -101,6 +101,45 @@ export const COLOR_MAPPER = [
 	},
 ]
 
+export const NUMBER_MAPPER = [
+	{
+		label: 'Rounded Box',
+		key: '--rounded-box',
+		defaultValue: 1,
+		unit: 'rem',
+	},
+	{
+		label: 'Rounded Button',
+		key: '--rounded-btn',
+		defaultValue: 0.5,
+		unit: 'rem',
+	},
+	{
+		label: 'Rounded Badge',
+		key: '--rounded-badge',
+		defaultValue: 1.9,
+		unit: 'rem',
+	},
+	{
+		label: 'Tab Radius',
+		key: '--tab-radius',
+		defaultValue: 0.5,
+		unit: 'rem',
+	},
+	{
+		label: 'Border Button',
+		key: '--border-btn',
+		defaultValue: 1,
+		unit: 'px',
+	},
+	{
+		label: 'Tab Border',
+		key: '--tab-border',
+		defaultValue: 1,
+		unit: 'px',
+	},
+]
+
 export const COLOR_KEYS = COLOR_MAPPER.map(({ key }) => key)
 
 export const THEME_MAPPER = [
