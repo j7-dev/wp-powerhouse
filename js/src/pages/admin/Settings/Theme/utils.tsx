@@ -4,7 +4,8 @@ import { oklch, parse, Oklch, formatHex } from 'culori'
  * @param colorString  oklch string
  * @returns
  */
-export function oklchToHex(colorString: string) {
+export function oklchToHex(colorString: string | undefined) {
+	if (!colorString) return '#000000'
 	// value 是 oklch string, 拆成 l,c,h
 	const [l, c, h] = colorString.split(' ')
 	const oklchColor = oklch({

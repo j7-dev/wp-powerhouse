@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Settings;
 
 use J7\WpUtils\Classes\DTO as BaseDTO;
+use J7\Powerhouse\Theme\DTO as ThemeDTO;
 
 if (class_exists('J7\Powerhouse\Settings\DTO')) {
 	return;
@@ -31,7 +32,16 @@ final class DTO extends BaseDTO {
 	/** @var string $enable_api_booster 啟用 API 加速器 */
 	public string $enable_api_booster = 'no';
 
+	// BunnyCDN 相關
 
+	/** @var string $bunny_library_id BunnyCDN 圖庫 ID */
+	public string $bunny_library_id = '';
+
+	/** @var string $bunny_cdn_hostname BunnyCDN 主機名稱 */
+	public string $bunny_cdn_hostname = '';
+
+	/** @var string $bunny_stream_api_key BunnyCDN 串流 API 金鑰 */
+	public string $bunny_stream_api_key = '';
 
 	/** @var self 實例 */
 	private static $instance = null;
@@ -43,7 +53,8 @@ final class DTO extends BaseDTO {
 	 */
 	public function __construct( array $input = [] ) {
 		parent::__construct($input);
-		self::$instance = $this;
+		self::$instance  = $this;
+		$this->theme_css = ThemeDTO::instance()->to_array();
 	}
 
 	/**
@@ -59,6 +70,7 @@ final class DTO extends BaseDTO {
 
 		/** @var array<string, mixed> $setting_array */
 		if ( null === self::$instance ) {
+			unset($setting_array['theme_css']);
 			new self($setting_array);
 		}
 		return self::$instance;

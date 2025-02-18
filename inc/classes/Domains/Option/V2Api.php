@@ -39,8 +39,10 @@ final class V2Api extends ApiBase {
 		],
 	];
 
-	/** @var array<string, mixed> $fields 允許獲取 & 預設值，預設與 DTO 同步 */
-	private $fields = [];
+	/** @var array<string, mixed> $fields 允許更新的欄位名稱 */
+	private $fields = [
+		DTO::SETTINGS_KEY => [],
+	];
 
 	/**
 	 * 不需要 sanitize 的 key
@@ -55,12 +57,6 @@ final class V2Api extends ApiBase {
 	public function __construct() {
 		parent::__construct();
 
-		$this->fields             = [
-			'bunny_library_id'     => '',
-			'bunny_cdn_hostname'   => '',
-			'bunny_stream_api_key' => '',
-			DTO::SETTINGS_KEY      => [],
-		];
 		$this->fields             = \apply_filters( 'powerhouse/option/allowed_fields', $this->fields ); // @phpstan-ignore-line
 		$this->skip_sanitize_keys = \apply_filters( 'powerhouse/option/skip_sanitize_keys', $this->skip_sanitize_keys ); // @phpstan-ignore-line
 	}
@@ -73,18 +69,14 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_options_callback( \WP_REST_Request $request ): \WP_REST_Response {
-		$options = [];
-		$fields  = $this->fields;
-
-		foreach ( $fields as $option_name => $default ) {
-			$options[ $option_name ] = \get_option( $option_name, $default );
-		}
+		$options                      = [];
+		$options[ DTO::SETTINGS_KEY ] = DTO::instance()->to_array();
 
 		return new \WP_REST_Response(
 			[
 				'code'    => 'get_options_success',
 				'message' => '獲取選項成功',
-				'data'    => $options,
+				'data'    => \apply_filters('powerhouse/options/get_options', $options, $request),
 			],
 			200
 		);

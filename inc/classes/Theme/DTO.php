@@ -107,6 +107,9 @@ final class DTO extends BaseDTO {
 	/** @var string tab_radius 圓角 */
 	public string $tab_radius = '0.5rem';
 
+	/** @var string theme 主題 */
+	public string $theme = 'custom';
+
 	/** @var self 實例 */
 	private static $instance = null;
 
@@ -128,31 +131,79 @@ final class DTO extends BaseDTO {
 	public static function instance() { // phpcs:ignore
 		$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
 		@[ // @phpstan-ignore-line
-			'theme_css' => $theme_css
+			'theme_css' => $theme_css,
+			'theme'     => $theme,
 		]              = $setting_array;
 
-		$theme_css = is_array($theme_css) ? $theme_css : [];
+		$theme_css          = is_array($theme_css) ? $theme_css : [];
+		$theme_css['theme'] = $theme;
 
 		/** @var array<string, mixed> $theme_css */
 		if ( null === self::$instance ) {
-			new self($theme_css);
+			new self(self::remove_double_dash($theme_css));
 		}
 		return self::$instance;
 	}
 
 	/**
+	 * 移除雙破折號
+	 *
+	 * @param array<string, mixed> $theme_css 主題 CSS。
+	 * @return array<string, mixed> 移除雙破折號後的主題 CSS。
+	 */
+	public static function remove_double_dash( array $theme_css = [] ): array {
+		$new_theme_css = [];
+		foreach ($theme_css as $key => $value) {
+			$new_theme_css[ str_replace('--', '', $key) ] = $value;
+		}
+		return $new_theme_css;
+	}
+
+
+	/**
 	 * 取得公開的屬性
 	 *
-	 * @return array<string,mixed>
+	 * @param bool $with_dash 是否帶 --
+	 *
+	 * @return array<string, string>
 	 */
-	public function to_array(): array {
-		$properties = get_object_vars($this);
+	public function to_array( $with_dash = true ): array {
+
+		$properties = parent::to_array();
+		if (!$with_dash) {
+			/** @var array<string, string> $properties */
+			return $properties;
+		}
 
 		$formatted_properties = [];
+		/** @var string $value */
 		foreach ($properties as $key => $value) {
+			if ('theme' === $key) {
+				$formatted_properties['theme'] = $value;
+				continue;
+			}
+
 			$formatted_properties[ "--{$key}" ] = $value;
 		}
-		$formatted_properties['color-scheme'] = 'custom';
 		return $formatted_properties;
+	}
+
+	/**
+	 * 印出 CSS
+	 *
+	 * @return void
+	 */
+	public function print_css(): void {
+		$theme_css = $this->to_array();
+		$style     = '<style>';
+		$style    .= "[data-theme='{$theme_css['theme']}'] {";
+
+		unset($theme_css['theme']);
+		foreach ($theme_css as $key => $value) {
+			$style .= "{$key}: {$value};";
+		}
+		$style .= '}';
+		$style .= '</style>';
+		echo $style;
 	}
 }
