@@ -1,17 +1,17 @@
 <?php
 /**
- * Duplicate
+ * Copy
  * 複製文章功能的類
  */
 
 declare ( strict_types=1 );
 
-namespace J7\Powerhouse\Domains\Duplicate;
+namespace J7\Powerhouse\Domains\Copy;
 
 /**
- * Class Duplicate
+ * Class Copy
  */
-final class Duplicate {
+final class Copy {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	/**
@@ -28,7 +28,7 @@ final class Duplicate {
 	 * Constructor
 	 */
 	public function __construct() {
-		\add_action( 'powerhouse_after_duplicate_post', [ __CLASS__, 'duplicate_children_post' ], 10, 5 );
+		\add_action( 'powerhouse_after_copy_post', [ __CLASS__, 'copy_children_post' ], 10, 5 );
 	}
 
 
@@ -48,18 +48,18 @@ final class Duplicate {
 	public function process( int $post_id, ?bool $copy_terms = true, int|bool $override_post_parent = false, int $depth = 0 ): int {
 		$post_type = \get_post_type( $post_id );
 
-		$duplicate_callback = match ( $post_type ) {
-			'product' => [ __CLASS__, 'duplicate_product' ],
-			default => [ __CLASS__, 'duplicate_post' ],
+		$copy_callback = match ( $post_type ) {
+			'product' => [ __CLASS__, 'copy_product' ],
+			default => [ __CLASS__, 'copy_post' ],
 		};
 
 		// 可以改寫複製的 callback，例如課程商品、銷售方案等
-		$duplicate_callback = \apply_filters( 'powerhouse/duplicate/callback', $duplicate_callback, $post_id, $copy_terms, $override_post_parent, $depth );
+		$copy_callback = \apply_filters( 'powerhouse/copy/callback', $copy_callback, $post_id, $copy_terms, $override_post_parent, $depth );
 
-		/** @var callable(int, bool, int|bool): int $duplicate_callback */
-		$new_id = call_user_func( $duplicate_callback, $post_id, $copy_terms, $override_post_parent, $depth ); // @phpstan-ignore-line
+		/** @var callable(int, bool, int|bool): int $copy_callback */
+		$new_id = call_user_func( $copy_callback, $post_id, $copy_terms, $override_post_parent, $depth ); // @phpstan-ignore-line
 
-		\do_action( 'powerhouse_after_duplicate_post', $this, $post_id, $new_id, $override_post_parent, $depth );
+		\do_action( 'powerhouse_after_copy_post', $this, $post_id, $new_id, $override_post_parent, $depth );
 
 		return $new_id;
 	}
@@ -75,7 +75,7 @@ final class Duplicate {
 	 * @return int 複製後的文章 ID
 	 * @throws \Exception Exception
 	 */
-	public static function duplicate_post( int $post_id, ?bool $copy_terms = true, int|bool $override_post_parent = false, int $depth = 0 ): int {
+	public static function copy_post( int $post_id, ?bool $copy_terms = true, int|bool $override_post_parent = false, int $depth = 0 ): int {
 		$post = \get_post($post_id);
 		if (!$post) {
 			throw new \Exception(
@@ -102,7 +102,7 @@ final class Duplicate {
 		if (!\is_numeric($new_id)) {
 			throw new \Exception(
 				sprintf(
-				__('duplicate post failed, %s', 'powerhouse'),
+				__('copy post failed, %s', 'powerhouse'),
 				$new_id->get_error_message()
 			)
 			);
@@ -123,7 +123,7 @@ final class Duplicate {
 
 		// 複製文章 terms
 		if ($copy_terms) {
-			$success = self::duplicate_terms($post_id, $new_id);
+			$success = self::copy_terms($post_id, $new_id);
 		}
 
 		if (\is_numeric($override_post_parent)) {
@@ -148,7 +148,7 @@ final class Duplicate {
 	 * @return int 複製後的商品 ID
 	 * @throws \Exception Exception
 	 */
-	public static function duplicate_product( int $post_id, ?bool $copy_terms = true, int|bool $override_post_parent = false, int $depth = 0 ): int {
+	public static function copy_product( int $post_id, ?bool $copy_terms = true, int|bool $override_post_parent = false, int $depth = 0 ): int {
 		$product = \wc_get_product($post_id);
 		if (!$product) {
 			throw new \Exception(
@@ -160,13 +160,13 @@ final class Duplicate {
 		}
 
 		// 使用 WC_Admin_Duplicate_Product 複製產品
-		$duplicate      = new \WC_Admin_Duplicate_Product();
-		$new_product    = $duplicate->product_duplicate($product);
+		$copy           = new \WC_Admin_Duplicate_Product();
+		$new_product    = $copy->product_duplicate($product);
 		$new_product_id = $new_product->get_id();
 
 		// 如果需要複製分類
 		if ($copy_terms) {
-			self::duplicate_terms($post_id, $new_product_id);
+			self::copy_terms($post_id, $new_product_id);
 		}
 
 		return $new_product_id;
@@ -181,7 +181,7 @@ final class Duplicate {
 	 * @return bool 設定 term 是否成功
 	 * @throws \Exception Exception
 	 */
-	public static function duplicate_terms( $source, int $target_id ): bool {
+	public static function copy_terms( $source, int $target_id ): bool {
 		// 取得來源 ID 和類型
 		$source_id = 0;
 		$post_type = '';
@@ -223,7 +223,7 @@ final class Duplicate {
 	/**
 	 * 複製子文章
 	 *
-	 * @param self $duplicate 複製物件
+	 * @param self $copy 複製物件
 	 * @param int  $post_id 文章 ID
 	 * @param int  $new_id 複製後的文章 ID
 	 * @param int  $new_parent 覆寫 post_parent, false 則不複製當前文章的子文章, true 會複製當前文章的子文章但當前文章 post_parent 不變
@@ -231,7 +231,7 @@ final class Duplicate {
 	 *
 	 * @return void
 	 */
-	public static function duplicate_children_post( self $duplicate, int $post_id, int $new_id, ?int $new_parent = 0, int $depth = 0 ): void {
+	public static function copy_children_post( self $copy, int $post_id, int $new_id, ?int $new_parent = 0, int $depth = 0 ): void {
 		if (!$new_parent) {
 			return;
 		}
@@ -242,13 +242,13 @@ final class Duplicate {
 			'fields'      => 'ids',
 		];
 
-		$args = \apply_filters( 'powerhouse/duplicate/children_post_args', $default_args, $post_id, $new_id, $new_parent, $depth );
+		$args = \apply_filters( 'powerhouse/copy/children_post_args', $default_args, $post_id, $new_id, $new_parent, $depth );
 
 		/** @var array<int> $children_ids */
 		$children_ids = \get_children($args);
 
 		foreach ($children_ids as $child_id) {
-			$duplicate->process($child_id, true, $new_id, $depth + 1);
+			$copy->process($child_id, true, $new_id, $depth + 1);
 		}
 	}
 }
