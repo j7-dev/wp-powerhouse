@@ -18,7 +18,7 @@ final class ApiBooster {
 	 */
 	protected static $namespaces = [
 		'/wp-json/power-', // power- 開頭 API
-		'powerhouse',
+		'/wp-json/v2/powerhouse',
 	];
 
 	/**
