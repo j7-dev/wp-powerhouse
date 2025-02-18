@@ -117,7 +117,7 @@ final class Copy {
 					continue;
 				}
 
-				\add_post_meta($new_id, $key, \maybe_unserialize($value));
+				\add_post_meta($new_id, $key, \wp_slash(\maybe_unserialize($value)));
 			}
 		}
 
@@ -226,23 +226,24 @@ final class Copy {
 	 * @param self $copy 複製物件
 	 * @param int  $post_id 文章 ID
 	 * @param int  $new_id 複製後的文章 ID
-	 * @param int  $new_parent 覆寫 post_parent, false 則不複製當前文章的子文章, true 會複製當前文章的子文章但當前文章 post_parent 不變
+	 * @param int  $override_post_parent 覆寫 post_parent, false 則不複製當前文章的子文章, true 會複製當前文章的子文章但當前文章 post_parent 不變
 	 * @param int  $depth 遞迴深度
 	 *
 	 * @return void
 	 */
-	public static function copy_children_post( self $copy, int $post_id, int $new_id, ?int $new_parent = 0, int $depth = 0 ): void {
-		if (!$new_parent) {
+	public static function copy_children_post( self $copy, int $post_id, int $new_id, ?int $override_post_parent = 0, int $depth = 0 ): void {
+		if (!$override_post_parent) {
 			return;
 		}
 
 		$default_args = [
 			'post_parent' => $post_id,
+			'post_type'   => 'post', // ❗ 這邊要記得改成你要複製的 post_type
 			'numberposts' => -1,
 			'fields'      => 'ids',
 		];
 
-		$args = \apply_filters( 'powerhouse/copy/children_post_args', $default_args, $post_id, $new_id, $new_parent, $depth );
+		$args = \apply_filters( 'powerhouse/copy/children_post_args', $default_args, $post_id, $new_id, $override_post_parent, $depth );
 
 		/** @var array<int> $children_ids */
 		$children_ids = \get_children($args);
