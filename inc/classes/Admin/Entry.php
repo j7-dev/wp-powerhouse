@@ -56,31 +56,11 @@ final class Entry {
 		Bootstrap::enqueue_admin_assets();
 		$id        = substr(Base::APP1_SELECTOR, 1);
 		$blog_name = \get_bloginfo('name');
-		?>
-		<!doctype html>
-		<html <?php language_attributes(); ?>>
-
-		<head>
-			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/js/dist/css/admin.min.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
-			<meta charset="UTF-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-			<title>Powerhouse 後台 | <?php echo $blog_name; ?></title>
-		</head>
-
-		<body>
-			<main id="<?php echo $id; ?>"></main>
-		<?php
-		/**
-		 * Prints any scripts and data queued for the footer.
-		 *
-		 * @since 2.8.0
-		 */
-		\do_action('admin_print_footer_scripts');
-
-		?>
-		</body>
-
-		</html>
-		<?php
+		Base::render_admin_layout(
+			[
+				'title' => "Powerhouse 後台 | {$blog_name}",
+				'id'    => $id,
+			]
+			);
 	}
 }

@@ -8,6 +8,7 @@ declare ( strict_types=1 );
 namespace J7\Powerhouse\Utils;
 
 use J7\Powerhouse\Api;
+use J7\Powerhouse\Plugin;
 
 if ( class_exists( 'J7\Powerhouse\Utils\Base' ) ) {
 	return;
@@ -113,5 +114,44 @@ abstract class Base {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * 渲染 admin layout
+	 *
+	 * @param array{title: string, id: string} $args 參數
+	 * @return void
+	 */
+	public static function render_admin_layout( array $args ): void {
+		Plugin::get('admin-layout', $args, true, true);
+	}
+
+	/**
+	 * 取得插件連結，用於顯示在 admin-layout 的 admin bar 上
+	 *
+	 * @return array<array{label: string, url: string, current: bool, disabled: bool}>
+	 */
+	public static function get_plugin_links(): array {
+		$show_plugins   = [
+			'powerhouse',
+			'power-course',
+			'power-docs',
+			'power-partner',
+			'power-payment',
+		];
+		$active_plugins = \get_option( 'active_plugins', [] );
+		$active_plugins = is_array($active_plugins) ? $active_plugins : [];
+
+		$plugin_links = [];
+		foreach ( $show_plugins as $plugin ) {
+			$plugin_links[] = [
+				'label'    => $plugin,
+				'url'      => \admin_url("admin.php?page={$plugin}"),
+				'current'  => \is_admin() && @$_GET['page'] === $plugin, // phpcs:ignore
+				'disabled' => !in_array($plugin, $active_plugins, true),
+			];
+		}
+
+		return $plugin_links;
 	}
 }

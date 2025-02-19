@@ -69,7 +69,7 @@ final class Plugin {
 		]
 		);
 
-		self::$template_page_names = [ 'admin', 'settings', 'license-codes', 'powerhouse' ];
+		self::$template_page_names = [ 'admin', 'settings', 'license-codes', 'powerhouse', 'admin-layout' ];
 	}
 
 

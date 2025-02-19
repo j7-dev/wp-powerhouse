@@ -16,7 +16,7 @@ import routerBindings, {
 import { Settings } from '@/pages/admin'
 import { HashRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { resources } from '@/resources'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, Button } from 'antd'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { BackToWpAdmin } from 'antd-toolkit/wp'
