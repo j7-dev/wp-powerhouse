@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Theme;
 
-use J7\WpUtils\Classes\DTO as BaseDTO;
 use J7\Powerhouse\Settings\DTO as SettingsDTO;
 
 
@@ -14,7 +13,7 @@ if (class_exists('J7\Powerhouse\Theme\DTO')) {
 /**
  * 設定物件
  */
-final class DTO extends BaseDTO {
+final class DTO {
 
 	/** @var string primary 顏色 */
 	public string $p = '49.12% 0.3096 275.75';
@@ -119,45 +118,35 @@ final class DTO extends BaseDTO {
 	 * @param array<string, mixed> $input Input values.
 	 */
 	public function __construct( array $input = [] ) {
-		parent::__construct($input, false);
+		foreach ( $input as $key => $value ) {
+			if (property_exists($this, $key)) {
+				$this->$key = $value;
+			}
+		}
 		self::$instance = $this;
 	}
 
 	/**
 	 * 取得單一實例
 	 *
-	 * @return self|null
+	 * @return self
 	 */
-	public static function instance():self|null { // phpcs:ignore
-		try {
-			if ( null === self::$instance ) {
+	public static function instance():self { // phpcs:ignore
+		if ( null === self::$instance ) {
 
-				$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
-				/** @var array<string, mixed> $theme_css */
-				@[ // @phpstan-ignore-line
-				'theme_css' => $theme_css,
-				'theme'     => $theme,
-				] = $setting_array;
+			$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
+			/** @var array<string, mixed> $theme_css */
+			@[ // @phpstan-ignore-line
+			'theme_css' => $theme_css,
+			'theme'     => $theme,
+			] = $setting_array;
 
-				$theme_css          = is_array($theme_css) ? $theme_css : []; // @phpstan-ignore-line
-				$theme_css['theme'] = $theme;
+			$theme_css          = is_array($theme_css) ? $theme_css : []; // @phpstan-ignore-line
+			$theme_css['theme'] = $theme ?? 'custom';
 
-				new self(self::remove_double_dash($theme_css));
-			}
-			return self::$instance;
-
-		} catch (\Throwable $th) {
-			return null;
+			return new self(self::remove_double_dash($theme_css));
 		}
-	}
-
-	/**
-	 * 覆寫原本的 __set 方法
-	 * set 不存在屬性時不會報錯
-	 *
-	 * @return void
-	 */
-	public function __set( string $property, $value ): void {
+		return self::$instance;
 	}
 
 	/**
@@ -184,7 +173,14 @@ final class DTO extends BaseDTO {
 	 */
 	public function to_array( $with_dash = true ): array {
 
-		$properties = parent::to_array();
+		$reflection = new \ReflectionClass($this);
+		$props      = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+		$properties = [];
+		foreach ($props as $prop) {
+			$properties[ $prop->getName() ] = $prop->getValue($this);
+		}
+
 		if (!$with_dash) {
 			/** @var array<string, string> $properties */
 			return $properties;
