@@ -19,7 +19,7 @@ use J7\Powerhouse\Plugin;
 			<title><?php echo $app_title; ?></title>
 		</head>
 
-		<body class="pt-8">
+		<body class="md:pt-8">
 			<?php Plugin::get('admin-layout/bar'); ?>
 			<main id="<?php echo $app_id; ?>"></main>
 		<?php

@@ -119,30 +119,35 @@ final class DTO extends BaseDTO {
 	 * @param array<string, mixed> $input Input values.
 	 */
 	public function __construct( array $input = [] ) {
-		parent::__construct($input);
+		parent::__construct($input, false);
 		self::$instance = $this;
 	}
 
 	/**
 	 * 取得單一實例
 	 *
-	 * @return self
+	 * @return self|null
 	 */
-	public static function instance() { // phpcs:ignore
-		$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
-		@[ // @phpstan-ignore-line
+	public static function instance():self|null { // phpcs:ignore
+		try {
+			$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
+			@[ // @phpstan-ignore-line
 			'theme_css' => $theme_css,
 			'theme'     => $theme,
-		]              = $setting_array;
+			]              = $setting_array;
 
-		$theme_css          = is_array($theme_css) ? $theme_css : [];
-		$theme_css['theme'] = $theme;
+			$theme_css          = is_array($theme_css) ? $theme_css : [];
+			$theme_css['theme'] = $theme;
 
-		/** @var array<string, mixed> $theme_css */
-		if ( null === self::$instance ) {
-			new self(self::remove_double_dash($theme_css));
+			/** @var array<string, mixed> $theme_css */
+			if ( null === self::$instance ) {
+				new self(self::remove_double_dash($theme_css));
+			}
+			return self::$instance;
+
+		} catch (\Throwable $th) {
+			return null;
 		}
-		return self::$instance;
 	}
 
 	/**

@@ -18,7 +18,10 @@ final class DTO extends BaseDTO {
 	const SETTINGS_KEY = 'powerhouse_settings';
 
 	/** @var string $theme 選擇主題 */
-	public string $theme = 'power';
+	public string $theme = 'custom';
+
+	/** @var string $enable_theme_changer 啟用主題切換器 */
+	public string $enable_theme_changer = 'no';
 
 	/** @var array<string, string> $theme_css 當選擇 custom 主題時，使用自訂的 css */
 	public array $theme_css = [];
@@ -54,7 +57,7 @@ final class DTO extends BaseDTO {
 	public function __construct( array $input = [] ) {
 		parent::__construct($input);
 		self::$instance  = $this;
-		$this->theme_css = ThemeDTO::instance()->to_array();
+		$this->theme_css = ThemeDTO::instance()?->to_array() ?? [];
 	}
 
 	/**

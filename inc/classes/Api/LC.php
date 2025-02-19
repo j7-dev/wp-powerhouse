@@ -7,47 +7,25 @@ declare( strict_types=1 );
 
 namespace J7\Powerhouse\Api;
 
-use J7\Powerhouse\Plugin;
-use J7\Powerhouse\LC as LC_CLASS;
+use J7\Powerhouse\Domains\LC\V2Api as LC_V2_Api;
+use J7\WpUtils\Classes\ApiBase;
 
 /**
  * Class LC
+ *
+ * @deprecated 使用 Domains\LC\V2Api 取代
  */
-final class LC {
+final class LC extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
-	use \J7\WpUtils\Traits\ApiRegisterTrait;
 
-	/**
-	 * APIs
-	 *
-	 * @var array<int, array{endpoint: string, method: string, permission_callback?:callable}>
-	 */
+	/** @var array{endpoint:string,method:string,permission_callback: ?callable }[] APIs */
 	protected $apis = [
 		[
-			'endpoint' => 'lc/invalidate',
-			'method'   => 'post',
+			'endpoint'            => 'lc/invalidate',
+			'method'              => 'post',
+			'permission_callback' => '__return_true',
 		],
 	];
-
-	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-		\add_action( 'rest_api_init', [ $this, 'register_api_license_codes' ] );
-	}
-
-	/**
-	 * Register products API
-	 *
-	 * @return void
-	 */
-	public function register_api_license_codes(): void {
-		$this->register_apis(
-		apis: $this->apis,
-		namespace: Plugin::$kebab,
-		default_permission_callback: '__return_true',
-		);
-	}
 
 	/**
 	 * 清除 LC 快取
@@ -57,30 +35,6 @@ final class LC {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_lc_invalidate_callback( \WP_REST_Request $request ): \WP_REST_Response {
-		$body_params  = $request->get_json_params();
-		$product_slug = $body_params['product_slug'];
-		if ( ! $product_slug ) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'invalidate_lc_cache_failed',
-					'message' => '產品 Slug 不能為空',
-				],
-				400
-			);
-		}
-
-		$delete_transient_result = LC_CLASS::delete_lc_transient( $product_slug );
-
-		return new \WP_REST_Response(
-			[
-				'code'    => 'invalidate_lc_cache_success',
-				'message' => '清除快取成功',
-				'data'    => [
-					'delete_transient_result' => $delete_transient_result,
-					'product_slug'            => $product_slug,
-				],
-			],
-			200
-			);
+		return LC_V2_Api::instance()->post_lc_invalidate_callback( $request );
 	}
 }

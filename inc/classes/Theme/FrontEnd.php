@@ -50,16 +50,19 @@ final class FrontEnd {
 	 * @return void
 	 */
 	public function custom_theme_color(): void {
-		ThemeDTO::instance()->print_css();
+		ThemeDTO::instance()?->print_css();
 	}
 
 
 	/**
 	 * 渲染主題按鈕
 	 *
+	 * @param bool $force_render 強制渲染
 	 * @return void
 	 */
-	public static function render_button() {
-		Plugin::get('theme');
+	public static function render_button( $force_render = false ) {
+		if ($force_render || DTO::instance()->enable_theme_changer === 'yes') {
+			Plugin::get('theme');
+		}
 	}
 }

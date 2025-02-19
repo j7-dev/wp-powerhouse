@@ -106,9 +106,14 @@ div[class^="ant-"] {
 
 .sticky-tabs-nav {
 	.ant-tabs-nav {
-		position: sticky;
-		top: 0px;
-		z-index: 10;
-		background: #fff;
+		@apply top-0 md:top-8 sticky z-10 bg-white;
+	}
+}
+
+.ant-layout-sider {
+	@apply top-0 md:!top-8;
+	.ant-layout-sider-children > div {
+		/* sider 左上角 logo 區域 */
+		display: none !important;
 	}
 }

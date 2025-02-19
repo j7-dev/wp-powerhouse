@@ -133,25 +133,41 @@ abstract class Base {
 	 */
 	public static function get_plugin_links(): array {
 		$show_plugins   = [
-			'powerhouse',
-			'power-course',
-			'power-docs',
-			'power-partner',
-			'power-payment',
+			'powerhouse/plugin.php',
+			'power-course/plugin.php',
+			'power-docs/plugin.php',
+			'power-partner/plugin.php',
+			'power-payment/plugin.php',
 		];
 		$active_plugins = \get_option( 'active_plugins', [] );
 		$active_plugins = is_array($active_plugins) ? $active_plugins : [];
 
 		$plugin_links = [];
 		foreach ( $show_plugins as $plugin ) {
+			$plugin_slug    = str_replace('/plugin.php', '', $plugin);
 			$plugin_links[] = [
-				'label'    => $plugin,
-				'url'      => \admin_url("admin.php?page={$plugin}"),
-				'current'  => \is_admin() && @$_GET['page'] === $plugin, // phpcs:ignore
+				'label'    => self::get_plugin_name($plugin_slug),
+				'url'      => \admin_url("admin.php?page={$plugin_slug}"),
+				'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
 				'disabled' => !in_array($plugin, $active_plugins, true),
 			];
 		}
 
 		return $plugin_links;
+	}
+
+	/**
+	 * 取得插件名稱
+	 * - 轉成 空白，首字母大寫
+	 *
+	 * @param string $plugin 插件名稱
+	 * @return string
+	 */
+	public static function get_plugin_name( string $plugin ): string {
+		// 把 $plugin 用 - 拆成 array
+		$names = explode('-', $plugin);
+		// 把每個片段第一個字大寫，並且用空白連接
+		$name = implode(' ', array_map(fn( $name ) => ucfirst($name), $names));
+		return $name;
 	}
 }

@@ -9,6 +9,7 @@ namespace J7\Powerhouse;
 
 use J7\WpUtils\Classes\General;
 use J7\Powerhouse\Utils\Base;
+use J7\Powerhouse\Domains\LC\Utils as LC_Utils;
 use Kucrut\Vite;
 
 if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
@@ -87,7 +88,7 @@ final class Bootstrap {
 		if (!$product_infos) {
 			return;
 		}
-		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', self::LC_MENU_SLUG, [ LC::class, 'powerhouse_license_codes_page_callback' ] );
+		// \add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', self::LC_MENU_SLUG, [ LC_Utils::class, 'powerhouse_license_codes_page_callback' ] );
 	}
 
 	/**
@@ -148,7 +149,7 @@ final class Bootstrap {
 				'BUNNY_STREAM_API_KEY' => \get_option( 'bunny_stream_api_key', '' ),
 				'NONCE'                => \wp_create_nonce( 'wp_rest' ),
 				'APP1_SELECTOR'        => Base::APP1_SELECTOR,
-				'ELEMENTOR_ENABLED'    => \in_array( 'elementor/elementor.php', $active_plugins, true ), // 檢查 elementor 是否啟用
+				'ELEMENTOR_ENABLED'    => \in_array( 'elementor/elementor.php', $active_plugins, true ), // 檢查 elementor 是否啟用,
 			]
 		);
 
@@ -168,6 +169,6 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function check_lc_array(): void {
-		$lc_array = LC::get_lc_array();
+		$lc_array = LC_Utils::get_lc_array();
 	}
 }

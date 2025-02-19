@@ -186,10 +186,15 @@ div[class^=ant-] .ant-radio-group.w-avg > label span {
 }
 
 .sticky-tabs-nav .ant-tabs-nav {
-  position: sticky;
-  top: 0px;
-  z-index: 10;
-  background: #fff;
+  @apply top-0 md:top-8 sticky z-10 bg-white;
+}
+
+.ant-layout-sider {
+  @apply top-0 md:!top-8;
+}
+.ant-layout-sider .ant-layout-sider-children > div {
+  /* sider 左上角 logo 區域 */
+  display: none !important;
 }
 
 .bn-container audio {
@@ -7773,6 +7778,10 @@ fieldset:disabled .m_c9ade57f:where([data-inverted]), .m_c9ade57f:where([data-in
 /* wp-admin menu page icon 大小 */
 #toplevel_page_powerhouse .wp-menu-image.svg {
   background-size: 18px auto !important;
+}
+
+.wc-logs-entries .line:before {
+  white-space: nowrap;
 }
 
 /*# sourceMappingURL=admin.css.map */

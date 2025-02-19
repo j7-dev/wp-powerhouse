@@ -7,109 +7,25 @@
 
 declare (strict_types = 1);
 
-namespace J7\Powerhouse;
+namespace J7\Powerhouse\Domains\LC;
 
 use J7\Powerhouse\Plugin;
 use J7\WpUtils\Classes\General;
 use Nullix\JsAesPhp\JsAesPhp;
+use J7\Powerhouse\Api;
 
+require_once __DIR__ . '/deprecated.php';
 
-if ( class_exists( 'J7\Powerhouse\LC' ) ) {
+if ( class_exists( 'J7\Powerhouse\Domains\LC\Utils' ) ) {
 	return;
 }
 /**
- * Class LC
+ * Class Utils
  */
-final class LC {
+class Utils {
 
 	const KEY        = 'powerhouse_license_codes';
 	const CACHE_TIME = 24 * HOUR_IN_SECONDS;
-
-	/**
-	 * Render Powerhouse Page Callback
-	 */
-	public static function powerhouse_license_codes_page_callback(): void {
-		$save_result = self::handle_save();
-
-		// 如果啟用成功，自動刷新頁面
-		if ('success' === $save_result['type']) {
-			\wp_safe_redirect(\admin_url('admin.php?page=powerhouse-license-codes'));
-			exit;
-		}
-
-		$show_alert = $save_result['show_alert'];
-		$lc_array   = self::get_lc_array();
-
-		echo '<div class="pr-5 my-8">';
-		printf(
-		/*html*/'
-		<sl-alert class="mb-8" variant="%1$s" %2$s>
-			<sl-icon slot="icon" name="check2-circle"></sl-icon>
-			%3$s
-		</sl-alert>
-',
-		$save_result['type'],
-		$show_alert ? 'open' : '',
-		$save_result['message']
-		);
-		echo '<div class="flex flex-wrap gap-6">';
-		foreach ( $lc_array as $lc ) {
-			Plugin::safe_get(
-				'license-codes/item',
-				[
-					'license_code' => $lc,
-					'key'          => self::KEY,
-				]
-			);
-		}
-		echo '</div>';
-		echo '</div>';
-	}
-
-	/**
-	 * 儲存表單
-	 *
-	 * @return array{type: string, message: string, show_alert: bool} 是否儲存
-	 */
-	private static function handle_save(): array {
-		// phpcs:disable
-		// 檢查是否提交了表單
-		$is_submit = \in_array($_POST['submit_button'] ?? '', ['activate', 'deactivate'], true);
-		if (!$is_submit) {
-			return [
-				'type'    => 'danger',
-				'message' => '非表單提交',
-				'show_alert' => false,
-			];
-		}
-
-		$key = self::KEY;
-
-		// 驗證 nonce
-		if (!isset($_POST[ "{$key}_nonce" ]) || !\wp_verify_nonce((string) $_POST[ "{$key}_nonce" ], "{$key}_action")) {
-			return [
-				'type'    => 'danger',
-				'message' => '安全檢查失敗',
-				'show_alert' => true,
-			];
-		}
-		$code = str_replace(' ', '', (string) $_POST['code']);
-		$product_slug = str_replace(' ', '', (string) $_POST['product_slug']);
-
-		// 如果是按下棄用按鈕
-		if('deactivate' === $_POST['submit_button']){
-			$data = self::deactivate($code, $product_slug);
-			$message = self::get_deactivate_message($data, $product_slug);
-			return array_merge($message, ['show_alert' => true]);
-		}
-		// phpcs:enable
-
-		// 如果是按下啟用按鈕
-		$data = self::activate($code, $product_slug);
-
-		$message = self::get_activate_message($data);
-		return array_merge($message, [ 'show_alert' => true ]);
-	}
 
 	/**
 	 * 取得所有 licenseCode 的 array
@@ -156,9 +72,11 @@ final class LC {
 
 			// 如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取
 			if (!is_array($decoded) && $saved_code ) {
-				$response = self::activate( (string) $saved_code, $product_slug, true);
-				if (\is_wp_error($response)) {
-					$default_lc['code']        = '500 ' . $response->get_error_message();
+				try {
+					$response = self::activate( (string) $saved_code, $product_slug, true);
+				} catch (\Throwable $th) {
+					// 如果啟用請求有問題，維持啟用狀態
+					$default_lc['code']        = '500 ' . $th->getMessage();
 					$default_lc['post_status'] = 'activated';
 					$lc_array[]                = $default_lc;
 					// 失敗的話，就先暫存一個預設啟用值，等於說跳過這次，下次到期再檢查
@@ -212,10 +130,10 @@ final class LC {
 	 * @param string $code 授權碼
 	 * @param string $product_slug 產品 key
 	 * @param bool   $is_system_check 是否為系統檢查
-	 * @return array|\WP_Error 驗證結果
-	 * @phpstan-ignore-next-line
+	 * @return array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
+	 * @throws \Exception 如果啟用失敗，則拋出例外。
 	 */
-	public static function activate( string $code, string $product_slug, bool $is_system_check = false ): array|\WP_Error {
+	public static function activate( string $code, string $product_slug, bool $is_system_check = false ): array {
 		$api      = Api\Base::instance();
 		$endpoint = 'license-codes/activate';
 
@@ -231,43 +149,8 @@ final class LC {
 			$params
 		);
 
-		return $response;
-	}
-
-	/**
-	 * 棄用授權碼
-	 *
-	 * @param string $code 授權碼
-	 * @param string $product_slug 產品 key
-	 * @return array|\WP_Error 驗證結果
-	 * @phpstan-ignore-next-line
-	 */
-	public static function deactivate( string $code, string $product_slug ): array|\WP_Error {
-		$api      = Api\Base::instance();
-		$endpoint = 'license-codes/deactivate';
-		$response = $api->remote_post(
-			$endpoint,
-			[
-				'code' => $code,
-			]
-			);
-
-		return $response;
-	}
-
-	/**
-	 * 取得啟用訊息
-	 *
-	 * @param array|\WP_Error $response 回傳的 response
-	 * @return array{type: string, message: string} 訊息
-	 * @phpstan-ignore-next-line
-	 */
-	public static function get_activate_message( array|\WP_Error $response ): array {
 		if (\is_wp_error($response)) {
-			return [
-				'type'    => 'danger',
-				'message' => $response->get_error_message(),
-			];
+			throw new \Exception($response->get_error_message());
 		}
 
 		$body = \wp_remote_retrieve_body($response);
@@ -281,35 +164,35 @@ final class LC {
 		$status_code = \wp_remote_retrieve_response_code($response);
 
 		if (200 !== $status_code) {
-			return [
-				'type'    => 'danger',
-				'message' => $data['message'] ?? 'unknown error',
-			];
+			throw new \Exception($data['message'] ?? 'unknown error');
 		}
 
 		// @phpstan-ignore-next-line
 		self::set_lc_transient($data);
 
-		return [
-			'type'    => 'success',
-			'message' => '啟用授權成功，重新整理頁面後就可以使用',
-		];
+		return $data;
 	}
 
 	/**
-	 * 取得棄用訊息
+	 * 棄用授權碼
 	 *
-	 * @param array|\WP_Error $response 回傳的 response
-	 * @param string          $product_slug 產品 key
-	 * @return array{type: string, message: string} 訊息
-	 * @phpstan-ignore-next-line
+	 * @param string $code 授權碼
+	 * @param string $product_slug 產品 key
+	 * @return array{message: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
+	 * @throws \Exception 如果棄用失敗，則拋出例外。
 	 */
-	public static function get_deactivate_message( array|\WP_Error $response, string $product_slug ): array {
+	public static function deactivate( string $code, string $product_slug = '' ): array {
+		$api      = Api\Base::instance();
+		$endpoint = 'license-codes/deactivate';
+		$response = $api->remote_post(
+			$endpoint,
+			[
+				'code' => $code,
+			]
+			);
+
 		if (\is_wp_error($response)) {
-			return [
-				'type'    => 'danger',
-				'message' => $response->get_error_message(),
-			];
+			throw new \Exception($response->get_error_message());
 		}
 
 		$body = \wp_remote_retrieve_body($response);
@@ -325,19 +208,12 @@ final class LC {
 		self::delete_lc_transient($product_slug);
 
 		if (200 !== $status_code) {
-			return [
-				'type'    => 'danger',
-				// @phpstan-ignore-next-line
-				'message' => $data['message'] ?? 'unknown error',
-			];
+			throw new \Exception($data['message'] ?? 'unknown error'); // @phpstan-ignore-line
 		}
 
-		return [
-			'type'    => 'success',
-			// @phpstan-ignore-next-line
-			'message' => $data['message'] ?? '停用授權成功',
-		];
+		return $data;
 	}
+
 
 	/**
 	 * 設置預設的 transient
@@ -366,7 +242,7 @@ final class LC {
 	 * 設置 LC transient
 	 * 儲存 product_slug 和 code 到 option
 	 *
-	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string} $data 成功
+	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string, logs?: array<mixed>} $data 成功
 	 * @return void
 	 */
 	public static function set_lc_transient( array $data ): void {
@@ -378,7 +254,19 @@ final class LC {
 		$saved_codes                  = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 		$saved_codes[ $product_slug ] = $data['code'];
 
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log(
+			[
+				'product_slug' => $product_slug,
+				'saved_codes'  => $saved_codes,
+				'data'         => self::encode($data),
+			],
+			'LC::set_lc_transient'
+		);
+		// ---------- END TEST ---------- //
 		\update_option(self::KEY, $saved_codes);
+
+		unset($data['logs']);
 		\set_transient("lc_{$product_slug}", self::encode($data), self::CACHE_TIME);
 	}
 
@@ -391,6 +279,14 @@ final class LC {
 	 * @return bool 是否刪除成功
 	 */
 	public static function delete_lc_transient( string $product_slug ): bool {
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log(
+			[
+				'product_slug' => $product_slug,
+			],
+			'LC::delete_lc_transient'
+		);
+		// ---------- END TEST ---------- //
 		/**
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
@@ -417,7 +313,7 @@ final class LC {
 		 */
 			$lc_status = JsAesPhp::decrypt($value, Plugin::$kebab);
 
-			if (!is_array($lc_status)) {
+			if (!is_array($lc_status)) { // @phpstan-ignore-line
 				return false;
 			}
 

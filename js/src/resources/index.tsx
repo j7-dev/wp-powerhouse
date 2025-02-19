@@ -1,4 +1,4 @@
-import { SettingOutlined } from '@ant-design/icons'
+import { SettingOutlined, BarcodeOutlined } from '@ant-design/icons'
 import { ResourceProps } from '@refinedev/core'
 
 export const resources: ResourceProps[] = [
@@ -8,6 +8,14 @@ export const resources: ResourceProps[] = [
 		meta: {
 			label: '設定',
 			icon: <SettingOutlined />,
+		},
+	},
+	{
+		name: 'license-code',
+		list: '/license-code',
+		meta: {
+			label: '授權碼',
+			icon: <BarcodeOutlined />,
 		},
 	},
 ]

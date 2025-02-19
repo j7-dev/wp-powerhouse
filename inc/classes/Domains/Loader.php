@@ -26,5 +26,6 @@ final class Loader {
 		Upload\V2Api::instance();
 		Copy\V2Api::instance();
 		Limit\V2Api::instance();
+		LC\V2Api::instance();
 	}
 }

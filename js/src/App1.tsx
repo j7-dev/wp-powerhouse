@@ -12,14 +12,11 @@ import routerBindings, {
 	UnsavedChangesNotifier,
 	NavigateToResource,
 } from '@refinedev/react-router-v6'
-
-import { Settings } from '@/pages/admin'
+import { Settings, LicenseCode } from '@/pages/admin'
 import { HashRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { resources } from '@/resources'
-import { ConfigProvider, Button } from 'antd'
+import { ConfigProvider } from 'antd'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-
-import { BackToWpAdmin } from 'antd-toolkit/wp'
 import {
 	dataProvider,
 	useBunny,
@@ -92,9 +89,7 @@ function App() {
 							>
 								<ThemedLayoutV2
 									Sider={(props) => <ThemedSiderV2 {...props} fixed />}
-									Title={({ collapsed }) => (
-										<BackToWpAdmin collapsed={collapsed} />
-									)}
+									Title={({ collapsed }) => null}
 								>
 									<Outlet />
 									<MediaLibraryIndicator />
@@ -104,6 +99,7 @@ function App() {
 					>
 						<Route index element={<NavigateToResource resource="settings" />} />
 						<Route path="settings" element={<Settings />} />
+						<Route path="license-code" element={<LicenseCode />} />
 						<Route path="*" element={<ErrorComponent />} />
 					</Route>
 				</Routes>
