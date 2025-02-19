@@ -41,7 +41,7 @@ final class FrontEnd {
 		}
 
 		$theme = DTO::instance()->theme;
-		return "{$output} id=\"tw\" data-theme=\"{$theme}\"";
+		return "{$output} id=\"tw\" class=\"tailwind\" data-theme=\"{$theme}\"";
 	}
 
 	/**

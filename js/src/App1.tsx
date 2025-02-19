@@ -24,6 +24,7 @@ import {
 } from 'antd-toolkit/refine'
 import { env } from '@/utils'
 import axios, { AxiosInstance } from 'axios'
+import 'antd-toolkit/style.css'
 
 // 如果 是 vite dev 才 import scss
 // 現在執行 yarn watch-css:admin 就有 css
