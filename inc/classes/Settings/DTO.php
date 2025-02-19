@@ -73,23 +73,9 @@ final class DTO extends BaseDTO {
 
 		/** @var array<string, mixed> $setting_array */
 		if ( null === self::$instance ) {
-			unset($setting_array['theme_css']);
+			unset($setting_array['theme_css']); // theme_css 獨立初始化
 			new self($setting_array);
 		}
 		return self::$instance;
-	}
-
-
-	/**
-	 * 取得 input name 表單 field_name 還有預設值
-	 * 可以用 list($field_name, $default_value) 解構
-	 *
-	 * @param string $key 欄位名稱
-	 * @return array{0: string, 1: string} [欄位名稱, 預設值]
-	 */
-	public static function get_field_name_and_value( string $key ): array {
-		$field_name  = self::SETTINGS_KEY . "[$key]";
-		$field_value = self::instance()->$key;
-		return [ $field_name, $field_value ];
 	}
 }

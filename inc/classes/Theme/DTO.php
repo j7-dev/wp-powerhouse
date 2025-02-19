@@ -151,6 +151,15 @@ final class DTO extends BaseDTO {
 	}
 
 	/**
+	 * 覆寫原本的 __set 方法
+	 * set 不存在屬性時不會報錯
+	 *
+	 * @return void
+	 */
+	public function __set( string $property, $value ): void {
+	}
+
+	/**
 	 * 移除雙破折號
 	 *
 	 * @param array<string, mixed> $theme_css 主題 CSS。

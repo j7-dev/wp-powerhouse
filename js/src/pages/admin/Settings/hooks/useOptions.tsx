@@ -14,6 +14,9 @@ const useOptions = ({ form }: { form: FormInstance }) => {
 	const result = useCustom<TOptionResponse>({
 		url: `${apiUrl}/options`,
 		method: 'get',
+		queryOptions: {
+			queryKey: ['get_options'],
+		},
 	})
 
 	const { isFetching } = result

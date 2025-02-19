@@ -254,16 +254,6 @@ class Utils {
 		$saved_codes                  = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 		$saved_codes[ $product_slug ] = $data['code'];
 
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log(
-			[
-				'product_slug' => $product_slug,
-				'saved_codes'  => $saved_codes,
-				'data'         => self::encode($data),
-			],
-			'LC::set_lc_transient'
-		);
-		// ---------- END TEST ---------- //
 		\update_option(self::KEY, $saved_codes);
 
 		unset($data['logs']);
@@ -279,14 +269,7 @@ class Utils {
 	 * @return bool 是否刪除成功
 	 */
 	public static function delete_lc_transient( string $product_slug ): bool {
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log(
-			[
-				'product_slug' => $product_slug,
-			],
-			'LC::delete_lc_transient'
-		);
-		// ---------- END TEST ---------- //
+
 		/**
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */

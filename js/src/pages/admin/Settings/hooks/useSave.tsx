@@ -1,11 +1,13 @@
 import { useCustomMutation, useApiUrl } from '@refinedev/core'
 import { FormInstance, message } from 'antd'
 import { useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 const useSave = ({ form }: { form: FormInstance }) => {
 	const apiUrl = useApiUrl()
 	const mutation = useCustomMutation()
 	const { mutate } = mutation
+	const queryClient = useQueryClient()
 
 	const handleSave = useCallback(() => {
 		message.loading({
@@ -26,9 +28,7 @@ const useSave = ({ form }: { form: FormInstance }) => {
 							content: '儲存成功',
 							key: 'save',
 						})
-
-						// 刷新頁面
-						window.location.reload()
+						queryClient.invalidateQueries(['get_options'])
 					},
 				},
 			)
