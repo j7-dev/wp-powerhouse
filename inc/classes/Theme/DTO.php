@@ -130,17 +130,18 @@ final class DTO extends BaseDTO {
 	 */
 	public static function instance():self|null { // phpcs:ignore
 		try {
-			$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
-			@[ // @phpstan-ignore-line
-			'theme_css' => $theme_css,
-			'theme'     => $theme,
-			]              = $setting_array;
-
-			$theme_css          = is_array($theme_css) ? $theme_css : [];
-			$theme_css['theme'] = $theme;
-
-			/** @var array<string, mixed> $theme_css */
 			if ( null === self::$instance ) {
+
+				$setting_array = \get_option(SettingsDTO::SETTINGS_KEY, []);
+				/** @var array<string, mixed> $theme_css */
+				@[ // @phpstan-ignore-line
+				'theme_css' => $theme_css,
+				'theme'     => $theme,
+				] = $setting_array;
+
+				$theme_css          = is_array($theme_css) ? $theme_css : []; // @phpstan-ignore-line
+				$theme_css['theme'] = $theme;
+
 				new self(self::remove_double_dash($theme_css));
 			}
 			return self::$instance;

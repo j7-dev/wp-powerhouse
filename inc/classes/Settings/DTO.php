@@ -66,13 +66,13 @@ final class DTO extends BaseDTO {
 	 * @return self
 	 */
 	public static function instance() { // phpcs:ignore
-		$setting_array = \get_option(self::SETTINGS_KEY, []);
-		if (!\is_array($setting_array)) {
-			$setting_array = [];
-		}
-
-		/** @var array<string, mixed> $setting_array */
 		if ( null === self::$instance ) {
+			$setting_array = \get_option(self::SETTINGS_KEY, []);
+			if (!\is_array($setting_array)) {
+				$setting_array = [];
+			}
+
+			/** @var array<string, mixed> $setting_array */
 			unset($setting_array['theme_css']); // theme_css 獨立初始化
 			new self($setting_array);
 		}
