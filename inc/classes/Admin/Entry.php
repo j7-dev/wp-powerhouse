@@ -38,7 +38,7 @@ final class Entry {
 		// Make sure we're on the right screen.
 		$screen = \get_current_screen();
 
-		if ( 'powerhouse_page_powerhouse-settings' !== $screen?->id) {
+		if ( 'toplevel_page_powerhouse' !== $screen?->id) {
 			return;
 		}
 

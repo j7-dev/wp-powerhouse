@@ -4,3 +4,8 @@
 @import "antd.scss";
 @import "BlockNote.scss";
 @import "BlockNote-mantine.scss";
+
+/* wp-admin menu page icon 大小 */
+#toplevel_page_powerhouse .wp-menu-image.svg {
+	background-size: 18px auto !important;
+}
