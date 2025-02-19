@@ -109,6 +109,9 @@ final class Bootstrap {
 
 		// 後台載入統一樣式
 		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/admin.min.css', [], Plugin::$version );
+		// 這支是 antd-toolkit 的 css
+		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/style.css', [], Plugin::$version );
+
 
 		if (!General::in_url(
 			[

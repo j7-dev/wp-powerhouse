@@ -14,6 +14,8 @@ use J7\Powerhouse\Plugin;
 
 		<head>
 			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/js/dist/css/admin.min.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
+			<link rel="stylesheet" href="<?php echo Plugin::$url; ?>/js/dist/css/style.css?ver=<?php echo Plugin::$version; ?>" /><?php //phpcs:ignore ?>
+
 			<meta charset="UTF-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<title><?php echo $app_title; ?></title>
