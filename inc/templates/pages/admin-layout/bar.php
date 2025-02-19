@@ -18,10 +18,6 @@ $plugin_links = Base::get_plugin_links();
 			<?php
 			foreach ( $plugin_links as $plugin_link ) {
 				if ($plugin_link['disabled']) {
-					printf(
-						/*html*/'<span class="pc-btn pc-btn-xs no-underline text-xs pc-btn-outline border-solid border-gray-500 text-gray-500">%1$s</span>',
-						$plugin_link['label'],
-					);
 					continue;
 				}
 				printf(

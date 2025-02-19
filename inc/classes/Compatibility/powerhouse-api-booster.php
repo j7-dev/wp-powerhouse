@@ -77,8 +77,6 @@ final class ApiBooster {
 
 		// 移除不必要的 WordPress 功能
 		$hooks_to_remove = [
-			'setup_theme',
-			'after_setup_theme',
 			'widgets_init',
 			'register_sidebar',
 			'wp_register_sidebar_widget',
@@ -86,7 +84,6 @@ final class ApiBooster {
 			'wp_default_styles',
 			'admin_bar_init',
 			'add_admin_bar_menus',
-			'wp_loaded',
 		];
 
 		foreach ( $hooks_to_remove as $hook ) {
