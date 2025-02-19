@@ -29,9 +29,9 @@ module.exports = {
 	},
 	hooks: {
 		'before:init': [
+			'yarn build && echo ✅ build success',
 			'yarn build-css:admin && echo ✅ build admin css success',
 			'yarn build-css:front && echo ✅ build front css success',
-			'yarn build && echo ✅ build success',
 		], // run before initialization
 		// 'after:[my-plugin]:bump': './bin/my-script.sh', // run after bumping version of my-plugin
 		'after:bump': [
