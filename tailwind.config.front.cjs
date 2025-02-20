@@ -4,7 +4,6 @@ module.exports = {
 	important: '#tw',
 	corePlugins: {
 		preflight: false,
-		container: false,
 	},
 	future: {
 		disableColorOpacityUtilitiesByDefault: true,
@@ -38,7 +37,7 @@ module.exports = {
 	},
 	plugins: [
 		require('daisyui'),
-		function ({ addUtilities }) {
+		function ({ addUtilities, addComponents }) {
 			const newUtilities = {
 				'.rtl': {
 					direction: 'rtl',
@@ -65,6 +64,28 @@ module.exports = {
 				},
 			}
 			addUtilities(newUtilities, ['responsive', 'hover'])
+
+			addComponents({
+				'.tw-container': {
+					maxWidth: '100%',
+					marginLeft: 'auto',
+					marginRight: 'auto',
+					paddingLeft: '1rem',
+					paddingRight: '1rem',
+					'@screen sm': {
+						maxWidth: '640px',
+					},
+					'@screen md': {
+						maxWidth: '768px',
+					},
+					'@screen lg': {
+						maxWidth: '1024px',
+					},
+					'@screen xl': {
+						maxWidth: '1280px',
+					},
+				}
+			})
 		},
 	],
 	safelist: ['opacity-50', 'border-0', 'w-full', 'aspect-video', 'rounded-xl'],
