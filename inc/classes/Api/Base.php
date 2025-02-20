@@ -1,34 +1,32 @@
 <?php
-/**
- * Api
- */
 
 declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Api;
 
-use J7\Powerhouse\Utils;
-
 if ( class_exists( 'J7\Powerhouse\Api\Base' ) ) {
 	return;
 }
 /**
- * Class Base
+ * Api Base
+ * 方便發 API 給 cloud.luke.cafe 或 http://cloud.local
+ *
+ * @package power-partner 有使用到，修改須注意
  */
 final class Base {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	public string $username = ''; // phpcs:ignore
-	public string $psw      = ''; // phpcs:ignore
-	public string $base_url = ''; // phpcs:ignore
+	/** @var string $username */
+	private string $username = ''; // @phpstan-ignore-line
 
-	/**
-	 * Api url
-	 * 可以透過 Plugin::$is_local 調整呼叫本地 API 或 cloud API
-	 *
-	 * @var string $api_url
-	 */
-	public $api_url;
+	/** @var string $psw */
+	private string $psw = ''; // @phpstan-ignore-line
+
+	/** @var string $base_url */
+	private string $base_url = ''; // @phpstan-ignore-line
+
+	/**  @var string $api_url Api url 可以透過 WP_ENVIRONMENT_TYPE 調整呼叫本地 API 或 cloud API  */
+	private $api_url;
 
 	/**
 	 * 預設的 API 參數
@@ -37,14 +35,59 @@ final class Base {
 	 *
 	 * @var array{body?: string, headers: array<string, string>, timeout: int} $default_args
 	 */
-	public $default_args;
+	private $default_args;
 
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		// 設定環境變數
-		Utils\Base::set_api_auth( $this);
+		$this->init();
+	}
+
+	/**
+	 * 設定環境變數
+	 */
+	public function init(): void {
+
+		$env = \wp_get_environment_type();
+
+		switch ($env) { // phpcs:ignore
+			case 'local-home': // LOCAL 麗寶之星家裡
+				$username = 'j7.dev.gg';
+				$psw      = '5NTw cqYl uhJU pixF Myj6 rBuA';
+				$base_url = 'http://cloud.local';
+				break;
+			case 'local': // LOCAL 辦公室
+				$username = 'powerpartner';
+				$psw      = 'WDdk K7nm SSNr AwGy Dhab sipK';
+				$base_url = 'http://cloud.local';
+				break;
+			case 'staging': // STAGING
+				$username = 'powerpartner';
+				$psw      = '9Nve BO2G oe8y B19G SDNd v68Q';
+				$base_url = 'https://cloud-staging.wpsite.pro';
+				break;
+			default: // PROD
+				$username = 'powerpartner';
+				$psw      = 'uJsk Gu3S pwUG r6ia P9zy Xjrj';
+				$base_url = 'https://cloud.luke.cafe';
+				break;
+		}
+
+		$this->username = $username;
+		$this->psw      = $psw;
+		$this->base_url = $base_url;
+		$this->api_url  = "{$base_url}/wp-json/power-partner-server";
+		// @phpstan-ignore-next-line
+		$this->default_args = [
+			'headers' => [
+				'Content-Type'  => 'application/json; charset=UTF-8',
+				'Authorization' => 'Basic ' . \base64_encode( $username . ':' . $psw ), // phpcs:ignore
+				'Origin'        => \wp_parse_url(\site_url(), PHP_URL_HOST),
+			],
+			'timeout' => 30, // 30 秒
+		];
 	}
 
 	/**
