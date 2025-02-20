@@ -10,6 +10,7 @@ lerna-debug.log*
 
 **/node_modules/**
 js/dist/**
+js/src/assets/css/**
 **/vendor/**
 dist-ssr
 *.local
