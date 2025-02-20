@@ -57,7 +57,7 @@ final class DTO extends BaseDTO {
 	public function __construct( array $input = [] ) {
 		parent::__construct($input);
 		self::$instance  = $this;
-		$this->theme_css = ThemeDTO::instance()?->to_array() ?? [];
+		$this->theme_css = ThemeDTO::instance()->to_array();
 	}
 
 	/**

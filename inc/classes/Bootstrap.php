@@ -88,7 +88,7 @@ final class Bootstrap {
 		if (!$product_infos) {
 			return;
 		}
-		// \add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', self::LC_MENU_SLUG, [ LC_Utils::class, 'powerhouse_license_codes_page_callback' ] );
+		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'admin.php?page=powerhouse#license-code' );
 	}
 
 	/**
@@ -111,7 +111,6 @@ final class Bootstrap {
 		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/admin.min.css', [], Plugin::$version );
 		// 這支是 antd-toolkit 的 css
 		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/style.css', [], Plugin::$version );
-
 
 		if (!General::in_url(
 			[
