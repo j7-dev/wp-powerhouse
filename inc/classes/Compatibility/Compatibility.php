@@ -63,6 +63,7 @@ final class Compatibility {
 		 */
 
 		// ❗不要刪除此行，註記已經執行過相容設定
+		\flush_rewrite_rules();
 		\update_option('powerhouse_compatibility_action_scheduled', Plugin::$version);
 	}
 }
