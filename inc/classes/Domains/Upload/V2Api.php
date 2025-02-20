@@ -73,9 +73,9 @@ final class V2Api extends ApiBase {
 			if ( (bool) $file_params['files']['tmp_name'] ) {
 
 				if ( ! function_exists( 'media_handle_upload' ) ) {
-					require_once 'wp-admin/includes/image.php';
-					require_once 'wp-admin/includes/file.php';
-					require_once 'wp-admin/includes/media.php';
+					require_once ABSPATH . 'wp-admin/includes/image.php';
+					require_once ABSPATH . 'wp-admin/includes/file.php';
+					require_once ABSPATH . 'wp-admin/includes/media.php';
 				}
 
 				if (\is_array($file_params['files']['tmp_name'])) {
@@ -171,9 +171,9 @@ final class V2Api extends ApiBase {
 
 			unset( $upload_result['file'] );
 			$upload_result['id']     = null;
-			$upload_result['type']   = $file['type'];
-			$upload_result['name']   = $file['name'];
-			$upload_result['size']   = $file['size'];
+			$upload_result['type']   = $file['type']; // @phpstan-ignore-line
+			$upload_result['name']   = $file['name']; // @phpstan-ignore-line
+			$upload_result['size']   = $file['size']; // @phpstan-ignore-line
 			$upload_result['width']  = $width;
 			$upload_result['height'] = $height;
 			if ( isset( $upload_result['error'] ) ) {
