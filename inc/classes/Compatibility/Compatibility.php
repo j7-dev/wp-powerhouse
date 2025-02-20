@@ -21,6 +21,9 @@ final class Compatibility {
 	 * Constructor
 	 */
 	public function __construct() {
+		\add_action( 'plugins_loaded', [ __CLASS__ , 'redirect' ], 10 );
+
+		// 以下是每次版本都會執行一次
 		$scheduled_version = \get_option('powerhouse_compatibility_action_scheduled');
 		if ($scheduled_version === Plugin::$version) {
 			return;
@@ -65,5 +68,26 @@ final class Compatibility {
 		// ❗不要刪除此行，註記已經執行過相容設定
 		\flush_rewrite_rules();
 		\update_option('powerhouse_compatibility_action_scheduled', Plugin::$version);
+	}
+
+
+	/**
+	 * 舊版本授權碼要 redirect 到新版本授權碼
+	 */
+	public static function redirect(): void {
+
+		if (!is_admin()) {
+			return;
+		}
+
+		if (!isset($_GET['page'])) {
+			return;
+		}
+
+		if ($_GET['page'] !== 'powerhouse-license-codes') {
+			return;
+		}
+		\wp_safe_redirect(\admin_url('admin.php?page=powerhouse#license-code'));
+		exit;
 	}
 }
