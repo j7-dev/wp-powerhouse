@@ -62,11 +62,54 @@ $themes = [
 <script type="module" async>
 	(function($) {
 		$(document).ready(function() {
-			$('#pc-theme-changer button[data-set-theme]').click(function() {
-				const theme = $(this).data('set-theme');
-				// 修改 html tag attribute data-theme
-				$('html').attr('data-theme', theme);
-			});
+
+			class ThemeChanger {
+				_theme = 'custom';
+				$dropdown = null;
+
+				constructor() {
+					this.$dropdown = $('#pc-theme-changer');
+					this.init();
+					this.attachEvent();
+				}
+
+				set theme(value) {
+					this._theme = value;
+					// 修改 html tag attribute data-theme
+					$('html').attr('data-theme', this._theme);
+
+					// 儲存到 localStorage
+					localStorage.setItem('theme', this._theme);
+				}
+
+				get theme() {
+					return this._theme;
+				}
+
+				init() {
+					// 從 localStorage 取得 theme
+					const theme = localStorage.getItem('theme');
+					if(!theme) {
+						return;
+					}
+					this.theme = localStorage.getItem('theme');
+				}
+
+				isDropdownOpen() {
+					const content = this.$dropdown[0].querySelector('.pc-dropdown-content');
+					return window.getComputedStyle(content).opacity !== '0';
+				}
+
+
+				attachEvent() {
+					this.$dropdown.on('click', 'button[data-set-theme]', (e) => {
+						const theme = $(e.currentTarget).data('set-theme');
+						this.theme = theme;
+					});
+				}
+			}
+
+			new ThemeChanger();
 		});
 	})(jQuery);
 </script>
