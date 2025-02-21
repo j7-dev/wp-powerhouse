@@ -55,25 +55,28 @@ final class ApiBooster {
 			return;
 		}
 
-		// 只保留需要的插件
-		$required_plugins = [
+		// 基本插件
+		$base_plugins = [
 			'powerhouse/plugin.php',
 			'woocommerce/woocommerce.php',
-			'power-course/plugin.php',
+			'woocommerce-subscriptions/woocommerce-subscriptions.php',
 		];
 
 		// 檢查是否所有必要的插件都已經載入
 		// 取得所有已啟用的插件
-		$active_plugins                = (array) \get_option('active_plugins');
-		$all_required_plugins_included = array_intersect($required_plugins, $active_plugins);
-		if (count($all_required_plugins_included) !== count($required_plugins)) {
-			return;
+		$active_plugins = \get_option('active_plugins', []);
+		$active_plugins = is_array($active_plugins) ? $active_plugins : [];
+
+		$required_plugins = [];
+		/** @var string[] $active_plugins */
+		foreach ($active_plugins as $active_plugin) {
+			// 如果以 power- 開頭，或者在 base_plugins 中，則加入 required_plugins
+			if (( strpos($active_plugin, 'power-') === 0 ) || in_array($active_plugin, $base_plugins, true)) {
+				$required_plugins[] = $active_plugin;
+			}
 		}
 
-		// 如果 WooCommerce Subscriptions 已經啟用，則需要載入 WooCommerce Subscriptions
-		if (in_array('woocommerce-subscriptions/woocommerce-subscriptions.php', $active_plugins, true)) {
-			$required_plugins[] = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
-		}
+		\add_filter('option_active_plugins', fn () => $required_plugins, 100 );
 
 		// 移除不必要的 WordPress 功能
 		$hooks_to_remove = [
@@ -95,8 +98,6 @@ final class ApiBooster {
 				-999999
 				);
 		}
-
-		\add_filter('option_active_plugins', fn () => $required_plugins, 100 );
 	}
 }
 
