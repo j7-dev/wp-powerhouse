@@ -3,14 +3,14 @@
  * Plugin Name:       Powerhouse
  * Plugin URI:        https://github.com/j7-dev/powerhouse
  * Description:       方便開發 WordPress 外掛的工具包。
- * Version:           3.0.2
+ * Version:           3.0.3
  * Requires at least: 5.7
  * Requires PHP:      8.0
  * Author:            J7
  * Author URI:        https://github.com/j7-dev
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       power-partner-server
+ * Text Domain:       powerhouse
  * Domain Path:       /languages
  * Tags: vite, WordPress plugin
  *
