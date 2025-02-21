@@ -244,7 +244,8 @@ final class V2Api extends ApiBase {
 			$upload_result    = \wp_handle_upload( $file, $upload_overrides );
 
 			unset( $upload_result['file'] );
-			$upload_result['id']   = null;
+			$upload_result['id'] = null;
+			/** @var array{name: string, type: string, tmp_name: string, size: int, error: int} $file */
 			$upload_result['type'] = $file['type'];
 			$upload_result['name'] = $file['name'];
 			$upload_result['size'] = $file['size'];
@@ -352,7 +353,8 @@ final class V2Api extends ApiBase {
 					// 直接上傳到 wp-content/uploads 不會新增到媒體庫
 					$upload_result = \wp_handle_upload( $file, $upload_overrides );
 					unset( $upload_result['file'] );
-					$upload_result['id']     = null;
+					$upload_result['id'] = null;
+					/** @var array{name: string, type: string, tmp_name: string, size: int, error: int} $file */
 					$upload_result['type']   = $file['type'];
 					$upload_result['name']   = $file['name'];
 					$upload_result['size']   = $file['size'];
