@@ -32,6 +32,7 @@ module.exports = {
 			'yarn build && echo ✅ build success',
 			'yarn build-css:admin && echo ✅ build admin css success',
 			'yarn build-css:front && echo ✅ build front css success',
+			'yarn build-css:blocknote && echo ✅ build blocknote css success',
 		], // run before initialization
 		// 'after:[my-plugin]:bump': './bin/my-script.sh', // run after bumping version of my-plugin
 		'after:bump': [

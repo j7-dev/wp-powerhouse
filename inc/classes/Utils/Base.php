@@ -7,7 +7,6 @@ declare ( strict_types=1 );
 
 namespace J7\Powerhouse\Utils;
 
-use J7\Powerhouse\Api;
 use J7\Powerhouse\Plugin;
 
 if ( class_exists( 'J7\Powerhouse\Utils\Base' ) ) {

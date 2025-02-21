@@ -1,3 +1,6 @@
-@import "reset";
-@import "scroll";
-@import "global.scss";
+@import "_reset";
+@import "_scroll";
+@import "_global";
+
+@import "_slidercaptcha";
+@import "_power-course";

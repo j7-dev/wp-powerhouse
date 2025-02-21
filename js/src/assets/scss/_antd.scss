@@ -83,9 +83,14 @@ div[class^="ant-"] {
 		}
 	}
 }
-.ant-editor-sortable-tree-node
+
+.ant-editor-sortable-tree-node {
 	.ant-editor-icon:not([aria-roledescription="sortable"]) {
-	min-width: 28px;
+		min-width: 28px;
+	}
+	button.ant-editor-sortable-tree-node-handle {
+		@apply absolute;
+	}
 }
 
 .sticky-card-actions {
@@ -106,6 +111,7 @@ div[class^="ant-"] {
 
 .sticky-tabs-nav {
 	.ant-tabs-nav {
+		// 因為 md 以上顯示 admin bar，所以 top 要設定為 8
 		@apply top-0 md:top-8 sticky z-10 bg-white;
 	}
 }

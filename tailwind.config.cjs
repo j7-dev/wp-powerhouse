@@ -13,8 +13,8 @@ module.exports = {
 	content: [
 		'./js/src/**/*.{js,ts,jsx,tsx}',
 		'./inc/**/*.{php,js,ts,jsx,tsx}',
-		'../power-docs/js/src/**/*.{js,ts,jsx,tsx}',
-		'../power-docs/inc/**/*.{php,js,ts,jsx,tsx}',
+		'../power-*/js/src/**/*.{js,ts,jsx,tsx}',
+		'../power-*/inc/**/*.{php,js,ts,jsx,tsx}',
 	],
 	theme: {
 		extend: {
