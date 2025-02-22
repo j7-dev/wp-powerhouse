@@ -298,11 +298,7 @@ abstract class Utils {
 	 */
 	public static function update_post( string|int $id, array $args ): int|\WP_Error {
 		$default_args = [
-			'ID'            => $id,
-			'post_title'    => '新文章',
-			'post_status'   => 'publish',
-			'post_author'   => \get_current_user_id(),
-			'page_template' => self::TEMPLATE,
+			'ID' => $id,
 		];
 
 		$args = \wp_parse_args( $args, $default_args );
