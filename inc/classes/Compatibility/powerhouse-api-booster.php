@@ -29,7 +29,7 @@ final class ApiBooster {
 			'enable_api_booster' => $enable_api_booster,
 		] = \get_option('powerhouse_settings');
 
-		if (!( 'yes' === $enable_api_booster )) {
+		if ('yes' !== $enable_api_booster ) {
 			return;
 		}
 
