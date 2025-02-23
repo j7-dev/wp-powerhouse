@@ -75,7 +75,7 @@ class Utils {
 				try {
 					$response = self::activate( (string) $saved_code, $product_slug, true);
 				} catch (\Throwable $th) {
-					// 如果啟用請求有問題，維持啟用狀態
+					// 如果 API 啟用請求有問題，維持啟用狀態
 					$default_lc['code']        = '500 ' . $th->getMessage();
 					$default_lc['post_status'] = 'activated';
 					$lc_array[]                = $default_lc;
@@ -86,32 +86,12 @@ class Utils {
 					continue;
 				}
 
-				// get header status code
-				$status_code = \wp_remote_retrieve_response_code($response);
-
-				if (200 !== $status_code) {
-					$default_lc['code']        = (string) $status_code;
-					$default_lc['post_status'] = 'activated';
-					$lc_array[]                = $default_lc;
-					// 失敗的話，就先暫存一個預設啟用值，等於說跳過這次，下次到期再檢查
-					self::set_lc_transient($default_lc);
-					// 失敗不清除原本的 saved_code
-					// self::delete_lc_transient($product_slug);
+				// 如果啟用回得不是 200，則維持啟用狀態
+				if ( \is_wp_error( $response ) ) {
+					self::delete_lc_transient($product_slug);
+					$lc_array[] = $default_lc;
 					continue;
 				}
-
-				$body = \wp_remote_retrieve_body($response);
-
-				/**
-				 * @var array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
-				 */
-				$data = General::json_parse($body, []);
-
-				// @phpstan-ignore-next-line
-				self::set_lc_transient($data);
-
-				$lc_array[] = $data;
-				continue;
 			}
 
 			// 如果 transient 存在
@@ -130,10 +110,10 @@ class Utils {
 	 * @param string $code 授權碼
 	 * @param string $product_slug 產品 key
 	 * @param bool   $is_system_check 是否為系統檢查
-	 * @return array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}} $data 成功|失敗
-	 * @throws \Exception 如果啟用失敗，則拋出例外。
+	 * @return array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}}|\WP_Error $data 成功|失敗，非 200 回傳 \WP_Error
+	 * @throws \Exception API 發送失敗，則拋出例外。
 	 */
-	public static function activate( string $code, string $product_slug, bool $is_system_check = false ): array {
+	public static function activate( string $code, string $product_slug, bool $is_system_check = false ): array|\WP_Error {
 		$api      = Api\Base::instance();
 		$endpoint = 'license-codes/activate';
 
@@ -164,7 +144,7 @@ class Utils {
 		$status_code = \wp_remote_retrieve_response_code($response);
 
 		if (200 !== $status_code) {
-			throw new \Exception($data['message'] ?? 'unknown error');
+			return new \WP_Error('activate_lc_failed', $data['message'] ?? 'unknown error');
 		}
 
 		// @phpstan-ignore-next-line

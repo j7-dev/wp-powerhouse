@@ -87,6 +87,10 @@ final class V2Api extends ApiBase {
 
 			$result = Utils::activate( $code, $product_slug );
 
+			if ( \is_wp_error( $result ) ) {
+				throw new \Exception( $result->get_error_message() );
+			}
+
 			return new \WP_REST_Response(
 			[
 				'code'    => 'activate_lc_success',
