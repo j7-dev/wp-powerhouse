@@ -35,7 +35,7 @@ $themes = [
 	'sunset',
 ];
 ?>
-<div id="pc-theme-changer" class="tw-fixed bottom-8 right-8 z-20 pc-dropdown pc-dropdown-top pc-dropdown-end">
+<div id="pc-theme-changer" class="tw-fixed bottom-8 right-8 z-30 pc-dropdown pc-dropdown-top pc-dropdown-end">
 
 	<div tabindex="0" class="pc-menu pc-dropdown-content bg-base-200 text-base-content rounded-box h-[28.6rem] max-h-[calc(100vh-10rem)] w-56 overflow-y-auto border border-white/5 shadow-2xl outline outline-1 outline-black/5 mt-16">
 		<div class="grid grid-cols-1 gap-3 p-3">

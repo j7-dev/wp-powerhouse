@@ -207,7 +207,7 @@ final class DTO {
 	public function print_css(): void {
 		$theme_css = $this->to_array();
 		$style     = '<style>';
-		$style    .= "[data-theme='{$theme_css['theme']}'] {";
+		$style    .= "#tw[data-theme='{$theme_css['theme']}'] {";
 
 		unset($theme_css['theme']);
 		foreach ($theme_css as $key => $value) {
