@@ -90,7 +90,7 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 			[
 				'code'    => 'activate_lc_success',
-				'message' => '啟用成功',
+				'message' => "授權碼 《{$code}》 啟用成功",
 				'data'    => $result,
 			]
 			);
@@ -98,8 +98,8 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 				[
 					'code'    => 'activate_lc_failed',
-					'message' => '啟用失敗',
-					'data'    => $th->getMessage(),
+					'message' => '啟用失敗，' . $th->getMessage(),
+					'data'    => null,
 				],
 				500
 			);
@@ -138,7 +138,7 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 			[
 				'code'    => 'deactivate_lc_success',
-				'message' => '棄用成功',
+				'message' => "授權碼 《{$code}》 棄用成功",
 				'data'    => $result,
 			],
 			200
@@ -147,8 +147,8 @@ final class V2Api extends ApiBase {
 			return new \WP_REST_Response(
 			[
 				'code'    => 'deactivate_lc_failed',
-				'message' => '棄用失敗',
-				'data'    => $th->getMessage(),
+				'message' => '棄用失敗，' . $th->getMessage(),
+				'data'    => null,
 			],
 			500
 			);
