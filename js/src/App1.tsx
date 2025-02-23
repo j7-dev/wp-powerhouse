@@ -1,12 +1,7 @@
 /* eslint-disable quote-props */
 import { Refine } from '@refinedev/core'
 
-import {
-	ThemedLayoutV2,
-	ThemedSiderV2,
-	ErrorComponent,
-	useNotificationProvider,
-} from '@refinedev/antd'
+import { ThemedLayoutV2, ThemedSiderV2, ErrorComponent } from '@refinedev/antd'
 import '@refinedev/antd/dist/reset.css'
 import routerBindings, {
 	UnsavedChangesNotifier,
@@ -19,11 +14,11 @@ import { ConfigProvider } from 'antd'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
 	dataProvider,
+	notificationProvider,
 	useBunny,
 	MediaLibraryIndicator,
 } from 'antd-toolkit/refine'
-import { env } from '@/utils'
-import axios, { AxiosInstance } from 'axios'
+import { useEnv } from 'antd-toolkit'
 import 'antd-toolkit/style.css'
 
 // 如果 是 vite dev 才 import scss
@@ -35,28 +30,19 @@ import 'antd-toolkit/style.css'
 
 function App() {
 	const { bunny_data_provider_result } = useBunny()
-	const { KEBAB, API_URL, NONCE } = env
-
-	const axiosInstance: AxiosInstance = axios.create({
-		timeout: 30000,
-		headers: {
-			// @ts-ignore
-			'X-WP-Nonce': NONCE,
-			'Content-Type': 'application/json',
-		},
-	})
+	const { API_URL, AXIOS_INSTANCE } = useEnv()
 
 	return (
 		<HashRouter>
 			<Refine
 				dataProvider={{
-					default: dataProvider(`${API_URL}/v2/powerhouse`, axiosInstance),
-					'wp-rest': dataProvider(`${API_URL}/wp/v2`, axiosInstance),
-					'wc-rest': dataProvider(`${API_URL}/wc/v3`, axiosInstance),
-					'wc-store': dataProvider(`${API_URL}/wc/store/v1`, axiosInstance),
+					default: dataProvider(`${API_URL}/v2/powerhouse`, AXIOS_INSTANCE),
+					'wp-rest': dataProvider(`${API_URL}/wp/v2`, AXIOS_INSTANCE),
+					'wc-rest': dataProvider(`${API_URL}/wc/v3`, AXIOS_INSTANCE),
+					'wc-store': dataProvider(`${API_URL}/wc/store/v1`, AXIOS_INSTANCE),
 					'bunny-stream': bunny_data_provider_result,
 				}}
-				notificationProvider={useNotificationProvider}
+				notificationProvider={notificationProvider}
 				routerProvider={routerBindings}
 				resources={resources}
 				options={{

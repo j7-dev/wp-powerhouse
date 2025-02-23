@@ -1,5 +1,5 @@
 import { useCustomMutation, useApiUrl } from '@refinedev/core'
-import { FormInstance, message } from 'antd'
+import { FormInstance } from 'antd'
 import { useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -10,11 +10,6 @@ const useSave = ({ form }: { form: FormInstance }) => {
 	const queryClient = useQueryClient()
 
 	const handleSave = useCallback(() => {
-		message.loading({
-			content: '儲存中...',
-			duration: 0,
-			key: 'save',
-		})
 		form.validateFields().then((values) => {
 			mutate(
 				{
@@ -24,10 +19,6 @@ const useSave = ({ form }: { form: FormInstance }) => {
 				},
 				{
 					onSuccess: () => {
-						message.success({
-							content: '儲存成功',
-							key: 'save',
-						})
 						queryClient.invalidateQueries(['get_options'])
 					},
 				},
