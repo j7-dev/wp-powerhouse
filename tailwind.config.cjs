@@ -96,6 +96,7 @@ module.exports = {
 		'fixed',
 		'block',
 		'inline',
+		'blur',
 	],
 	daisyui: {
 		themes: [
