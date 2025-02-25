@@ -98,9 +98,6 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function enqueue_frontend_assets(): void {
-		if (!General::in_url([ 'power-', 'powerhouse' ])) {
-			return;
-		}
 		// 後台已經有 blocknote 的 css 了，前台按需載入
 		\wp_register_style( 'blocknote', Plugin::$url . '/js/dist/css/blocknote.min.css', [], Plugin::$version );
 		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/front.min.css', [], Plugin::$version );
