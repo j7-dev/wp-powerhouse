@@ -64,10 +64,6 @@ final class AutoUpdate {
 		}
 		$plugin = reset($plugins); // 目前更新的外掛
 
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log(in_array( $plugin, $this->power_plugins, true ), '滿足更新 powerhouse 條件');
-		// ---------- END TEST ---------- //
-
 		// 如果目前更新的外掛屬於 power- 系列
 		if ( in_array( $plugin, $this->power_plugins, true ) ) {
 			$action_id = \as_schedule_single_action(time() + 10, self::AUTO_UPDATE_HOOK);
