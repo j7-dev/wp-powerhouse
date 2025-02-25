@@ -22,6 +22,7 @@ final class Compatibility {
 	 */
 	public function __construct() {
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'redirect' ], 10 );
+		AutoUpdate::instance();
 
 		// 以下是每次版本都會執行一次
 		$scheduled_version = \get_option('powerhouse_compatibility_action_scheduled');
