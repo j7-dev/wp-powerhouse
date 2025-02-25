@@ -39,7 +39,6 @@ class Utils {
 		 * @var array<string, array{name?: string, link?: string}>  key,info
 		 */
 		$product_infos = \apply_filters( 'powerhouse_product_infos', [] );
-
 		// 存在 db 的 product_slug 和 code
 		/**
 		 * @var array<string, string> $saved_codes 產品 key 和 code
@@ -264,18 +263,18 @@ class Utils {
 		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
 		$trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
 		$functions = array_map( fn ( $t ) => $t['function'], $trace );
-		\J7\WpUtils\Classes\WC::log(
-			[
-				'functions'    => $functions,
-				'product_slug' => $product_slug,
-			],
-			'debug_backtrace delete_lc_transient'
-			);
+		if ($functions[2] !== 'check_lc_array') {
+			\J7\WpUtils\Classes\WC::log(
+				[
+					'functions'    => $functions,
+					'product_slug' => $product_slug,
+				],
+				'debug_backtrace delete_lc_transient'
+				);
+		}
 		// -------------------- END TEST ------------------- //
 
-		/**
-		 * @var array<string, string> $saved_codes 產品 key 和 code
-		 */
+		/** @var array<string, string> $saved_codes 產品 key 和 code */
 		$saved_codes = \get_option(self::KEY, []);
 		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 
