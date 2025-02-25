@@ -39,10 +39,9 @@ module.exports = {
 		require('daisyui'),
 		function ({ addUtilities, addComponents }) {
 			const newUtilities = {
-				'.rtl': {
+				'.right-to-left': {
 					direction: 'rtl',
 				},
-
 				// 與 WordPress 衝突的 class
 				'.tw-hidden': {
 					display: 'none',

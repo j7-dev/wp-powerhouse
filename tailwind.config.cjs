@@ -39,7 +39,7 @@ module.exports = {
 		require('daisyui'),
 		function ({ addUtilities, addComponents }) {
 			const newUtilities = {
-				'.rtl': {
+				'.right-to-left': {
 					direction: 'rtl',
 				},
 
