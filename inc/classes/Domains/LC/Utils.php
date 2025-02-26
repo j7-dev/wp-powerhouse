@@ -90,6 +90,8 @@ class Utils {
 					self::delete_lc_transient($product_slug);
 					$lc_array[] = $default_lc;
 					continue;
+				} else {
+					$lc_array[] = $response;
 				}
 			}
 
