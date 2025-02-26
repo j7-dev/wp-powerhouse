@@ -40,8 +40,6 @@ final class Bootstrap {
 		Domains\Loader::instance();
 		Theme\FrontEnd::instance();
 
-		\add_action( 'init', [ __CLASS__, 'register_assets' ] );
-
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
 
@@ -51,15 +49,6 @@ final class Bootstrap {
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
 	}
 
-	/**
-	 * Register assets
-	 *
-	 * @return void
-	 */
-	public static function register_assets(): void {
-		\wp_register_style( 'shoelace', 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/themes/light.css', [], '2.18.0' );
-		\wp_register_script( 'shoelace', 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.18.0/cdn/shoelace-autoloader.js', [], '2.18.0', false );
-	}
 
 	/**
 	 * Add Power Plugin Menu
