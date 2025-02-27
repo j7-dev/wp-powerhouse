@@ -10,6 +10,7 @@ $search = (string) ($_GET['search'] ?? ''); // phpcs:ignore
 /** @var array{class: string|null} $args */
 @[
 	'class' => $class,
+	'input_class' => $input_class,
 ] = $args;
 
 global $post;
@@ -18,7 +19,7 @@ $top_parent_id = PostUtils::get_top_post_id( $post->ID );
 printf(
 /*html*/'
 <form action="%1$s" method="get" class="%3$s">
-	<label class="pc-input pc-input-bordered flex items-center gap-2">
+	<label class="pc-input %4$s flex items-center gap-2">
 		<input type="text" class="pc-search-input grow !border-none h-fit bg-inherit" placeholder="搜尋" name="search" value="%2$s" />
 		<button type="submit" class="!bg-transparent !border-none !outline-none !m-0 !p-4">
 			<svg
@@ -37,4 +38,5 @@ printf(
 get_the_permalink( $top_parent_id ),
 $search,
 $class ?? '',
+$input_class ?? '',
 );
