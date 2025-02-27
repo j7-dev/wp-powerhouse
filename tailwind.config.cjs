@@ -97,7 +97,8 @@ module.exports = {
 		'block',
 		'inline',
 		'blur',
-		'size-full'
+		'size-full',
+		'container'
 	],
 	daisyui: {
 		themes: [

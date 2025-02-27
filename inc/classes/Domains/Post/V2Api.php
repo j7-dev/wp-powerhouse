@@ -147,61 +147,49 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_posts_with_id_callback( $request ) { // phpcs:ignore
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('post id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('post id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$post = \get_post( (int) $id );
 
-			$post = \get_post( (int) $id );
+		if (!$post) {
+			throw new \Exception(
+				sprintf(
+				__('post not found #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			if (!$post) {
-				throw new \Exception(
-					sprintf(
-					__('post not found #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		/** @var array<string, mixed>|null $params */
+		$params = $request->get_query_params();
+		$params = is_array($params) ? $params : [];
+		/** @var array<string, mixed> $params */
+		$params = WP::sanitize_text_field_deep( $params, false );
 
-			/** @var array<string, mixed>|null $params */
-			$params = $request->get_query_params();
-			$params = is_array($params) ? $params : [];
-			/** @var array<string, mixed> $params */
-			$params = WP::sanitize_text_field_deep( $params, false );
+		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
+		$params = General::parse( $params );
 
-			// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
-			$params = General::parse( $params );
-
-			[
+		[
 				'meta_keys' => $meta_keys,
 				'with_description' => $with_description,
 				'depth' => $depth,
 				'recursive_args' => $recursive_args,
 			] = Utils::handle_args($params);
 
-			/** @var \WP_Post $post */
-			$post_array = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+		/** @var \WP_Post $post */
+		$post_array = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
 
-			$response = new \WP_REST_Response( $post_array );
+		$response = new \WP_REST_Response( $post_array );
 
-			return $response;
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'get_failed',
-					'message' => $th->getMessage(),
-					'data'    => null,
-				],
-				400
-			);
-		}
+		return $response;
 	}
 
 
@@ -254,47 +242,30 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_posts_callback( $request ): \WP_REST_Response|\WP_Error {
-
-		try {
-			[
+		[
 				'data'      => $data,
 				'meta_data' => $meta_data,
 			] = $this->separator( $request );
 
-			$qty = (int) ( $meta_data['qty'] ?? 1 );
-			unset($meta_data['qty']);
+		$qty = (int) ( $meta_data['qty'] ?? 1 );
+		unset($meta_data['qty']);
 
-			$post_parents = $meta_data['post_parents'] ?? [];
-			unset($meta_data['post_parents']);
-			$post_parents = is_array( $post_parents ) ? $post_parents : [];
+		$post_parents = $meta_data['post_parents'] ?? [];
+		unset($meta_data['post_parents']);
+		$post_parents = is_array( $post_parents ) ? $post_parents : [];
 
-			// 不需要紀錄 depth，深度是由 post_parent 決定的
-			unset($meta_data['depth']);
-			// action 用來區分是 create 還是 update ，目前只有 create ，所以不用判斷
-			unset($meta_data['action']);
+		// 不需要紀錄 depth，深度是由 post_parent 決定的
+		unset($meta_data['depth']);
+		// action 用來區分是 create 還是 update ，目前只有 create ，所以不用判斷
+		unset($meta_data['action']);
 
-			$data['meta_input'] = $meta_data;
+		$data['meta_input'] = $meta_data;
 
-			$success_ids = [];
+		$success_ids = [];
 
-			if (!empty($post_parents)) {
-				foreach ($post_parents as $post_parent) {
-					$data['post_parent'] = $post_parent;
-					for ($i = 0; $i < $qty; $i++) {
-						$post_id = Utils::create_post( $data );
-						if (is_numeric($post_id)) {
-							$success_ids[] = $post_id;
-						} else {
-							throw new \Exception(
-								sprintf(
-								__('create post failed, %s', 'powerhouse'),
-								$post_id->get_error_message()
-							)
-							);
-						}
-					}
-				}
-			} else {
+		if (!empty($post_parents)) {
+			foreach ($post_parents as $post_parent) {
+				$data['post_parent'] = $post_parent;
 				for ($i = 0; $i < $qty; $i++) {
 					$post_id = Utils::create_post( $data );
 					if (is_numeric($post_id)) {
@@ -309,24 +280,29 @@ final class V2Api extends ApiBase {
 					}
 				}
 			}
+		} else {
+			for ($i = 0; $i < $qty; $i++) {
+				$post_id = Utils::create_post( $data );
+				if (is_numeric($post_id)) {
+					$success_ids[] = $post_id;
+				} else {
+					throw new \Exception(
+						sprintf(
+						__('create post failed, %s', 'powerhouse'),
+						$post_id->get_error_message()
+					)
+					);
+				}
+			}
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 				[
 					'code'    => 'create_success',
 					'message' => __('create post success', 'powerhouse'),
 					'data'    => $success_ids,
 				],
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'create_failed',
-					'message' => $th->getMessage(),
-					'data'    => null,
-				],
-				400
-			);
-		}
 	}
 
 	/**
@@ -368,35 +344,34 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_posts_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('post id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('post id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			[
+		[
 			'data'      => $data,
 			'meta_data' => $meta_data,
 			] = $this->separator( $request );
 
-			$data['meta_input'] = $meta_data;
+		$data['meta_input'] = $meta_data;
 
-			$update_result = Utils::update_post(
+		$update_result = Utils::update_post(
 				(int) $id,
 				$data
 			);
 
-			/** @var int|\WP_Error $update_result */
-			if ( !is_numeric( $update_result ) ) {
-				return $update_result;
-			}
+		/** @var int|\WP_Error $update_result */
+		if ( !is_numeric( $update_result ) ) {
+			return $update_result;
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'update_success',
 				'message' => __('update post success', 'powerhouse'),
@@ -405,17 +380,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-			[
-				'code'    => 'update_failed',
-				'message' => $th->getMessage(),
-				'data'    => null,
-			],
-			400
-			);
-		}
 	}
 
 	/**
@@ -437,36 +401,25 @@ final class V2Api extends ApiBase {
 		/** @var array<string> $ids */
 		$ids = is_array( $ids ) ? $ids : [];
 
-		try {
-			foreach ($ids as $id) {
-				$result = \wp_trash_post( (int) $id );
-				if (!$result) {
-					throw new \Exception(
-						sprintf(
-						__('delete post data failed #%s', 'powerhouse'),
-						$id
-					)
-					);
-				}
+		foreach ($ids as $id) {
+			$result = \wp_trash_post( (int) $id );
+			if (!$result) {
+				throw new \Exception(
+					sprintf(
+					__('delete post data failed #%s', 'powerhouse'),
+					$id
+				)
+				);
 			}
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
 					'message' => __('delete post data success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'delete_failed',
-					'message' => $th->getMessage(),
-					'data'    => $ids,
-				],
-				400
-			);
-		}
 	}
 
 	/**
@@ -479,27 +432,26 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function delete_posts_with_id_callback( $request ): \WP_REST_Response {
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('post id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
-			$result = \wp_trash_post( (int) $id );
-			if (!$result) {
-				throw new \Exception(
-					sprintf(
-					__('delete post failed #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('post id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+		$result = \wp_trash_post( (int) $id );
+		if (!$result) {
+			throw new \Exception(
+				sprintf(
+				__('delete post failed #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'delete_success',
 				'message' => __('delete post success', 'powerhouse'),
@@ -508,17 +460,5 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'delete_failed',
-					'message' => $th->getMessage(),
-					'data'    => [
-						'id' => $id,
-					],
-				],
-				400
-				);
-		}
 	}
 }

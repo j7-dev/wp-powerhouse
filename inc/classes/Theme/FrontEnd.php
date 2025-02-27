@@ -22,7 +22,7 @@ final class FrontEnd {
 	 */
 	public function __construct() {
 		\add_filter( 'language_attributes', [ $this, 'add_html_attr' ], 20, 2 );
-		\add_action('wp_head', [ $this, 'custom_theme_color' ], 10);
+		\add_action('wp_head', [ $this, 'custom_theme_color' ], -100);
 	}
 
 	/**
@@ -62,7 +62,7 @@ final class FrontEnd {
 	 */
 	public static function render_button( $force_render = false ) {
 		if ($force_render || DTO::instance()->enable_theme_changer === 'yes') {
-			Plugin::get('theme');
+			Plugin::load_template('theme');
 		}
 	}
 }

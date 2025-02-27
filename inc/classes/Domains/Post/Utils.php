@@ -1,7 +1,4 @@
 <?php
-/**
- * Post Utils
- */
 
 declare(strict_types=1);
 
@@ -10,7 +7,7 @@ namespace J7\Powerhouse\Domains\Post;
 use J7\WpUtils\Classes\WP;
 
 /**
- * Class Utils
+ * Post Utils
  */
 abstract class Utils {
 
@@ -313,9 +310,9 @@ abstract class Utils {
 	 * 取得最上層的文章 ID
 	 *
 	 * @param int $post_id 文章 ID.
-	 * @return int|null
+	 * @return int
 	 */
-	public static function get_top_post_id( int $post_id ): int|null {
+	public static function get_top_post_id( int $post_id ): int {
 
 		$cache_key   = "top_post_id_{$post_id}";
 		$top_post_id = \wp_cache_get( $cache_key );
@@ -325,13 +322,14 @@ abstract class Utils {
 
 		$ancestors = \get_post_ancestors( $post_id );
 		if ( empty( $ancestors ) ) {
-			return null;
+			// 如果沒有祖先，自己就是最上層
+			return $post_id;
 		}
 		// 取最後一個
 		$top_post_id = $ancestors[ count( $ancestors ) - 1 ];
 
 		\wp_cache_set( $cache_key, $top_post_id );
-		return $top_post_id;
+		return (int) $top_post_id;
 	}
 
 
