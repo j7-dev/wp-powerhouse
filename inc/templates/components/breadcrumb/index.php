@@ -29,11 +29,15 @@ if (!$the_post->post_parent) {
 
 /** @var array<int> $breadcrumb_post_ids 取得麵包屑的 post id，由上到下 */
 $breadcrumb_post_ids = array_reverse(\get_ancestors($the_post->ID, $the_post->post_type, 'post_type'));
+$breadcrumb_post_ids = [
+	...$breadcrumb_post_ids,
+	$the_post->ID,
+];
 
 printf(
 /*html*/'
 <div class="pc-breadcrumbs %1$s">
-	<ul class="pl-0">
+	<ul class="pl-0 gap-y-1 flex-wrap">
 ',
 $class
 );
