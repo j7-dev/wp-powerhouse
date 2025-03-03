@@ -51,7 +51,7 @@ foreach ($breadcrumb_post_ids as $key => $breadcrumb_post_id) {
 	}
 
 	printf(
-	/*html*/'<li><a class="text-base-content/75 hover:text-primary flex" style="text-decoration: none;" href="%1$s">%2$s%3$s</a></li>
+	/*html*/'<li><a class="text-base-content/75 hover:text-primary flex" style="text-decoration: none;" href="%1$s">%2$s<span class="flex-1 whitespace-normal">%3$s</span></a></li>
 	',
 	get_the_permalink($breadcrumb_post_id),
 	$key === 0 ? /*html*/'
@@ -59,7 +59,7 @@ foreach ($breadcrumb_post_ids as $key => $breadcrumb_post_id) {
 	xmlns="http://www.w3.org/2000/svg"
 	fill="none"
 	viewBox="0 0 24 24"
-	class="h-4 w-4 stroke-current mr-1">
+	class="h-4 w-4 stroke-current mx-1">
 		<path
 		stroke-linecap="round"
 		stroke-linejoin="round"
