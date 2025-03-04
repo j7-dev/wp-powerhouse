@@ -59,6 +59,9 @@ class Utils {
 			$decoded = false;
 			if (false !== $lc) {
 				$decoded = self::decode( (string) $lc);
+				// 如果 transient 存在，則直接新增到 $lc_array
+				$lc_array[] = $decoded;
+				continue;
 			}
 
 			$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
@@ -85,18 +88,17 @@ class Utils {
 					continue;
 				}
 
-				// 如果啟用回得不是 200，則使用預設的狀態
+				// 如果啟用回得是 401 ，則使用預設的狀態
 				if ( \is_wp_error( $response ) ) {
 					self::delete_lc_transient($product_slug);
 					$lc_array[] = $default_lc;
 					continue;
-				} else {
-					$lc_array[] = $response;
 				}
-			}
 
-			// 如果 transient 存在
-			$lc_array[] = $decoded;
+				// 不是 \WP_Error, 也沒有 throw，那就是 200
+				// 不需要 set_lc_transient，因為 activate 裡面已經有做了
+				$lc_array[] = $response;
+			}
 		}
 
 		/**
@@ -111,8 +113,8 @@ class Utils {
 	 * @param string $code 授權碼
 	 * @param string $product_slug 產品 key
 	 * @param bool   $is_system_check 是否為系統檢查
-	 * @return array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}}|\WP_Error $data 成功|失敗，非 200 回傳 \WP_Error
-	 * @throws \Exception API 發送失敗，則拋出例外。
+	 * @return array{id: int, post_status: string, code: string, type: string, expire_date: int, domain: string, product_id: int, product_slug: string, product_name: string}|array{code: string, message: string, data: array{status: int}}|\WP_Error $data 成功|失敗，401 回傳 \WP_Error
+	 * @throws \Exception API 發送失敗，或非 200 & 401，則拋出例外。
 	 */
 	public static function activate( string $code, string $product_slug, bool $is_system_check = false ): array|\WP_Error {
 		$api      = Api\Base::instance();
@@ -144,14 +146,19 @@ class Utils {
 		// get header status code
 		$status_code = \wp_remote_retrieve_response_code($response);
 
-		if (200 !== $status_code) {
-			return new \WP_Error('activate_lc_failed', $data['message'] ?? 'unknown error');
+		if (200 === $status_code) {
+			// @phpstan-ignore-next-line
+			self::set_lc_transient($data);
+			return $data;
 		}
 
-		// @phpstan-ignore-next-line
-		self::set_lc_transient($data);
+		// 只有 401 才回 WP_Error，其他都直接 throw
+		// 因為後續處理中 WP_Error 會掉授權，其他種類 throw 會維持原本狀態
+		if (401 === $status_code) {
+			return new \WP_Error($status_code, $data['message'] ?? 'unknown error');
+		}
 
-		return $data;
+		throw new \Exception($data['message'] ?? 'unknown error', $status_code); // @phpstan-ignore-line
 	}
 
 	/**
@@ -262,20 +269,6 @@ class Utils {
 	 * @return bool 是否刪除成功
 	 */
 	public static function delete_lc_transient( string $product_slug ): bool {
-		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
-		$trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
-		$functions = array_map( fn ( $t ) => $t['function'], $trace );
-		if ($functions[2] !== 'check_lc_array') {
-			\J7\WpUtils\Classes\WC::log(
-				[
-					'functions'    => $functions,
-					'product_slug' => $product_slug,
-				],
-				'debug_backtrace delete_lc_transient'
-				);
-		}
-		// -------------------- END TEST ------------------- //
-
 		/** @var array<string, string> $saved_codes 產品 key 和 code */
 		$saved_codes = \get_option(self::KEY, []);
 		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
