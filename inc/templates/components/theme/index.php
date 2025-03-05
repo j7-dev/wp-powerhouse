@@ -62,37 +62,29 @@ $themes = [
 <script type="module" async>
 	(function($) {
 		$(document).ready(function() {
-
 			class ThemeChanger {
 				_theme = 'custom';
 				$dropdown = null;
 
 				constructor() {
 					this.$dropdown = $('#pc-theme-changer');
-					this.init();
 					this.attachEvent();
 				}
 
 				set theme(value) {
+					// 如果切換的主題色與之前一樣，那就什麼也不做
+					if(this._theme === value) {
+						return;
+					}
 					this._theme = value;
 					// 修改 html tag attribute data-theme
 					$('html').attr('data-theme', this._theme);
-
 					// 儲存到 localStorage
 					localStorage.setItem('theme', this._theme);
 				}
 
 				get theme() {
 					return this._theme;
-				}
-
-				init() {
-					// 從 localStorage 取得 theme
-					const theme = localStorage.getItem('theme');
-					if(!theme) {
-						return;
-					}
-					this.theme = localStorage.getItem('theme');
 				}
 
 				isDropdownOpen() {

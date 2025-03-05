@@ -46,11 +46,25 @@ final class FrontEnd {
 
 	/**
 	 * 印出自訂主題的 CSS
+	 * 還有判斷用戶儲存在 localStorage 的 theme
 	 *
 	 * @return void
 	 */
 	public function custom_theme_color(): void {
 		ThemeDTO::instance()?->print_css();
+		?>
+		<script type="text/javascript">
+			// 同步代碼，我希望盡早判斷 localStorage 的 theme 是否存在，如果存在則立即改寫 html 的 data-theme 屬性
+			// 才不會有閃一下的問題
+			(function() {
+				const theme = localStorage.getItem('theme');
+				if(!theme) {
+					return;
+				}
+				document.documentElement.setAttribute('data-theme', theme);
+			})();
+		</script>
+		<?php
 	}
 
 
