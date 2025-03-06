@@ -9,6 +9,7 @@ global $post;
 @[
 	'post'      => $the_post,
 	'post_type' => $the_post_type,
+	'title'     => $the_title,
 ] = $args;
 
 $the_post = $the_post ?? $post;
@@ -34,7 +35,8 @@ if (!$children_posts) {
 	return;
 }
 
-echo '<h3 class="text-lg md:text-2xl font-black mb-4">相關文章</h3>';
+$the_title = $the_title ?? '章節內容';
+echo '<h3 class="text-lg md:text-2xl font-black mb-4">' . $the_title . '</h3>';
 echo '<div class="grid grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4 mb-12">';
 
 foreach ($children_posts as $child_post) {
