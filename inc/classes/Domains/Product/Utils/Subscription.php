@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Product\Helper;
+namespace J7\Powerhouse\Domains\Product\Utils;
 
 /**
  * Class Subscription

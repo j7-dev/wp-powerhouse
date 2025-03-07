@@ -5,11 +5,11 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\LC;
+namespace J7\Powerhouse\Domains\LC\Core;
 
 use J7\WpUtils\Classes\ApiBase;
 use J7\WpUtils\Classes\WP;
-
+use J7\Powerhouse\Domains\LC\Utils\Base;
 
 /**
  * Class V2Api
@@ -57,7 +57,7 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_lc_callback( \WP_REST_Request $request ): \WP_REST_Response {
-		return new \WP_REST_Response(Utils::get_lc_array());
+		return new \WP_REST_Response(Base::get_lc_array());
 	}
 
 
@@ -85,7 +85,7 @@ final class V2Api extends ApiBase {
 				'product_slug' => $product_slug,
 			] = $body_params;
 
-			$result = Utils::activate( $code, $product_slug );
+			$result = Base::activate( $code, $product_slug );
 
 			if ( \is_wp_error( $result ) ) {
 				throw new \Exception( $result->get_error_message() );
@@ -137,7 +137,7 @@ final class V2Api extends ApiBase {
 			'product_slug' => $product_slug,
 			] = $body_params;
 
-			$result = Utils::deactivate( $code, $product_slug );
+			$result = Base::deactivate( $code, $product_slug );
 
 			return new \WP_REST_Response(
 			[
@@ -183,7 +183,7 @@ final class V2Api extends ApiBase {
 		// TEST 印出 WC Logger 記得移除 ---- //
 		\J7\WpUtils\Classes\WC::log($product_slug, 'delete_lc_transient from post_lc_invalidate_callback');
 		// ---------- END TEST ---------- //
-		$delete_transient_result = Utils::delete_lc_transient( $product_slug );
+		$delete_transient_result = Base::delete_lc_transient( $product_slug );
 
 		return new \WP_REST_Response(
 			[

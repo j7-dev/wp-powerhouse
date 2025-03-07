@@ -6,10 +6,11 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\User;
+namespace J7\Powerhouse\Domains\User\Core;
 
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\ApiBase;
+use J7\Powerhouse\Domains\User\Utils\CRUD;
 
 /**
  * Class V2Api
@@ -134,7 +135,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_users = [];
 		foreach ($user_ids as $user_id) {
-			$formatted_users[] = Utils::format_user_details( (int) $user_id, $meta_keys );
+			$formatted_users[] = CRUD::format_user_details( (int) $user_id, $meta_keys );
 		}
 		$formatted_users = array_filter( $formatted_users );
 
@@ -170,7 +171,7 @@ final class V2Api extends ApiBase {
 					);
 			}
 
-			$user_array = Utils::format_user_details( (int) $id );
+			$user_array = CRUD::format_user_details( (int) $id );
 
 			$response = new \WP_REST_Response( $user_array );
 
@@ -217,7 +218,7 @@ final class V2Api extends ApiBase {
 					/** @var int|string $id */
 					$args       = $body_params;
 					$args['ID'] = $id;
-					$user_id    = Utils::update_user( $args );
+					$user_id    = CRUD::update_user( $args );
 					if (is_numeric($user_id)) {
 						$success_ids[] = $user_id;
 					} else {
@@ -247,7 +248,7 @@ final class V2Api extends ApiBase {
 			$success_ids = [];
 
 			for ($i = 0; $i < $qty; $i++) {
-				$user_id = Utils::create_user( $body_params );
+				$user_id = CRUD::create_user( $body_params );
 				if (is_numeric($user_id)) {
 					$success_ids[] = $user_id;
 				} else {
@@ -308,7 +309,7 @@ final class V2Api extends ApiBase {
 
 			$body_params['ID'] = $id;
 
-			$update_result = Utils::update_user( $body_params );
+			$update_result = CRUD::update_user( $body_params );
 
 			if ( !is_numeric( $update_result ) ) {
 				return $update_result;

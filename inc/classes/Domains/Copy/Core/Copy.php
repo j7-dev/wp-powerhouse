@@ -6,7 +6,7 @@
 
 declare ( strict_types=1 );
 
-namespace J7\Powerhouse\Domains\Copy;
+namespace J7\Powerhouse\Domains\Copy\Core;
 
 /**
  * Class Copy

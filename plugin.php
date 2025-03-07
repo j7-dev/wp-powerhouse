@@ -35,7 +35,7 @@ if ( \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/inc/classes/Domains/LC/Utils.php';
+require_once __DIR__ . '/inc/classes/Domains/LC/Utils/Base.php';
 
 /**
  * Class Plugin

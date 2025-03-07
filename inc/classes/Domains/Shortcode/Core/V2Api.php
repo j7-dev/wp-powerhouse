@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Shortcode;
+namespace J7\Powerhouse\Domains\Shortcode\Core;
 
 use J7\WpUtils\Classes\ApiBase;
 

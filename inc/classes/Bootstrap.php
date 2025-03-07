@@ -9,7 +9,7 @@ namespace J7\Powerhouse;
 
 use J7\WpUtils\Classes\General;
 use J7\Powerhouse\Utils\Base;
-use J7\Powerhouse\Domains\LC\Utils as LC_Utils;
+use J7\Powerhouse\Domains\LC\Utils\Base as LCUtils;
 use Kucrut\Vite;
 
 if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
@@ -164,6 +164,6 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function check_lc_array(): void {
-		$lc_array = LC_Utils::get_lc_array();
+		$lc_array = LCUtils::get_lc_array();
 	}
 }

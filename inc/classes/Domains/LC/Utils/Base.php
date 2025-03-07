@@ -7,7 +7,7 @@
 
 declare (strict_types = 1);
 
-namespace J7\Powerhouse\Domains\LC;
+namespace J7\Powerhouse\Domains\LC\Utils;
 
 use J7\Powerhouse\Plugin;
 use J7\WpUtils\Classes\General;
@@ -20,9 +20,9 @@ if ( class_exists( 'J7\Powerhouse\Domains\LC\Utils' ) ) {
 	return;
 }
 /**
- * Class Utils
+ * Class Base
  */
-class Utils {
+class Base {
 
 	const KEY        = 'powerhouse_license_codes';
 	const CACHE_TIME = 24 * HOUR_IN_SECONDS;

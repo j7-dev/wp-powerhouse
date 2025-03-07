@@ -3,7 +3,7 @@
  * 搜尋組件
  */
 
-use J7\Powerhouse\Domains\Post\Utils as PostUtils;
+use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
 
 $search = (string) ($_GET['search'] ?? ''); // phpcs:ignore
 
@@ -14,7 +14,7 @@ $search = (string) ($_GET['search'] ?? ''); // phpcs:ignore
 ] = $args;
 
 global $post;
-$top_parent_id = PostUtils::get_top_post_id( $post->ID );
+$top_parent_id = PostCRUD::get_top_post_id( $post->ID );
 
 printf(
 /*html*/'

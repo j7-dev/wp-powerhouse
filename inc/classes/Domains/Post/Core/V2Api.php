@@ -6,11 +6,12 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Post;
+namespace J7\Powerhouse\Domains\Post\Core;
 
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
+use J7\Powerhouse\Domains\Post\Utils\CRUD;
 
 /**
  * Class V2Api
@@ -110,7 +111,7 @@ final class V2Api extends ApiBase {
 			'with_description' => $with_description,
 			'depth' => $depth,
 			'recursive_args' => $recursive_args,
-		] = Utils::handle_args($args);
+		] = CRUD::handle_args($args);
 
 		$query       = new \WP_Query($args);
 		$posts       = $query->posts;
@@ -120,7 +121,7 @@ final class V2Api extends ApiBase {
 		$formatted_posts = [];
 		foreach ($posts as $post) {
 			/** @var \WP_Post $post */
-			$formatted_posts[] = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+			$formatted_posts[] = CRUD::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
 		}
 
 		$response = new \WP_REST_Response( $formatted_posts );
@@ -182,10 +183,10 @@ final class V2Api extends ApiBase {
 				'with_description' => $with_description,
 				'depth' => $depth,
 				'recursive_args' => $recursive_args,
-			] = Utils::handle_args($params);
+			] = CRUD::handle_args($params);
 
 		/** @var \WP_Post $post */
-		$post_array = Utils::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+		$post_array = CRUD::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
 
 		$response = new \WP_REST_Response( $post_array );
 
@@ -208,7 +209,7 @@ final class V2Api extends ApiBase {
 		$file_params = $request->get_file_params();
 
 		// 將前端傳過來的欄位轉換成 wp_update_post 能吃的參數
-		$body_params = Utils::converter( $body_params );
+		$body_params = CRUD::converter( $body_params );
 
 		$skip_keys = [
 			'post_content',
@@ -255,7 +256,7 @@ final class V2Api extends ApiBase {
 		$success_ids = [];
 
 		for ($i = 0; $i < $qty; $i++) {
-			$post_id = Utils::create_post( $data );
+			$post_id = CRUD::create_post( $data );
 			if (is_numeric($post_id)) {
 				$success_ids[] = $post_id;
 			} else {
@@ -292,7 +293,7 @@ final class V2Api extends ApiBase {
 		$body_params = WP::sanitize_text_field_deep( $body_params, false );
 
 		/** @var array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $body_params */
-		$sort_result = Utils::sort_posts( $body_params );
+		$sort_result = CRUD::sort_posts( $body_params );
 
 		if ( $sort_result !== true ) {
 			return $sort_result;
@@ -333,7 +334,7 @@ final class V2Api extends ApiBase {
 
 		$data['meta_input'] = $meta_data;
 
-		$update_result = Utils::update_post(
+		$update_result = CRUD::update_post(
 				(int) $id,
 				$data
 			);
