@@ -6,16 +6,16 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Product;
+namespace J7\Powerhouse\Domains\Product\Core;
 
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\WC;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
-use J7\Powerhouse\Domains\Post\Utils as PostUtils;
+use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
 use J7\Powerhouse\Domains\Limit\Models\Limit;
 use J7\Powerhouse\Domains\Limit\Models\BoundItemsData;
-
+use J7\Powerhouse\Domains\Product\Utils\CRUD;
 
 
 /**
@@ -102,7 +102,7 @@ final class V2Api extends ApiBase {
 	public function __construct() {
 		parent::__construct();
 		// 擴展 wc_get_products 的 meta_query
-		\add_filter('woocommerce_product_data_store_cpt_get_products_query', [ Utils::class, 'extend_meta_query' ], 10, 2,);
+		\add_filter('woocommerce_product_data_store_cpt_get_products_query', [ CRUD::class, 'extend_meta_query' ], 10, 2,);
 	}
 
 	/**
@@ -140,7 +140,7 @@ final class V2Api extends ApiBase {
 			'args' => $args,
 			'meta_keys' => $meta_keys,
 			'with_description' => $with_description,
-		] = PostUtils::handle_args($args);
+		] = PostCRUD::handle_args($args);
 
 		$args['fields'] = 'ids';  // 確保只返回 id
 
@@ -153,7 +153,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_products = [];
 		foreach ($products as $product) {
-			$formatted_products[] = Utils::format_product_details( $product, $with_description, $meta_keys );
+			$formatted_products[] = CRUD::format_product_details( $product, $with_description, $meta_keys );
 		}
 		$formatted_products = array_filter( $formatted_products );
 
@@ -197,9 +197,9 @@ final class V2Api extends ApiBase {
 			[
 				'meta_keys' => $meta_keys,
 				'with_description' => $with_description,
-			] = PostUtils::handle_args($params);
+			] = PostCRUD::handle_args($params);
 
-			$product_array = Utils::format_product_details( (int) $id, $with_description, $meta_keys );
+			$product_array = CRUD::format_product_details( (int) $id, $with_description, $meta_keys );
 
 			$response = new \WP_REST_Response( $product_array );
 
@@ -256,7 +256,7 @@ final class V2Api extends ApiBase {
 		$file_params = $request->get_file_params();
 
 		// 將前端傳過來的欄位轉換成 wp_update_post 能吃的參數
-		// $body_params = Utils::converter( $body_params );
+		// $body_params = CRUD::converter( $body_params );
 
 		$skip_keys = [
 			'description',
@@ -301,7 +301,7 @@ final class V2Api extends ApiBase {
 			$success_ids = [];
 
 			for ($i = 0; $i < $qty; $i++) {
-				$product_id    = Utils::create_product( $data, $meta_data );
+				$product_id    = CRUD::create_product( $data, $meta_data );
 				$success_ids[] = $product_id;
 			}
 
@@ -342,7 +342,7 @@ final class V2Api extends ApiBase {
 			] = $this->separator( $request );
 
 			/** @var \WC_Product $product */
-			Utils::update_product( $product, $data, $meta_data );
+			CRUD::update_product( $product, $data, $meta_data );
 
 			return new \WP_REST_Response(
 			[
@@ -513,12 +513,12 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_products_options_callback( $request ) { // phpcs:ignore
-		$formatted_cats = PostUtils::format_terms(
+		$formatted_cats = PostCRUD::format_terms(
 			[
 				'taxonomy' => 'product_cat',
 			]
 			);
-		$formatted_tags = PostUtils::format_terms(
+		$formatted_tags = PostCRUD::format_terms(
 			[
 				'taxonomy' => 'product_tag',
 			]
@@ -529,7 +529,7 @@ final class V2Api extends ApiBase {
 		[
 			'max_price' => $max_price,
 			'min_price' => $min_price,
-		] = Utils::get_max_min_prices();
+		] = CRUD::get_max_min_prices();
 
 		/** @var array{
 		 *  product_cats: array{id: string, name: string, slug: string}[],
