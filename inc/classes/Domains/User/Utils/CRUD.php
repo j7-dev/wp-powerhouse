@@ -5,14 +5,14 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\User;
+namespace J7\Powerhouse\Domains\User\Utils;
 
 use J7\WpUtils\Classes\WP;
 
 /**
- * Class Utils
+ * Class CRUD
  */
-abstract class Utils {
+abstract class CRUD {
 
 	/**
 	 * Create a new user

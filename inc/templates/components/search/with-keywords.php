@@ -1,7 +1,7 @@
 <?php
 
 use J7\Powerhouse\Plugin;
-use J7\Powerhouse\Domains\Post\Utils as PostUtils;
+use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
 
 global $post;
 
@@ -18,7 +18,7 @@ if ( ! ( $the_post instanceof \WP_Post ) ) {
 	return;
 }
 
-$top_parent_id = PostUtils::get_top_post_id( $the_post->ID );
+$top_parent_id = PostCRUD::get_top_post_id( $the_post->ID );
 
 /** @var array<array{id: string, title: string}>|'' $badges */
 $badges = get_post_meta( $top_parent_id, 'pd_keywords', true );
