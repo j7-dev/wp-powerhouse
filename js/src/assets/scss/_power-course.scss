@@ -1,3 +1,12 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: var(--fallback-bc, oklch(var(--bc) / var(--tw-text-opacity)));
+}
+
 #tw {
 	// daisyUI 的 rate 組件與 tailwind CSS 的樣式衝突，所以要加上以下 CSS
 	div .pc-rating input:checked ~ input,
@@ -9,15 +18,6 @@
 	body.courses-product,
 	body.classroom {
 		background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
-
-		h1,
-		h2,
-		h3,
-		h4,
-		h5,
-		h6 {
-			color: var(--fallback-bc, oklch(var(--bc) / var(--tw-text-opacity)));
-		}
 	}
 
 	.pc-title {
