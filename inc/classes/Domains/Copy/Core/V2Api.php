@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Copy; // phpcs:ignore
+namespace J7\Powerhouse\Domains\Copy\Core; // phpcs:ignore
 
 use J7\WpUtils\Classes\ApiBase;
 

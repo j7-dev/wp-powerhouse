@@ -64,6 +64,7 @@ abstract class Base {
 			'power-docs/plugin.php',
 			'power-partner/plugin.php',
 			'power-payment/plugin.php',
+			'power-shop/plugin.php',
 		];
 		$active_plugins = \get_option( 'active_plugins', [] );
 		$active_plugins = is_array($active_plugins) ? $active_plugins : [];

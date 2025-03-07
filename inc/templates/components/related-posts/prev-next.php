@@ -3,14 +3,14 @@
  * 顯示樹狀結構的上一篇、下一篇文章 (不是扁平的上一篇下一篇)
  */
 
-use J7\Powerhouse\Domains\Post\Utils as PostUtils;
+use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
 
 global $post;
 
 
-$top_parent_id = PostUtils::get_top_post_id($post->ID);
+$top_parent_id = PostCRUD::get_top_post_id($post->ID);
 
-$all_children_ids = PostUtils::get_flatten_post_ids( $top_parent_id);
+$all_children_ids = PostCRUD::get_flatten_post_ids( $top_parent_id);
 
 // find index of current post id
 /** @var int|false $current_post_index */

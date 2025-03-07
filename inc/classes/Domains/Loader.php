@@ -18,14 +18,14 @@ final class Loader {
 	 * Constructor
 	 */
 	public function __construct() {
-		Post\V2Api::instance();
-		User\V2Api::instance();
-		Product\V2Api::instance();
-		Option\V2Api::instance();
-		Shortcode\V2Api::instance();
-		Upload\V2Api::instance();
-		Copy\V2Api::instance();
-		Limit\V2Api::instance();
-		LC\V2Api::instance();
+		Post\Core\V2Api::instance();
+		User\Core\V2Api::instance();
+		Product\Core\V2Api::instance();
+		Option\Core\V2Api::instance();
+		Shortcode\Core\V2Api::instance();
+		Upload\Core\V2Api::instance();
+		Copy\Core\V2Api::instance();
+		Limit\Core\V2Api::instance();
+		LC\Core\V2Api::instance();
 	}
 }
