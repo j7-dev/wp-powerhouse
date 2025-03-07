@@ -5,15 +5,15 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Product;
+namespace J7\Powerhouse\Domains\Product\Utils;
 
 use J7\WpUtils\Classes\WP;
-use J7\Powerhouse\Domains\Post\Utils as PostUtils;
+use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
 
 /**
- * Class Utils
+ * Class CRUD
  */
-abstract class Utils {
+abstract class CRUD {
 
 	/**
 	 * 新增商品
@@ -49,8 +49,8 @@ abstract class Utils {
 	 * @return void
 	 */
 	public static function update_product( \WC_Product $product, array $data = [], array $meta_data = [] ): void {
-		Helper\Save::data($product, $data );
-		Helper\Save::meta_data($product, $meta_data );
+		Save::data($product, $data );
+		Save::meta_data($product, $meta_data );
 	}
 
 
@@ -164,7 +164,7 @@ abstract class Utils {
 
 		// 暴露額外的 meta keys
 		$meta_keys_array         = self::get_meta_keys_array($product, $meta_keys);
-		$subscription_data_array = Helper\Subscription::get_subscription_meta_data($product);
+		$subscription_data_array = Subscription::get_subscription_meta_data($product);
 
 		// 組合商品屬性 $attributes_arr
 		$attributes     = $product->get_attributes(); // get attributes object
@@ -233,13 +233,13 @@ abstract class Utils {
 			'attributes'         => $attributes_arr,
 
 			// 商品分類
-			'categories'         => PostUtils::format_terms(
+			'categories'         => PostCRUD::format_terms(
 				[
 					'taxonomy'   => 'product_cat',
 					'object_ids' => $product_id,
 				]
 				),
-			'tags'               => PostUtils::format_terms(
+			'tags'               => PostCRUD::format_terms(
 				[
 					'taxonomy'   => 'product_tag',
 					'object_ids' => $product_id,
@@ -294,7 +294,7 @@ abstract class Utils {
 		$product_type = $product->get_type();
 
 		return match ($product_type) {
-			'subscription' => Helper\Subscription::get_price_html($product),
+			'subscription' => Subscription::get_price_html($product),
 			'variable-subscription' => '',
 			default => $product->get_price_html(),
 		};

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Post;
+namespace J7\Powerhouse\Domains\Post\Utils;
 
 use J7\WpUtils\Classes\WP;
 
 /**
- * Post Utils
+ * Post CRUD
  */
-abstract class Utils {
+abstract class CRUD {
 
 	const TEMPLATE = '';
 
