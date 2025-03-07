@@ -63,13 +63,11 @@ final class V2Api extends ApiBase {
 	];
 
 	/**
-	 * Get posts callback 取得文章列表
-	 * 傳入 post_type 可以取得特定文章類型
+	 * Get orders callback 取得訂單列表
 	 *
 	 * @see https://github.com/woocommerce/woocommerce/wiki/wc_get_orders-and-WC_Order_Query
 	 *
 	 * @param \WP_REST_Request $request Request.
-	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 * @phpstan-ignore-next-line
 	 */
@@ -122,13 +120,13 @@ final class V2Api extends ApiBase {
 		$total       = $query->total;
 		$total_pages = $query->max_num_pages;
 
-		$formatted_posts = [];
+		$formatted_orders = [];
 		foreach ($orders as $order) {
 			/** @var \WP_Post $post */
-			$formatted_posts[] = CRUD::format_order_details($order );
+			$formatted_orders[] = CRUD::format_order_details($order );
 		}
 
-		$response = new \WP_REST_Response( $formatted_posts );
+		$response = new \WP_REST_Response( $formatted_orders );
 
 		// set pagination in header
 		$response->header( 'X-WP-Total', (string) $total );
@@ -142,8 +140,8 @@ final class V2Api extends ApiBase {
 
 
 
-	/**TODO
-	 * Get posts callback
+	/**
+	 * Get order callback
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 *
@@ -162,12 +160,12 @@ final class V2Api extends ApiBase {
 			);
 		}
 
-		$post = \get_post( (int) $id );
+		$order = \wc_get_order( (int) $id );
 
-		if (!$post) {
+		if (!$order) {
 			throw new \Exception(
 				sprintf(
-				__('post not found #%s', 'powerhouse'),
+				__('order not found #%s', 'powerhouse'),
 				$id
 			)
 			);
@@ -182,17 +180,10 @@ final class V2Api extends ApiBase {
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$params = General::parse( $params );
 
-		[
-				'meta_keys' => $meta_keys,
-				'with_description' => $with_description,
-				'depth' => $depth,
-				'recursive_args' => $recursive_args,
-			] = CRUD::handle_args($params);
-
 		/** @var \WP_Post $post */
-		$post_array = CRUD::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+		$formatted_order = CRUD::format_order_details( $order );
 
-		$response = new \WP_REST_Response( $post_array );
+		$response = new \WP_REST_Response( $formatted_order );
 
 		return $response;
 	}
@@ -330,12 +321,12 @@ final class V2Api extends ApiBase {
 			);
 	}
 
-	/**TODO
-	 * 批量刪除文章資料
+	/**
+	 * 批量刪除訂單資料
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
-	 * @throws \Exception 當刪除文章資料失敗時拋出異常
+	 * @throws \Exception 當刪除訂單資料失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
 	public function delete_orders_callback( $request ): \WP_REST_Response|\WP_Error {
@@ -350,11 +341,20 @@ final class V2Api extends ApiBase {
 		$ids = is_array( $ids ) ? $ids : [];
 
 		foreach ($ids as $id) {
-			$result = \wp_trash_post( (int) $id );
-			if (!$result) {
+			$order = \wc_get_order( (int) $id );
+			if (!$order) {
 				throw new \Exception(
 					sprintf(
-					__('delete post data failed #%s', 'powerhouse'),
+					__('order not found #%s', 'powerhouse'),
+					$id
+				)
+				);
+			}
+			$delete_result = $order->delete();
+			if (!$delete_result) {
+				throw new \Exception(
+				sprintf(
+					__('delete order failed #%s', 'powerhouse'),
 					$id
 				)
 				);
@@ -364,13 +364,13 @@ final class V2Api extends ApiBase {
 		return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
-					'message' => __('delete post data success', 'powerhouse'),
+					'message' => __('delete order data success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
 	}
 
-	/**TODO
+	/**
 	 * Delete post callback
 	 * 刪除文章
 	 *
@@ -389,20 +389,28 @@ final class V2Api extends ApiBase {
 			)
 			);
 		}
-		$result = \wp_trash_post( (int) $id );
-		if (!$result) {
+		$order = \wc_get_order( (int) $id );
+		if (!$order) {
 			throw new \Exception(
 				sprintf(
-				__('delete post failed #%s', 'powerhouse'),
+				__('order not found #%s', 'powerhouse'),
 				$id
 			)
 			);
 		}
-
+		$delete_result = $order->delete();
+		if (!$delete_result) {
+			throw new \Exception(
+				sprintf(
+				__('delete order failed #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 		return new \WP_REST_Response(
 			[
 				'code'    => 'delete_success',
-				'message' => __('delete post success', 'powerhouse'),
+				'message' => __('delete order success', 'powerhouse'),
 				'data'    => [
 					'id' => $id,
 				],

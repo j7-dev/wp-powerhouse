@@ -70,6 +70,9 @@ abstract class CRUD {
 	 * }
 	 */
 	public static function format_order_details( \WC_Order|OrderRefund $order ) {
+		if (!( $order instanceof \WC_Order )) {
+			return null;
+		}
 
 		/** @var \WC_Order_Item_Product[] $items */
 		$items       = $order->get_items();
@@ -105,12 +108,14 @@ abstract class CRUD {
 			'order_number'         => $order->get_order_number(),
 			'customer'             => $customer,
 			'items'                => $items_array,
-			'date_created'         => $order->get_date_created()?->date( 'Y-m-d H:i:s' ),
-			'date_modified'        => $order->get_date_modified()?->date( 'Y-m-d H:i:s' ),
+			'date_created'         => $order->get_date_created()?->date( 'Y-m-d H:i' ),
+			'date_modified'        => $order->get_date_modified()?->date( 'Y-m-d H:i' ),
 			'status'               => $order->get_status(),
-			'order_total'          => $order->get_formatted_order_total(),
+			'total'                => $order->get_formatted_order_total(),
 			'total_discount'       => $order->get_total_discount(),
 			'payment_method_title' => $order->get_payment_method_title(),
+			'payment_complete'     => $order->payment_complete(),
+			'date_paid'            => $order->get_date_paid()?->date( 'Y-m-d H:i' ),
 			'created_via'          => $order->get_created_via(),
 		];
 
