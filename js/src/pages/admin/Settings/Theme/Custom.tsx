@@ -17,8 +17,11 @@ const Custom = () => {
 		}
 		if ('custom' !== watchTheme) {
 			setIsCustom(false)
-			const theme = THEME_MAPPER.find(({ theme }) => theme === watchTheme)
+			const theme = THEME_MAPPER.find(
+				({ theme: singleTheme }) => singleTheme === watchTheme,
+			)
 			if (!theme) return
+
 			// const formattedTheme = formatTheme(theme)
 			form.setFieldValue(['powerhouse_settings', 'theme_css'], theme)
 		} else {
@@ -43,13 +46,6 @@ const Custom = () => {
 						name={['powerhouse_settings', 'theme_css', key]}
 						initialValue={defaultValue}
 						getValueProps={(value) => {
-							if (key === '--p') {
-								console.log({
-									key,
-									value,
-									oklchToHex: oklchToHex(value),
-								})
-							}
 							return {
 								value: value ? oklchToHex(value) : '',
 							}
@@ -93,6 +89,12 @@ const Custom = () => {
 					</Item>
 				))}
 			</div>
+
+			<Item
+				name={['powerhouse_settings', 'theme_css', 'color-scheme']}
+				initialValue="light"
+				hidden
+			/>
 		</>
 	)
 }

@@ -13,13 +13,15 @@ const index = () => {
 	const form = Form.useFormInstance()
 	const watchTheme =
 		Form.useWatch(['powerhouse_settings', 'theme'], form) || 'light'
+
 	// 自訂的
 	const watchCustomThemeOKLCH =
 		Form.useWatch(['powerhouse_settings', 'theme_css'], form) || {}
 
 	//	選中的
 	const theme =
-		THEME_MAPPER.find(({ theme }) => theme === watchTheme) || THEME_MAPPER?.[0]
+		THEME_MAPPER.find(({ theme: singleTheme }) => singleTheme === watchTheme) ||
+		THEME_MAPPER?.[0]
 
 	const mergedTheme = { ...theme, ...watchCustomThemeOKLCH }
 
@@ -43,8 +45,8 @@ const index = () => {
 					/>
 					<div className="rounded-box grid grid-cols-2 gap-4">
 						<Option theme="custom" form={form} />
-						{THEME_MAPPER.map(({ theme }) => (
-							<Option key={theme} theme={theme} form={form} />
+						{THEME_MAPPER.map(({ theme: singleTheme }) => (
+							<Option key={singleTheme} theme={singleTheme} form={form} />
 						))}
 					</div>
 				</div>

@@ -109,6 +109,9 @@ final class DTO {
 	/** @var string theme 主題 */
 	public string $theme = 'custom';
 
+	/** @var string color_scheme 顏色方案 */
+	public string $color_scheme = 'light';
+
 	/** @var self 實例 */
 	private static $instance = null;
 
@@ -141,8 +144,10 @@ final class DTO {
 			'theme'     => $theme,
 			] = $setting_array;
 
-			$theme_css          = is_array($theme_css) ? $theme_css : []; // @phpstan-ignore-line
-			$theme_css['theme'] = $theme ?? 'custom';
+			$theme_css                 = is_array($theme_css) ? $theme_css : []; // @phpstan-ignore-line
+			$theme_css['theme']        = $theme ?? 'custom';
+			$theme_css['color_scheme'] = $theme_css['color-scheme'] ?? 'light';
+			unset($theme_css['color-scheme']);
 
 			return new self(self::remove_double_dash($theme_css));
 		}
@@ -191,6 +196,11 @@ final class DTO {
 		foreach ($properties as $key => $value) {
 			if ('theme' === $key) {
 				$formatted_properties['theme'] = $value;
+				continue;
+			}
+
+			if ('color_scheme' === $key) {
+				$formatted_properties['color-scheme'] = $value;
 				continue;
 			}
 

@@ -1,17 +1,19 @@
 import { oklch, parse, Oklch, formatHex } from 'culori'
+
 /**
  * 將 oklch string 轉為 hex
- * @param colorString  oklch string
- * @returns
+ * @param colorString oklch string
+ * @return
  */
 export function oklchToHex(colorString: string | undefined) {
 	if (!colorString) return '#000000'
+
 	// value 是 oklch string, 拆成 l,c,h
 	const [l, c, h] = colorString.split(' ')
 	const oklchColor = oklch({
 		l: parseFloat(l) / 100, // 將百分比轉為 0-1
-		c: c,
-		h: h,
+		c,
+		h,
 	} as any)
 	return formatHex(oklchColor)
 }
@@ -19,7 +21,7 @@ export function oklchToHex(colorString: string | undefined) {
 /**
  * 將 hex 轉為 oklch string
  * @param hexColor hex string
- * @returns oklch string
+ * @return oklch string
  */
 export function hexToOklch(hexColor: string) {
 	try {
@@ -42,6 +44,6 @@ export function getStyle(theme: { [key: string]: string }) {
 		style += `${key}: ${value};`
 	})
 
-	style += `}`
+	style += '}'
 	return style
 }
