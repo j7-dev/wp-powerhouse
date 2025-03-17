@@ -41,6 +41,11 @@ final class V2Api extends ApiBase {
 			'permission_callback' => null,
 		],
 		[
+			'endpoint'            => 'orders/options',
+			'method'              => 'get',
+			'permission_callback' => null,
+		],
+		[
 			'endpoint'            => 'orders',
 			'method'              => 'post',
 			'permission_callback' => null,
@@ -57,6 +62,16 @@ final class V2Api extends ApiBase {
 		],
 		[
 			'endpoint'            => 'orders/(?P<id>\d+)',
+			'method'              => 'delete',
+			'permission_callback' => null,
+		],
+		[
+			'endpoint'            => 'order-notes',
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
+		[
+			'endpoint'            => 'order-notes/(?P<id>\d+)',
 			'method'              => 'delete',
 			'permission_callback' => null,
 		],
@@ -100,11 +115,11 @@ final class V2Api extends ApiBase {
 			// 'customer' => 'woocommerce@woocommerce.com', // 接受 billing email or customer id.
 			// 'customer_id' => 12,
 			// 'billing_country' => 'US',
-		// 'billing_first_name' => 'Claudio',
-		// 'billing_last_name' => 'Sanches',
-		// 'date_paid' => '2016-02-12',
-		// 'date_created' => '<' . ( time() - HOUR_IN_SECONDS ), // 最近 1小時 內的訂單
-		// 'date_completed' => '1494971177...1494938777',
+			// 'billing_first_name' => 'Claudio',
+			// 'billing_last_name' => 'Sanches',
+			// 'date_paid' => '2016-02-12',
+			// 'date_created' => '<' . ( time() - HOUR_IN_SECONDS ), // 最近 1小時 內的訂單
+			// 'date_completed' => '1494971177...1494938777',
 		];
 
 		$args = \wp_parse_args(
@@ -181,11 +196,40 @@ final class V2Api extends ApiBase {
 		$params = General::parse( $params );
 
 		/** @var \WP_Post $post */
-		$formatted_order = CRUD::format_order_details( $order );
+		$formatted_order = CRUD::format_order_details( $order, true );
 
 		$response = new \WP_REST_Response( $formatted_order );
 
 		return $response;
+	}
+
+	/**
+	 * Get orders options callback
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 *
+	 * @return \WP_REST_Response<array{
+	 *  statuses: array<string, string>,
+	 * ...
+	 * }>
+	 * @phpstan-ignore-next-line
+	 */
+	public function get_orders_options_callback( $request ) { // phpcs:ignore
+
+		/** @var array{
+		 *  statuses: array<string, string>,
+		 * ...
+		 * } $options
+		*/
+		$options = \apply_filters(
+			'powerhouse/order/get_options',
+			[
+				'statuses' => \wc_get_order_statuses(),
+			],
+			$request
+			);
+
+		return new \WP_REST_Response($options);
 	}
 
 
@@ -228,47 +272,25 @@ final class V2Api extends ApiBase {
 		return $separated_data;
 	}
 
-	/**TODO
-	 * Post post callback
-	 * 創建文章
+	/**
+	 * Post order callback
+	 * 創建訂單
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
-	 * @throws \Exception 當新增文章失敗時拋出異常
+	 * @throws \Exception 當新增訂單失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_orders_callback( $request ): \WP_REST_Response|\WP_Error {
-		[
-				'data'      => $data,
-				'meta_data' => $meta_data,
-			] = $this->separator( $request );
-
-		$qty = (int) ( $meta_data['qty'] ?? 1 );
-		unset($meta_data['qty']);
-
-		$data['meta_input'] = $meta_data;
-
-		$success_ids = [];
-
-		for ($i = 0; $i < $qty; $i++) {
-			$post_id = CRUD::create_post( $data );
-			if (is_numeric($post_id)) {
-				$success_ids[] = $post_id;
-			} else {
-				throw new \Exception(
-					sprintf(
-					__('create post failed, %s', 'powerhouse'),
-					$post_id->get_error_message()
-				)
-				);
-			}
-		}
+		$order = \wc_create_order();
+		$order->set_status('pending');
+		$order->save();
 
 		return new \WP_REST_Response(
 				[
 					'code'    => 'create_success',
-					'message' => __('create post success', 'powerhouse'),
-					'data'    => $success_ids,
+					'message' => __('create order success', 'powerhouse'),
+					'data'    => $order,
 				],
 			);
 	}
@@ -416,5 +438,72 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
+	}
+
+
+	/**
+	 * 新增訂單備註
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 * @phpstan-ignore-next-line
+	 * @throws \Exception 當新增訂單備註失敗時拋出異常
+	 */
+	public function post_order_notes_callback( $request ): \WP_REST_Response|\WP_Error {
+		$body_params = $request->get_body_params();
+		WP::include_required_params( $body_params, [ 'order_id', 'note', 'is_customer_note' ] );
+		[
+			'order_id' => $order_id,
+			'note' => $note,
+			'is_customer_note' => $is_customer_note, // 0 = false, 1 = true
+		] = WP::sanitize_text_field_deep( $body_params );
+
+		$order = \wc_get_order( (int) $order_id );
+		if (!$order) {
+			throw new \Exception(
+				sprintf(
+					__('order not found #%s', 'powerhouse'),
+					$order_id
+				)
+			);
+		}
+		$comment_id = $order->add_order_note($note, (int) $is_customer_note, true);
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'create_success',
+				'message' => __('create order note success', 'powerhouse'),
+				'data'    => $comment_id,
+			],
+		);
+	}
+
+	/**
+	 * 刪除訂單備註
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 * @phpstan-ignore-next-line
+	 * @throws \Exception 當刪除訂單備註失敗時拋出異常
+	 */
+	public function delete_order_notes_with_id_callback( $request ): \WP_REST_Response {
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+					__('order note id format not match #%s', 'powerhouse'),
+					$id
+				)
+			);
+		}
+		$success = \wc_delete_order_note( (int) $id );
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'delete_success',
+				'message' => __('delete order note success', 'powerhouse'),
+				'data'    => $success,
+			]
+		);
 	}
 }
