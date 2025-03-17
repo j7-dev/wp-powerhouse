@@ -6,8 +6,6 @@ namespace J7\Powerhouse\Domains\Post\Utils;
 
 use J7\WpUtils\Classes\WP;
 
-require_once __DIR__ . '/deprecated.php';
-
 /** Post CRUD */
 abstract class CRUD {
 
