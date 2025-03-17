@@ -15,7 +15,7 @@
 [ ] - Order
 [x] - Post
 [ ] - Product
-[ ] - Report
+[ ] - Report/Revenue
 [x] - Shortcode
 [x] - Upload
 [x] - User
