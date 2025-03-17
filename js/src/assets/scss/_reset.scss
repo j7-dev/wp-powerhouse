@@ -13,7 +13,6 @@
 }
 *:visited {
 	text-decoration: none;
-	color: inherit;
 }
 
 html {
@@ -34,7 +33,6 @@ body {
 
 a {
 	text-decoration: none;
-	// color: inherit;
 }
 
 img,
@@ -51,7 +49,6 @@ select {
 }
 
 ::selection {
-	background-color: #b3d4fc;
 	text-shadow: none;
 }
 
