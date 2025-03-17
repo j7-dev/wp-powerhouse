@@ -1,16 +1,13 @@
 <?php
-/**
- * Api Optimize
- * 將 self::FILE_NAME 檔案移動到 mu-plugins 目錄下
- * 加快 API 回應速度
- */
 
 declare(strict_types=1);
 
 namespace J7\Powerhouse\Compatibility;
 
 /**
- * ApiOptimize Api
+ * Api Optimize
+ * 將 self::FILE_NAME 檔案移動到 mu-plugins 目錄下
+ * 加快 API 回應速度
  */
 final class ApiOptimize {
 	use \J7\WpUtils\Traits\SingletonTrait;
