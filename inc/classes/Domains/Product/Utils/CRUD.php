@@ -263,6 +263,32 @@ abstract class CRUD {
 		);
 	}
 
+
+	/**
+	 * Format product Select
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return array
+	 */
+	public static function format_select( $product) { // phpcs:ignore
+
+		if ( ! ( $product instanceof \WC_Product ) ) {
+			return [];
+		}
+		$product_id = $product->get_id();
+
+		$base_array = [
+			// Get Product General Info
+			'id'        => (string) $product_id,
+			'type'      => $product->get_type(),
+			'name'      => $product->get_name(),
+			'slug'      => $product->get_slug(),
+			'permalink' => \get_permalink( $product_id ),
+		];
+
+		return $base_array;
+	}
+
 	/**
 	 * 取得 meta keys array
 	 *
