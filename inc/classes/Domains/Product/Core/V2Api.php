@@ -43,6 +43,10 @@ final class V2Api extends ApiBase {
 			'permission_callback' => null,
 		],
 		[
+			'endpoint' => 'products/select',
+			'method'   => 'get',
+		],
+		[
 			'endpoint'            => 'products/(?P<id>\d+)',
 			'method'              => 'get',
 			'permission_callback' => null,
@@ -164,6 +168,55 @@ final class V2Api extends ApiBase {
 		$response->header( 'X-WP-TotalPages', (string) $total_pages );
 		$response->header( 'X-WP-CurrentPage', (string) $args['paged'] );
 		$response->header( 'X-WP-PageSize', (string) $args['posts_per_page'] );
+
+		return $response;
+	}
+
+	/**
+	 * Get products tree select callback
+	 * 用 WP Query 而不是 wc_get_products
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_products_select_callback( $request ) { // phpcs:ignore
+
+		$params = $request->get_query_params() ?? [];
+
+		$params = WP::sanitize_text_field_deep( $params, false );
+
+		$default_args = [
+			'post_status'    => [ 'publish' ],
+			'post_type'      => 'product',
+			'posts_per_page' => 20,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'fields'         => 'ids',
+		];
+
+		$args = \wp_parse_args(
+			$params,
+			$default_args,
+		);
+
+		$results = new \WP_Query( $args );
+
+		$total       = $results->found_posts;
+		$total_pages = $results->max_num_pages;
+
+		$product_ids        = $results->posts;
+		$products           = array_map(fn( $product_id ) => \wc_get_product( $product_id ), $product_ids);
+		$products           = array_filter($products);
+		$formatted_products = [];
+		foreach ($products as $product) {
+			$formatted_products[] = CRUD::format_select( $product );
+		}
+
+		$response = new \WP_REST_Response( $formatted_products );
+
+		// set pagination in header
+		$response->header( 'X-WP-Total', $total );
+		$response->header( 'X-WP-TotalPages', $total_pages );
 
 		return $response;
 	}
