@@ -28,5 +28,6 @@ final class Loader {
 		Limit\Core\V2Api::instance();
 		LC\Core\V2Api::instance();
 		Order\Core\V2Api::instance();
+		Report\Revenue\Core\V2Api::instance();
 	}
 }
