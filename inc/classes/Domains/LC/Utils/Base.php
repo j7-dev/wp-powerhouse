@@ -14,8 +14,6 @@ use J7\WpUtils\Classes\General;
 use Nullix\JsAesPhp\JsAesPhp;
 use J7\Powerhouse\Api;
 
-require_once __DIR__ . '/deprecated.php';
-
 if ( class_exists( 'J7\Powerhouse\Domains\LC\Utils' ) ) {
 	return;
 }

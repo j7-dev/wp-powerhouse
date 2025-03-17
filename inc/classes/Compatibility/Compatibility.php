@@ -7,6 +7,8 @@ namespace J7\Powerhouse\Compatibility;
 use J7\Powerhouse\Plugin;
 use J7\Powerhouse\Domains\Limit\Utils\CreateTable;
 
+require_once __DIR__ . '/deprecated.php';
+
 /**
  * Compatibility 不同版本間的相容性設定
  *
