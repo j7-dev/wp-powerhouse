@@ -74,7 +74,17 @@ abstract class CRUD {
 		$user = \get_user_by( 'ID', $user_id );
 
 		if ( ! $user ) {
-			return null;
+			return [
+				'id'                    => '',
+				'user_login'            => '',
+				'user_email'            => '',
+				'display_name'          => '訪客',
+				'user_registered'       => '',
+				'user_registered_human' => '',
+				'user_avatar_url'       => 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Fvector-art%2F26631837-incognito-icon-vector-symbol-design-illustration&psig=AOvVaw0KlMIe2lsttP8SC-47PjOn&ust=1741950083858000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCPDiwPbzhowDFQAAAAAdAAAAABAb',
+				'description'           => '',
+				'roles'                 => [],
+			];
 		}
 
 		$user_registered      = (string) $user->get( 'user_registered' );
@@ -101,7 +111,7 @@ abstract class CRUD {
 			$meta_keys_array
 		);
 
-		// ENHANCE 未來可能會有階層  上下限關係的 user!?
+		// ENHANCE 未來可能會有階層  上下線關係的 user!?
 
 		/** @var array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...} $formatted_array */
 		return $formatted_array;
