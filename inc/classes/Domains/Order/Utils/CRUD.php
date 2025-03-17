@@ -7,6 +7,8 @@ namespace J7\Powerhouse\Domains\Order\Utils;
 use J7\WpUtils\Classes\WP;
 use Automattic\WooCommerce\Admin\Overrides\OrderRefund;
 use J7\Powerhouse\Domains\User\Utils\CRUD as UserCRUD;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
+use Automattic\WooCommerce\Admin\Overrides\Order;
 
 
 /** Post CRUD */
@@ -51,25 +53,30 @@ abstract class CRUD {
 	 *
 	 * @return array{
 	 *  id: string,
-	 *  type: string,
-	 *  depth: int,
-	 *  name: string,
-	 *  slug: string,
+	 *  order_number: string,
+	 *  customer: array{
+	 *    id: string,
+	 *    name: string,
+	 *    email: string,
+	 *  },
+	 *  items: array{
+	 *    id: string,
+	 *    name: string,
+	 *    quantity: int,
+	 *    price: string,
+	 *  }[],
 	 *  date_created: string,
 	 *  date_modified: string,
 	 *  status: string,
-	 *  menu_order: int,
-	 *  permalink: string,
-	 *  category_ids: string[],
-	 *  tag_ids: string[],
-	 *  images: array<array{id: string, url: string, width: int, height: int, alt: string}>,
-	 *  parent_id: string,
-	 *  children?: array<array{id: string, type: string, depth: int, name: string, slug: string, date_created: string, date_modified: string, status: string, menu_order: int, permalink: string, category_ids: string[], tag_ids: string[], images: array<array{id: string, url: string, width: int, height: int, alt: string}>, parent_id: string}>,
-	 *  description?: string,
-	 *  short_description?: string,
+	 *  total: string,
+	 *  total_discount: string,
+	 *  payment_method_title: string,
+	 *  payment_complete: boolean,
+	 *  date_paid: string,
+	 *  created_via: string,
 	 * }
 	 */
-	public static function format_order_details( \WC_Order|OrderRefund $order ) {
+	public static function format_order_details( \WC_Order|OrderRefund $order, $with_details = false ) {
 		if (!( $order instanceof \WC_Order )) {
 			return null;
 		}
@@ -96,36 +103,131 @@ abstract class CRUD {
 		// $meta_keys_array = self::get_meta_keys_array($post, $meta_keys);
 
 		$customer = UserCRUD::format_user_details( $order->get_customer_id() ) ?? [];
-		$customer = \array_merge(
-			$customer,
+
+		$override_order = new Order( $order );
+
+		$customers_query = new CustomersQuery(
 			[
-				'ip_address' => $order->get_customer_ip_address(),
+				'customers'    => [ $override_order->get_report_customer_id() ],
+				// If unset, these params have default values that affect the results.
+				'order_after'  => null,
+				'order_before' => null,
 			]
 			);
+		$customer_data    = $customers_query->get_data();
+		$customer_history = $customer_data->data[0] ?? null;
+
+		$customer['date_last_active'] = $customer_history['date_last_active'];
+		$customer['date_last_order']  = $customer_history['date_last_order'];
+		$customer['orders_count']     = $customer_history['orders_count'];
+		$customer['total_spend']      = $customer_history['total_spend'];
+		$customer['avg_order_value']  = $customer_history['avg_order_value'];
+		$customer['ip_address']       = $order->get_customer_ip_address();
 
 		$base_array = [
-			'id'                   => $order->get_id(),
-			'order_number'         => $order->get_order_number(),
-			'customer'             => $customer,
-			'items'                => $items_array,
-			'date_created'         => $order->get_date_created()?->date( 'Y-m-d H:i' ),
-			'date_modified'        => $order->get_date_modified()?->date( 'Y-m-d H:i' ),
-			'status'               => $order->get_status(),
-			'total'                => $order->get_formatted_order_total(),
-			'total_discount'       => $order->get_total_discount(),
-			'payment_method_title' => $order->get_payment_method_title(),
-			'payment_complete'     => $order->payment_complete(),
-			'date_paid'            => $order->get_date_paid()?->date( 'Y-m-d H:i' ),
-			'created_via'          => $order->get_created_via(),
+			'id'                    => (string) $order->get_id(),
+			'order_number'          => $order->get_order_number(),
+			'customer'              => $customer,
+			'items'                 => $items_array,
+			'date_created'          => $order->get_date_created()?->date( 'Y-m-d H:i' ),
+			'date_modified'         => $order->get_date_modified()?->date( 'Y-m-d H:i' ),
+			'status'                => $order->get_status(),
+			'formatted_order_total' => $order->get_formatted_order_total(),
+			'payment_method_title'  => $order->get_payment_method_title(),
+			'payment_complete'      => $order->payment_complete(),
+			'date_paid'             => $order->get_date_paid()?->date( 'Y-m-d H:i' ),
+			'created_via'           => $order->get_created_via(),
+			'edit_order_url'        => $order->get_edit_order_url(),
+
+			'shipping_total'        => (float) $order->get_shipping_total(), // 運費合計
+			'shipping_method'       => $order->get_shipping_method(), // 運送方式
+			'subtotal'              => $order->get_subtotal(), // 商品小計
+			'total_discount'        => $order->get_total_discount(), // 折扣合計
+			'total_fees'            => $order->get_total_fees(), // 其他費用合計
+			'total_tax'             => (float) $order->get_total_tax(), // 稅金合計
+			'total'                 => $order->get_total(), // 訂單總金額
+
 		];
+
+		if (!$with_details) {
+			return $base_array;
+		}
+
+		$order_notes = self::get_order_notes($order);
 
 		$formatted_array = array_merge(
 			$base_array,
+			[
+				'order_notes' => $order_notes,
+				'billing'     => [
+					'first_name' => $order->get_billing_first_name(),
+					'last_name'  => $order->get_billing_last_name(),
+					'email'      => $order->get_billing_email(),
+					'phone'      => $order->get_billing_phone(),
+					'company'    => $order->get_billing_company(),
+					'postcode'   => $order->get_billing_postcode(),
+					'country'    => $order->get_billing_country(),
+					'state'      => $order->get_billing_state(),
+					'city'       => $order->get_billing_city(),
+					'address_1'  => $order->get_billing_address_1(),
+					'address_2'  => $order->get_billing_address_2(),
+				],
+				'shipping'    => [
+					'first_name' => $order->get_shipping_first_name(),
+					'last_name'  => $order->get_shipping_last_name(),
+					'email'      => '',
+					'phone'      => $order->get_shipping_phone(),
+					'company'    => $order->get_shipping_company(),
+					'postcode'   => $order->get_shipping_postcode(),
+					'country'    => $order->get_shipping_country(),
+					'state'      => $order->get_shipping_state(),
+					'city'       => $order->get_shipping_city(),
+					'address_1'  => $order->get_shipping_address_1(),
+					'address_2'  => $order->get_shipping_address_2(),
+				],
+			]
 			// $meta_keys_array
 		);
 
 		// @phpstan-ignore-next-line
 		return $formatted_array;
+	}
+
+	/**
+	 * Get order notes
+	 *
+	 * @param \WC_Order $order order.
+	 *
+	 * @return array{id: string, date_created: string, content: string, customer_note: string, added_by: string, order_id: string}[]
+	 */
+	public static function get_order_notes( \WC_Order $order ): array {
+		$order_notes           = \wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+			]
+			);
+		$formatted_order_notes = [];
+		foreach ($order_notes as $order_note) {
+			$formatted_order_notes[] = [
+				'id'            => $order_note->id,
+				'date_created'  => $order_note->date_created?->date('Y-m-d H:i'),
+				'content'       => \wpautop($order_note->content),
+				'customer_note' => $order_note->customer_note,
+				'added_by'      => $order_note->added_by,
+				'order_id'      => $order_note->order_id,
+			];
+		}
+
+		$formatted_order_notes[] = [
+			'id'            => $order->get_id(),
+			'date_created'  => $order->get_date_created()?->date('Y-m-d H:i'),
+			'content'       => '訂單創建',
+			'customer_note' => false,
+			'added_by'      => 'system',
+			'order_id'      => 'N/A',
+		];
+
+		return $formatted_order_notes;
 	}
 
 	/**TODO
@@ -146,94 +248,7 @@ abstract class CRUD {
 		return \apply_filters( 'powerhouse/post/get_meta_keys_array', $meta_keys_array, $post );
 	}
 
-	/**TODO
-	 * 取得遞迴文章 array
-	 *
-	 * @param \WP_Post                  $post 文章.
-	 * @param array<string, mixed>|null $recursive_args 遞迴參數.
-	 * @param int                       $depth 深度.
-	 * @param array<string>             $meta_keys 要暴露出來的 meta keys.
-	 * @return array{children: array<mixed>}|array{}
-	 */
-	public static function get_recursive_array( \WP_Post $post, array $recursive_args = null, int $depth = 0, array $meta_keys = [] ): array {
-		if (null ===$recursive_args) {
-			return [];
-		}
 
-		$default_args = [
-			'post_parent' => $post->ID,
-			'post_type'   => $post->post_type,
-			'numberposts' => -1,
-			'post_status' => 'any',
-			'orderby'     => [
-				'menu_order' => 'ASC',
-				'ID'         => 'DESC',
-				'date'       => 'DESC',
-			],
-		];
-
-		$args = \wp_parse_args( $recursive_args, $default_args );
-
-		/** @var \WP_Post[] $children */
-		$children = \get_children($args);
-
-		$children_to_array = [];
-		foreach ($children as $child) {
-			$children_to_array[] = self::format_post_details(
-				$child,
-				false,
-				$depth + 1,
-				$recursive_args,
-				$meta_keys
-			);
-		}
-
-		return $children_to_array ? [
-			'children' => $children_to_array,
-		] : [];
-	}
-
-	/**TODO
-	 * Sort posts
-	 * 改變文章順序
-	 *
-	 * @param array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $params Parameters.
-	 *
-	 * @return true|\WP_Error
-	 */
-	public static function sort_posts( array $params ): bool|\WP_Error {
-		$from_tree = $params['from_tree'] ?? []; // @phpstan-ignore-line
-		$to_tree   = $params['to_tree'] ?? []; // @phpstan-ignore-line
-
-		$delete_ids = [];
-		foreach ($from_tree as $from_node) {
-			$from_id = $from_node['id'];
-			$to_node = array_filter($to_tree, fn ( $node ) => $node['id'] === $from_id);
-			if (empty($to_node)) {
-				$delete_ids[] = $from_id;
-			}
-		}
-		foreach ($to_tree as $node) {
-			$to_id       = $node['id'];
-			$is_new_post = strpos($to_id, 'new-') === 0; // 用 new- 開頭的 id 是新章節
-			$args        = self::converter($node);
-
-			if ($is_new_post) {
-				$insert_result = self::create_post($args);
-			} else {
-				$insert_result = self::update_post($to_id, $args);
-			}
-			if (\is_wp_error($insert_result)) {
-				return $insert_result;
-			}
-		}
-
-		foreach ($delete_ids as $id) {
-			\wp_trash_post( (int) $id );
-		}
-
-		return true;
-	}
 
 	/**TODO
 	 * Converter 轉換器
