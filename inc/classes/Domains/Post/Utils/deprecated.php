@@ -1,7 +1,4 @@
 <?php
-/**
- * 舊版 class
- */
 
 declare (strict_types = 1);
 
@@ -14,7 +11,7 @@ if ( class_exists( 'J7\Powerhouse\Domains\Post\Utils' ) ) {
 	return;
 }
 /**
- * Class LC
+ * 舊版 class
  */
 final class Utils extends Utils\CRUD {
 
