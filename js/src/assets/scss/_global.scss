@@ -38,6 +38,16 @@ table.table {
 	}
 
 	// border
+	&.table-borderless {
+		td,
+		th {
+			width: 0;
+			border: none;
+			padding: 0.75rem 0.5rem;
+			font-size: inherit;
+		}
+	}
+
 	&.table-border {
 		td,
 		th {
