@@ -180,6 +180,9 @@ final class V2Api extends ApiBase {
 			);
 		}
 
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log($product_slug, 'delete_lc_transient from post_lc_invalidate_callback');
+		// ---------- END TEST ---------- //
 		$delete_transient_result = Utils::delete_lc_transient( $product_slug );
 
 		return new \WP_REST_Response(

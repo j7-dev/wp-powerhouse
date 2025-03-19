@@ -67,6 +67,16 @@ class Utils {
 			$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 			// 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient
 			if (!is_array($decoded) && !$saved_code ) {
+				// TEST 印出 WC Logger 記得移除 ---- //
+				\J7\WpUtils\Classes\WC::log(
+					[
+						'product_slug' => $product_slug,
+						'decoded'      => $decoded,
+						'saved_code'   => $saved_code,
+					],
+					'delete_lc_transient from get_lc_array 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient'
+					);
+				// ---------- END TEST ---------- //
 				self::delete_lc_transient($product_slug);
 				$lc_array[] = $default_lc;
 				continue;
@@ -90,6 +100,15 @@ class Utils {
 
 				// 如果啟用回得是 401 ，則使用預設的狀態
 				if ( \is_wp_error( $response ) ) {
+					// TEST 印出 WC Logger 記得移除 ---- //
+					\J7\WpUtils\Classes\WC::log(
+						[
+							'product_slug' => $product_slug,
+							'error'        => $response->get_error_message(),
+						],
+						'delete_lc_transient from get_lc_array 如果啟用回得是 401 ，則使用預設的狀態'
+						);
+					// ---------- END TEST ---------- //
 					self::delete_lc_transient($product_slug);
 					$lc_array[] = $default_lc;
 					continue;
@@ -121,8 +140,9 @@ class Utils {
 		$endpoint = 'license-codes/activate';
 
 		$params = [
-			'code'         => $code,
-			'product_slug' => $product_slug,
+			'code'            => $code,
+			'product_slug'    => $product_slug,
+			'is_system_check' => $is_system_check,
 		];
 		if ($is_system_check) {
 			$params['post_status'] = [ 'available', 'activated' ];
@@ -193,6 +213,9 @@ class Utils {
 		// get header status code
 		$status_code = \wp_remote_retrieve_response_code($response);
 
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log($product_slug, 'delete_lc_transient from deactivate');
+		// ---------- END TEST ---------- //
 		self::delete_lc_transient($product_slug);
 
 		if (200 !== $status_code) {
@@ -234,18 +257,6 @@ class Utils {
 	 * @return void
 	 */
 	public static function set_lc_transient( array $data ): void {
-		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
-		$trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
-		$functions = array_map( fn ( $t ) => $t['function'], $trace );
-		\J7\WpUtils\Classes\WC::log(
-			[
-				'functions' => $functions,
-				'data'      => $data,
-			],
-			'debug_backtrace set_lc_transient'
-			);
-		// -------------------- END TEST ------------------- //
-
 		$product_slug = $data['product_slug'];
 		/**
 		 * @var array<string, string> $saved_codes 產品 key 和 code
@@ -269,6 +280,17 @@ class Utils {
 	 * @return bool 是否刪除成功
 	 */
 	public static function delete_lc_transient( string $product_slug ): bool {
+		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
+		$trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
+		$functions = array_map( fn ( $t ) => $t['function'], $trace );
+		\J7\WpUtils\Classes\WC::log(
+			[
+				'functions'    => $functions,
+				'product_slug' => $product_slug,
+			],
+			'debug_backtrace delete_lc_transient'
+			);
+		// -------------------- END TEST ------------------- //
 		/** @var array<string, string> $saved_codes 產品 key 和 code */
 		$saved_codes = \get_option(self::KEY, []);
 		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
