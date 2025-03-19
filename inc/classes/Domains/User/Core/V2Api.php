@@ -45,6 +45,11 @@ final class V2Api extends ApiBase {
 			'permission_callback' => null,
 		],
 		[
+			'endpoint'            => 'users/options',
+			'method'              => 'get',
+			'permission_callback' => null,
+		],
+		[
 			'endpoint'            => 'users',
 			'method'              => 'post',
 			'permission_callback' => null,
@@ -188,6 +193,35 @@ final class V2Api extends ApiBase {
 		}
 	}
 
+	/**
+	 * Get users options callback
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 *
+	 * @return \WP_REST_Response
+	 * */
+	public function get_users_options_callback( $request ): \WP_REST_Response {
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		$roles = \get_editable_roles();
+		$formatted_roles = [];
+		foreach ($roles as $role => $role_data) {
+			$formatted_roles[] = [
+				'value' => $role,
+				'label' => $role_data['name'],
+			];
+		}
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'get_success',
+				'message' => __('get users options success', 'powerhouse'),
+				'data'    => [
+					'roles' => $formatted_roles,
+				],
+			],
+		);
+	}
 
 	/**
 	 * 批量創建/更新用戶
