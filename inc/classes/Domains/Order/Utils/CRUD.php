@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Order\Utils;
 
-use J7\WpUtils\Classes\WP;
 use Automattic\WooCommerce\Admin\Overrides\OrderRefund;
 use J7\Powerhouse\Domains\User\Utils\CRUD as UserCRUD;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
-use Automattic\WooCommerce\Admin\Overrides\Order;
 
 
 /** Post CRUD */
@@ -104,11 +102,9 @@ abstract class CRUD {
 
 		$customer = UserCRUD::format_user_details( $order->get_customer_id() ) ?? [];
 
-		$override_order = new Order( $order );
-
 		$customers_query = new CustomersQuery(
 			[
-				'customers'    => [ $override_order->get_report_customer_id() ],
+				'customers'    => [ $customer['id'] ],
 				// If unset, these params have default values that affect the results.
 				'order_after'  => null,
 				'order_before' => null,
@@ -117,11 +113,11 @@ abstract class CRUD {
 		$customer_data    = $customers_query->get_data();
 		$customer_history = $customer_data->data[0] ?? null;
 
-		$customer['date_last_active'] = $customer_history['date_last_active'];
-		$customer['date_last_order']  = $customer_history['date_last_order'];
-		$customer['orders_count']     = $customer_history['orders_count'];
-		$customer['total_spend']      = $customer_history['total_spend'];
-		$customer['avg_order_value']  = $customer_history['avg_order_value'];
+		$customer['date_last_active'] = $customer_history['date_last_active'] ?? null;
+		$customer['date_last_order']  = $customer_history['date_last_order'] ?? null;
+		$customer['orders_count']     = $customer_history['orders_count'] ?? null;
+		$customer['total_spend']      = $customer_history['total_spend'] ?? null;
+		$customer['avg_order_value']  = $customer_history['avg_order_value'] ?? null;
 		$customer['ip_address']       = $order->get_customer_ip_address();
 
 		$base_array = [
