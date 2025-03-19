@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Domains\User\Utils;
 
 use J7\WpUtils\Classes\WP;
+use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
+
 
 /**
  * Class CRUD
@@ -84,6 +86,7 @@ abstract class CRUD {
 				'user_avatar_url'       => 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Fvector-art%2F26631837-incognito-icon-vector-symbol-design-illustration&psig=AOvVaw0KlMIe2lsttP8SC-47PjOn&ust=1741950083858000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCPDiwPbzhowDFQAAAAAdAAAAABAb',
 				'description'           => '',
 				'roles'                 => [],
+				'billing_phone'         => '',
 			];
 		}
 
@@ -104,7 +107,28 @@ abstract class CRUD {
 			'user_avatar_url'       => $user_avatar_url,
 			'description'           => $user->description,
 			'roles'                 => $user->roles,
+			'billing_phone'         => \get_user_meta($user_id, 'billing_phone', true),
+			'birthday'              => \get_user_meta($user_id, 'birthday', true),
 		];
+
+		// 取得 customer 資料
+		$customers_query = new CustomersQuery(
+			[
+				'customers'    => [ $user_id ],
+				// If unset, these params have default values that affect the results.
+				'order_after'  => null,
+				'order_before' => null,
+			]
+			);
+
+		$customer_data    = $customers_query->get_data();
+		$customer_history = $customer_data->data[0] ?? null;
+
+		$base_array['date_last_active'] = $customer_history['date_last_active'] ?? null;
+		$base_array['date_last_order']  = $customer_history['date_last_order'] ?? null;
+		$base_array['orders_count']     = $customer_history['orders_count'] ?? null;
+		$base_array['total_spend']      = $customer_history['total_spend'] ?? null;
+		$base_array['avg_order_value']  = $customer_history['avg_order_value'] ?? null;
 
 		$formatted_array = array_merge(
 			$base_array,
