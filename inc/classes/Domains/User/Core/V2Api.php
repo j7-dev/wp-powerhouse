@@ -60,6 +60,11 @@ final class V2Api extends ApiBase {
 			'permission_callback' => null,
 		],
 		[
+			'endpoint'            => 'users/resetpassword',
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
+		[
 			'endpoint'            => 'users',
 			'method'              => 'delete',
 			'permission_callback' => null,
@@ -84,63 +89,25 @@ final class V2Api extends ApiBase {
 	public function get_users_callback( $request ): \WP_REST_Response {
 		$params = $request->get_query_params();
 		$params = WP::sanitize_text_field_deep( $params, false );
+		/** @var array<string> $meta_keys 要暴露的 meta keys */
+		$meta_keys = $params['meta_keys'] ?? [];
+		unset($params['meta_keys']);
 
-		$posts_per_page = intval($params['posts_per_page'] ?? 20); // @phpstan-ignore-line
-		$paged          = intval($params['paged'] ?? 1); // @phpstan-ignore-line
-		$offset         = ( $paged - 1 ) * $posts_per_page;
-		$search         = (string) ( $params['s'] ?? $params['search'] ?? '' ); // @phpstan-ignore-line
-		$orderby        = (string) ( $params['orderby'] ?? 'ID' ); // @phpstan-ignore-line
-		$order          = (string) ( $params['order'] ?? 'DESC' ); // @phpstan-ignore-line
+		$args = CRUD::prepare_query_args( $params );
 
-		global $wpdb;
+		$query = new \WP_User_Query( $args );
 
-		// 基礎 SQL
-		$select_sql = 'SELECT DISTINCT u.ID';
-		$count_sql  = 'SELECT COUNT(DISTINCT u.ID)';
-		$from_sql   = " FROM {$wpdb->users} u";
-		$where_sql  = ' WHERE 1=1';
+		$users = $query->get_results();
 
-		// 搜尋條件，'ID', 'user_login', 'user_email', 'user_nicename', 'display_name'
-		if ($search) {
-			$search     = '%' . $wpdb->esc_like($search) . '%';
-			$where_sql .= " AND (u.ID LIKE '{$search}' OR u.user_login LIKE '{$search}' OR u.user_email LIKE '{$search}' OR u.user_nicename LIKE '{$search}' OR u.display_name LIKE '{$search}')";
-		}
-
-		// Meta 查詢
-		// TODO 可以再優化更複雜的查詢
-		if (isset($params['meta_key'])) {
-			$from_sql  .= " LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id";
-			$where_sql .= $wpdb->prepare(
-				' AND um.meta_key = %s',
-				$params['meta_key']
-			);
-
-			if (isset($params['meta_value'])) {
-				$where_sql .= $wpdb->prepare(
-					' AND um.meta_value = %s',
-					$params['meta_value']
-				);
-			}
-		}
-
-		// 排序
-		$order_sql = " ORDER BY u.{$orderby} {$order}";
-
-		// 分頁
-		$limit_sql = $wpdb->prepare(' LIMIT %d OFFSET %d', $posts_per_page, $offset);
-
-		// 執行查詢
-		$total    = $wpdb->get_var(\wp_unslash($count_sql . $from_sql . $where_sql)); // phpcs:ignore
-		$user_ids = $wpdb->get_col(\wp_unslash($select_sql . $from_sql . $where_sql . $order_sql . $limit_sql)); // phpcs:ignore
+		$total          = $query->get_total();
+		$posts_per_page = $args['number'];
+		$paged          = $args['paged'];
 
 		$total_pages = ceil($total / $posts_per_page);
 
-		/** @var array<string> $meta_keys 要暴露的 meta keys */
-		$meta_keys = $params['meta_keys'] ?? [];
-
 		$formatted_users = [];
-		foreach ($user_ids as $user_id) {
-			$formatted_users[] = CRUD::format_user_details( (int) $user_id, $meta_keys );
+		foreach ($users as $user) {
+			$formatted_users[] = CRUD::format_user_details( (int) $user->ID, $meta_keys );
 		}
 		$formatted_users = array_filter( $formatted_users );
 
@@ -203,7 +170,7 @@ final class V2Api extends ApiBase {
 	public function get_users_options_callback( $request ): \WP_REST_Response {
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 
-		$roles = \get_editable_roles();
+		$roles           = \get_editable_roles();
 		$formatted_roles = [];
 		foreach ($roles as $role => $role_data) {
 			$formatted_roles[] = [
@@ -371,6 +338,59 @@ final class V2Api extends ApiBase {
 		}
 	}
 
+	/**
+	 * 批量寄送重設密碼信
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 * @throws \Exception 當寄送重設密碼信失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	public function post_users_resetpassword_callback( $request ): \WP_REST_Response|\WP_Error {
+
+		$body_params = $request->get_json_params();
+
+		/** @var array<string, mixed> $body_params */
+		$body_params = WP::sanitize_text_field_deep( $body_params, false );
+
+		$ids = $body_params['ids'] ?? [];
+		/** @var array<string> $ids */
+		$ids = is_array( $ids ) ? $ids : [];
+
+		try {
+			require_once ABSPATH . 'wp-admin/includes/user.php';
+			foreach ($ids as $id) {
+				$user = \get_user_by( 'ID', $id );
+
+				if ( !$user ) {
+					continue;
+				}
+
+				$result = \retrieve_password( $user->user_login );
+				if (true !== $result) {
+					throw new \Exception($result->get_error_message());
+				}
+			}
+
+			return new \WP_REST_Response(
+				[
+					'code'    => 'resetpassword_success',
+					'message' => __('reset password success', 'powerhouse'),
+					'data'    => $ids,
+				]
+			);
+		} catch (\Throwable $th) {
+			return new \WP_REST_Response(
+				[
+					'code'    => 'resetpassword_failed',
+					'message' => $th->getMessage(),
+					'data'    => $ids,
+				],
+				400
+			);
+		}
+	}
+
 
 	/**
 	 * 批量刪除用戶
@@ -392,6 +412,7 @@ final class V2Api extends ApiBase {
 		$ids = is_array( $ids ) ? $ids : [];
 
 		try {
+			require_once ABSPATH . 'wp-admin/includes/user.php';
 			foreach ($ids as $id) {
 				$result = \wp_delete_user( (int) $id );
 				if (!$result) {
@@ -442,6 +463,8 @@ final class V2Api extends ApiBase {
 				)
 				);
 			}
+			require_once ABSPATH . 'wp-admin/includes/user.php';
+
 			$result = \wp_delete_user( (int) $id );
 			if (!$result) {
 				throw new \Exception(
