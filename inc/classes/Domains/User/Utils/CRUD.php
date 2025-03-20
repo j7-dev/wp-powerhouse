@@ -108,7 +108,7 @@ abstract class CRUD {
 			'description'           => $user->description,
 			'roles'                 => $user->roles,
 			'billing_phone'         => \get_user_meta($user_id, 'billing_phone', true),
-			'birthday'              => \get_user_meta($user_id, 'birthday', true),
+			'pc_birthday'           => ( (int) \get_user_meta($user_id, 'pc_birthday', true) ) ?: null,
 		];
 
 		// 取得 customer 資料
@@ -157,5 +157,124 @@ abstract class CRUD {
 		// 可以改寫 meta_keys
 		// @phpstan-ignore-next-line
 		return \apply_filters( 'powerhouse/user/get_meta_keys_array', $meta_keys_array, $user );
+	}
+
+
+	/**
+	 * 將的參數拆成 data 與 meta_data
+	 * data 可以直接給 WP_User_Query 查詢，其他的參數是 meta_data 查詢
+	 *
+	 * @see https://developer.wordpress.org/reference/classes/wp_user_query/
+	 *
+	 * @param array<string, mixed> $args Arguments.
+	 * @return array{data: array<string, mixed>, meta_data: array<string, mixed>}
+	 */
+	public static function query_separator( array $args ): array {
+		$args['number']      = $args['posts_per_page'] ?? 20; // @phpstan-ignore-line
+		$args['count_total'] = true; // @phpstan-ignore-line
+		unset( $args['posts_per_page'] );
+
+		// 將資料拆成 data 與 meta_data
+		$data      = [];
+		$meta_data = [];
+
+		$data_fields = [
+			'role',
+			'role__in',
+			'role__not_in',
+			'include',
+			'exclude',
+			'blog_id',
+			'search',
+			'search_columns',
+			'number',
+			'offset',
+			'paged',
+			'orderby',
+			'order',
+			'date_query',
+			'who',
+			'count_total', // 是否計算總數
+			'has_published_posts',
+			'fields', // return 的 fields
+		];
+		foreach ( $args as $key => $value ) {
+			if ('search' === $key) {
+				$data[ $key ] = "*{$value}*";
+				continue;
+			}
+
+			if ( \in_array( $key, $data_fields, true ) ) {
+				$data[ $key ] = $value;
+			} else {
+				$meta_data[ $key ] = $value;
+			}
+		}
+
+		return [
+			'data'      => $data,
+			'meta_data' => $meta_data,
+		];
+	}
+
+
+	/**
+	 * 準備查詢參數
+	 *
+	 * @param array<string, mixed> $args Arguments.
+	 * @return array<string, mixed>
+	 */
+	public static function prepare_query_args( array $args ): array {
+
+		[
+			'data'      => $data,
+			'meta_data' => $meta_data,
+		] = self::query_separator($args);
+
+		if ($meta_data) {
+			$data['meta_query'] = [
+				'relation' => 'AND',
+			];
+		}
+
+		foreach ( $meta_data as $key => $value ) {
+			if ('billing_phone' === $key) {
+				$data['meta_query'][] = [
+					'key'     => $key,
+					'value'   => $value,
+					'compare' => 'LIKE',
+				];
+
+				continue;
+			}
+
+			if ('pc_birthday' === $key && is_array($value)) {
+				$data['meta_query'][] = [
+					'key'     => $key,
+					'value'   => $value[0] ?? 0,
+					'compare' => '>=',
+					'type'    => 'NUMERIC',
+				];
+				$data['meta_query'][] = [
+					'key'     => $key,
+					'value'   => $value[1] ?? time(),
+					'compare' => '<=',
+					'type'    => 'NUMERIC',
+				];
+
+				continue;
+			}
+			$data['meta_query'][] = [
+				'key'   => $key,
+				'value' => $value,
+			];
+		}
+
+		$default_args = [
+			'orderby' => 'ID',
+			'order'   => 'DESC',
+		];
+
+		return \wp_parse_args( $data, $default_args );
 	}
 }
