@@ -67,16 +67,6 @@ class Utils {
 			$default_lc = self::get_default_lc($product_slug, $product_name, $product_info);
 			// 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient
 			if (!is_array($decoded) && !$saved_code ) {
-				// TEST 印出 WC Logger 記得移除 ---- //
-				\J7\WpUtils\Classes\WC::log(
-					[
-						'product_slug' => $product_slug,
-						'decoded'      => $decoded,
-						'saved_code'   => $saved_code,
-					],
-					'delete_lc_transient from get_lc_array 如果 transient 不存在|過期，且 saved_code 不存在，則新增預設的 transient'
-					);
-				// ---------- END TEST ---------- //
 				self::delete_lc_transient($product_slug);
 				$lc_array[] = $default_lc;
 				continue;
@@ -88,13 +78,22 @@ class Utils {
 					$response = self::activate( (string) $saved_code, $product_slug, true);
 				} catch (\Throwable $th) {
 					// 如果 API 啟用請求有問題，維持啟用狀態
-					$default_lc['code']        = '500 ' . $th->getMessage();
+					$default_lc['code']        = $saved_code;
 					$default_lc['post_status'] = 'activated';
 					$lc_array[]                = $default_lc;
 					// 失敗的話，就先暫存一個預設啟用值，等於說跳過這次，下次到期再檢查
 					self::set_lc_transient($default_lc);
 					// 失敗不清除原本的 saved_code
 					// self::delete_lc_transient($product_slug);
+					\J7\WpUtils\Classes\WC::log(
+						[
+							'error'        => '500 ' . $th->getMessage(),
+							'condition'    => 'transient 不存在|過期，且 saved_code 存在',
+							'saved_code'   => $saved_code,
+							'product_slug' => $product_slug,
+						],
+						'如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取 get_lc_array'
+						);
 					continue;
 				}
 
@@ -258,6 +257,7 @@ class Utils {
 	 */
 	public static function set_lc_transient( array $data ): void {
 		$product_slug = $data['product_slug'];
+
 		/**
 		 * @var array<string, string> $saved_codes 產品 key 和 code
 		 */
@@ -280,6 +280,10 @@ class Utils {
 	 * @return bool 是否刪除成功
 	 */
 	public static function delete_lc_transient( string $product_slug ): bool {
+		/** @var array<string, string> $saved_codes 產品 key 和 code */
+		$saved_codes = \get_option(self::KEY, []);
+		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
+
 		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
 		$trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
 		$functions = array_map( fn ( $t ) => $t['function'], $trace );
@@ -287,13 +291,11 @@ class Utils {
 			[
 				'functions'    => $functions,
 				'product_slug' => $product_slug,
+				'saved_codes'  => $saved_codes,
 			],
 			'debug_backtrace delete_lc_transient'
 			);
 		// -------------------- END TEST ------------------- //
-		/** @var array<string, string> $saved_codes 產品 key 和 code */
-		$saved_codes = \get_option(self::KEY, []);
-		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 
 		unset($saved_codes[ $product_slug ]);
 		\update_option(self::KEY, $saved_codes);
