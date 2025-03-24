@@ -100,25 +100,8 @@ abstract class CRUD {
 
 		// $meta_keys_array = self::get_meta_keys_array($post, $meta_keys);
 
-		$customer = UserCRUD::format_user_details( $order->get_customer_id() ) ?? [];
-
-		$customers_query = new CustomersQuery(
-			[
-				'customers'    => [ $customer['id'] ],
-				// If unset, these params have default values that affect the results.
-				'order_after'  => null,
-				'order_before' => null,
-			]
-			);
-		$customer_data    = $customers_query->get_data();
-		$customer_history = $customer_data->data[0] ?? null;
-
-		$customer['date_last_active'] = $customer_history['date_last_active'] ?? null;
-		$customer['date_last_order']  = $customer_history['date_last_order'] ?? null;
-		$customer['orders_count']     = $customer_history['orders_count'] ?? null;
-		$customer['total_spend']      = $customer_history['total_spend'] ?? null;
-		$customer['avg_order_value']  = $customer_history['avg_order_value'] ?? null;
-		$customer['ip_address']       = $order->get_customer_ip_address();
+		$customer               = UserCRUD::format_user_record( $order->get_customer_id() ) ?? [];
+		$customer['ip_address'] = $order->get_customer_ip_address();
 
 		$base_array = [
 			'id'                    => (string) $order->get_id(),
@@ -133,7 +116,7 @@ abstract class CRUD {
 			'payment_complete'      => $order->payment_complete(),
 			'date_paid'             => $order->get_date_paid()?->date( 'Y-m-d H:i' ),
 			'created_via'           => $order->get_created_via(),
-			'edit_order_url'        => $order->get_edit_order_url(),
+			'edit_url'              => $order->get_edit_order_url(),
 
 			'shipping_total'        => (float) $order->get_shipping_total(), // 運費合計
 			'shipping_method'       => $order->get_shipping_method(), // 運送方式
@@ -155,33 +138,8 @@ abstract class CRUD {
 			$base_array,
 			[
 				'order_notes' => $order_notes,
-				'billing'     => [
-					'first_name' => $order->get_billing_first_name(),
-					'last_name'  => $order->get_billing_last_name(),
-					'email'      => $order->get_billing_email(),
-					'phone'      => $order->get_billing_phone(),
-					'company'    => $order->get_billing_company(),
-					'postcode'   => $order->get_billing_postcode(),
-					'country'    => $order->get_billing_country(),
-					'state'      => $order->get_billing_state(),
-					'city'       => $order->get_billing_city(),
-					'address_1'  => $order->get_billing_address_1(),
-					'address_2'  => $order->get_billing_address_2(),
-				],
-				'shipping'    => [
-					'first_name' => $order->get_shipping_first_name(),
-					'last_name'  => $order->get_shipping_last_name(),
-					'email'      => '',
-					'phone'      => $order->get_shipping_phone(),
-					'company'    => $order->get_shipping_company(),
-					'postcode'   => $order->get_shipping_postcode(),
-					'country'    => $order->get_shipping_country(),
-					'state'      => $order->get_shipping_state(),
-					'city'       => $order->get_shipping_city(),
-					'address_1'  => $order->get_shipping_address_1(),
-					'address_2'  => $order->get_shipping_address_2(),
-				],
-			]
+			],
+			Info::to_order_array( $order->get_id() ),
 			// $meta_keys_array
 		);
 
