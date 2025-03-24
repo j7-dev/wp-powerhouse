@@ -9,6 +9,7 @@ namespace J7\Powerhouse\Domains\User\Utils;
 
 use J7\WpUtils\Classes\WP;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
+use J7\Powerhouse\Domains\Order\Utils\Info;
 
 
 /**
@@ -65,14 +66,33 @@ abstract class CRUD {
 		return \wp_update_user($data);
 	}
 
+
 	/**
 	 * Format user details
 	 *
 	 * @param int           $user_id  User ID.
 	 * @param array<string> $meta_keys  要暴露的前端 meta key
-	 * @return array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...}|null
+	 * @return array{
+	 * id: string,
+	 *   user_login: string,
+	 *   user_email: string,
+	 *   display_name: string,
+	 *   user_registered: string,
+	 *   user_registered_human: string|null,
+	 *   user_avatar_url: mixed,
+	 *   description: string,
+	 *   roles: array<string>,
+	 *   billing_phone: string,
+	 *   pc_birthday: int|null,
+	 *   edit_url: string,
+	 *   date_last_active: string|null,
+	 *   date_last_order: string|null,
+	 *   orders_count: int|null,
+	 *   total_spend: string|null,
+	 *   avg_order_value: string|null
+	 * }|null
 	 */
-	public static function format_user_details( int $user_id, array $meta_keys = [] ): array|null {
+	public static function format_user_record( int $user_id, array $meta_keys = [] ): array|null {
 		$user = \get_user_by( 'ID', $user_id );
 
 		if ( ! $user ) {
@@ -87,6 +107,7 @@ abstract class CRUD {
 				'description'           => '',
 				'roles'                 => [],
 				'billing_phone'         => '',
+				'edit_url'              => '',
 			];
 		}
 
@@ -109,6 +130,7 @@ abstract class CRUD {
 			'roles'                 => $user->roles,
 			'billing_phone'         => \get_user_meta($user_id, 'billing_phone', true),
 			'pc_birthday'           => ( (int) \get_user_meta($user_id, 'pc_birthday', true) ) ?: null,
+			'edit_url'              => \get_edit_user_link( $user_id ),
 		];
 
 		// 取得 customer 資料
@@ -137,8 +159,48 @@ abstract class CRUD {
 
 		// ENHANCE 未來可能會有階層  上下線關係的 user!?
 
-		/** @var array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...} $formatted_array */
+		/** @var array{
+		 *   id: string,
+		 *   user_login: string,
+		 *   user_email: string,
+		 *   display_name: string,
+		 *   user_registered: string,
+		 *   user_registered_human: string|null,
+		 *   user_avatar_url: mixed,
+		 *   description: string,
+		 *   roles: array<string>,
+		 *   billing_phone: string,
+		 *   pc_birthday: int|null,
+		 *   edit_url: string,
+		 *   date_last_active: string|null,
+		 *   date_last_order: string|null,
+		 *   orders_count: int|null,
+		 *   total_spend: string|null,
+		 *   avg_order_value: string|null
+		 * } $formatted_array */
 		return $formatted_array;
+	}
+
+	/**
+	 * Format user details
+	 *
+	 * @param int           $user_id  User ID.
+	 * @param array<string> $meta_keys  要暴露的前端 meta key
+	 * @return array{id: string, user_login: string, user_email: string, display_name: string, user_registered: string, user_registered_human: string|null, user_avatar_url: mixed, description: string, ...}|null
+	 */
+	public static function format_user_details( int $user_id, array $meta_keys = [] ): array|null {
+		$new_meta_keys = [
+			...$meta_keys,
+			'first_name',
+			'last_name',
+			'description',
+		];
+
+		$user_record = self::format_user_record( $user_id, $new_meta_keys );
+
+		$extra_array = Info::to_user_array( $user_id );
+
+		return array_merge( $user_record, $extra_array );
 	}
 
 	/**
