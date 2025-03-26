@@ -339,4 +339,68 @@ abstract class CRUD {
 
 		return \wp_parse_args( $data, $default_args );
 	}
+
+
+	/**
+	 * 取得指定用戶 ID 的購物車內容
+	 *
+	 * 此方法會檢查用戶的購物車會話，並返回購物車中的所有商品資訊
+	 *
+	 * @param int $user_id 用戶 ID
+	 *
+	 * @return array{
+	 *   product_id: int,
+	 *   product_name: string,
+	 *   quantity: int,
+	 *   price: string|float,
+	 *   variation_id: int,
+	 *   variation: array<string, string>,
+	 *   line_total: float
+	 * }[] 購物車內容陣列，如果購物車為空或發生錯誤則返回空陣列
+	 */
+	public static function get_user_cart_items( int $user_id ): array {
+
+		// 檢查用戶是否存在
+		if (!\get_user_by('id', $user_id)) {
+			return [];
+		}
+
+		// 取得用戶的購物車會話
+		$session_handler = new \WC_Session_Handler();
+		$session         = $session_handler->get_session($user_id);
+
+		if (!$session || empty($session['cart'])) {
+			return [];
+		}
+
+		// 解析購物車資料
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log($session, '$session');
+		// ---------- END TEST ---------- //
+		$cart_items   = \maybe_unserialize($session['cart']);
+		$cart_content = [];
+
+		if (!empty($cart_items)) {
+			foreach ($cart_items as $cart_item_key => $values) {
+				$product_id = $values['product_id'];
+				$product    = \wc_get_product($product_id);
+
+				if (!$product) {
+					continue;
+				}
+
+				$cart_content[] = [
+					'product_id'   => $product_id,
+					'product_name' => $product->get_name(),
+					'quantity'     => $values['quantity'],
+					'price'        => $product->get_price(),
+					'variation_id' => isset($values['variation_id']) ? $values['variation_id'] : 0,
+					'variation'    => isset($values['variation']) ? $values['variation'] : [],
+					'line_total'   => $values['line_subtotal'],
+				];
+			}
+		}
+
+		return $cart_content;
+	}
 }
