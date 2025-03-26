@@ -97,4 +97,68 @@ abstract class Base {
 		$name = implode(' ', array_map(fn( $name ) => ucfirst($name), $names));
 		return $name;
 	}
+
+	/**
+	 * 通用批次處理高階函數
+	 *
+	 * @param array<int, mixed> $items 需要處理的項目陣列
+	 * @param callable          $callback 處理每個項目的回調函數，接收項目和索引參數，回傳布林值表示成功或失敗
+	 * @param array{
+	 *  batch_size: int,
+	 *  pause_ms: int,
+	 *  flush_cache: bool,
+	 * }    $options 設定選項
+	 * @return array 處理結果統計
+	 */
+	public static function batch_process( $items, $callback, $options = [] ) {
+		// 默认选项
+		$default_options = [
+			'batch_size'  => 10,  // 每批次處理的項目數量
+			'pause_ms'    => 750, // 每批次之間暫停的毫秒數
+			'flush_cache' => true, // 每批次後是否清除 WordPress 快取
+		];
+
+		// 合併選項
+		$options = \wp_parse_args( $options, $default_options );
+
+		// 初始化結果統計
+		$result = [
+			'total'        => count($items),
+			'success'      => 0,
+			'failed'       => 0,
+			'failed_items' => [],
+		];
+
+		// 分批處理
+		$batches = array_chunk($items, $options['batch_size']);
+
+		foreach ($batches as $batch_index => $batch) {
+			// 處理每一批
+			foreach ($batch as $index => $item) {
+				$success = call_user_func($callback, $item, $index);
+
+				if ($success) {
+					++$result['success'];
+				} else {
+					++$result['failed'];
+					$result['failed_items'][] = $item;
+				}
+			}
+
+			// 如果不是最後一批，執行批次間操作
+			if ($batch_index < count($batches) - 1) {
+				// 清除快取，釋放記憶體
+				if ($options['flush_cache']) {
+					\wp_cache_flush();
+				}
+
+				// 暫停指定時間
+				if ($options['pause_ms'] > 0) {
+					usleep($options['pause_ms'] * 1000); // 轉換為微秒
+				}
+			}
+		}
+
+		return $result;
+	}
 }
