@@ -163,7 +163,9 @@ final class DTO {
 	public static function remove_double_dash( array $theme_css = [] ): array {
 		$new_theme_css = [];
 		foreach ($theme_css as $key => $value) {
-			$new_theme_css[ str_replace('--', '', $key) ] = $value;
+			$key                   = str_replace('--', '', $key);
+			$key                   = str_replace('-', '_', $key);
+			$new_theme_css[ $key ] = $value;
 		}
 		return $new_theme_css;
 	}
@@ -203,7 +205,7 @@ final class DTO {
 				$formatted_properties['color-scheme'] = $value;
 				continue;
 			}
-
+			$key                                = str_replace('_', '-', $key);
 			$formatted_properties[ "--{$key}" ] = $value;
 		}
 		return $formatted_properties;
