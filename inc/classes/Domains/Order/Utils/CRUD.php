@@ -9,7 +9,7 @@ use J7\Powerhouse\Domains\User\Utils\CRUD as UserCRUD;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
 
 
-/** Post CRUD */
+/** Order CRUD */
 abstract class CRUD {
 
 	const TEMPLATE = '';

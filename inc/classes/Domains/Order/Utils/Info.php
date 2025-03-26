@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Order\Utils;
 
-/** Helper */
+/**
+ * 訂單資訊
+ * 因為 WooCommerce billing, shipping 資訊欄位很多
+ * 透過這個類可以一次拿到所有相關的欄位以及組合資料結構
+ */
 abstract class Info {
 
 	/** @var array<string>  類型*/
