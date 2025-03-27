@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Domains\Order\Utils;
 
 use Automattic\WooCommerce\Admin\Overrides\OrderRefund;
-use J7\Powerhouse\Domains\User\Utils\CRUD as UserCRUD;
-use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
+use J7\Powerhouse\Domains\User\Model\User;
+
+
 
 
 /** Order CRUD */
@@ -100,7 +101,7 @@ abstract class CRUD {
 
 		// $meta_keys_array = self::get_meta_keys_array($post, $meta_keys);
 
-		$customer               = UserCRUD::format_user_record( $order->get_customer_id() ) ?? [];
+		$customer               = User::instance( $order->get_customer_id() )->to_array();
 		$customer['ip_address'] = $order->get_customer_ip_address();
 
 		$base_array = [
