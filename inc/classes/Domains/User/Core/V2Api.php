@@ -11,6 +11,7 @@ namespace J7\Powerhouse\Domains\User\Core;
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\ApiBase;
 use J7\Powerhouse\Domains\User\Utils\CRUD;
+use J7\Powerhouse\Domains\User\Model\User;
 
 /**
  * Class V2Api
@@ -107,7 +108,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_users = [];
 		foreach ($users as $user) {
-			$formatted_users[] = CRUD::format_user_record( (int) $user->ID, $meta_keys );
+			$formatted_users[] = User::instance( (int) $user->ID, $meta_keys )->to_array();
 		}
 		$formatted_users = array_filter( $formatted_users );
 
@@ -143,7 +144,11 @@ final class V2Api extends ApiBase {
 					);
 			}
 
-			$user_array = CRUD::format_user_details( (int) $id );
+			$params    = $request->get_query_params();
+			$params    = WP::sanitize_text_field_deep( $params, false );
+			$meta_keys = $params['meta_keys'] ?? [];
+
+			$user_array = User::instance( (int) $id, $meta_keys )->to_array('edit');
 
 			$response = new \WP_REST_Response( $user_array );
 
