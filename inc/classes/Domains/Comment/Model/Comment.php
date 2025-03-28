@@ -22,8 +22,14 @@ final class Comment extends DTO {
 	/** @var string $added_by 新增者 */
 	public string $added_by;
 
-	/** @var string $user_id 被評論的用戶 ID */
+	/** @var bool $is_customer_note 客戶是否可見 */
+	public bool $is_customer_note = false;
+
+	/** @var string $user_id 評論的作者 ID */
 	public string $user_id;
+
+	/** @var string $commented_user_id 被評論的用戶 ID */
+	public string $commented_user_id;
 
 	/**
 	 * 實例化評論
@@ -38,11 +44,13 @@ final class Comment extends DTO {
 		}
 
 		$comment_data = [
-			'id'           => (string) $comment->comment_ID,
-			'date_created' => $comment->comment_date,
-			'content'      => $comment->comment_content,
-			'added_by'     => $comment->comment_author,
-			'user_id'      => (string) $comment->user_id,
+			'id'                => (string) $comment->comment_ID,
+			'date_created'      => $comment->comment_date,
+			'content'           => \wpautop( $comment->comment_content ),
+			'added_by'          => $comment->comment_author,
+			'is_customer_note'  => \wc_string_to_bool( \get_comment_meta( $comment_id, 'is_customer_note', true ) ),
+			'user_id'           => (string) $comment->user_id,
+			'commented_user_id' => (string) \get_comment_meta( $comment_id, 'commented_user_id', true ) ?: '0',
 		];
 
 		return new self( $comment_data );
