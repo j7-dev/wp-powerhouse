@@ -340,10 +340,11 @@ abstract class CRUD {
 		}
 
 		$args = [
-			'type'       => 'review', // 'contact_remarks',
-			'author__in' => [ $user_id ],
+			'type'       => 'contact_remark',
 			'status'     => 'approve', // 'hold' (`comment_status=0`), 'approve' (`comment_status=1`), 'all', or a custom comment status
 			'fields'     => 'ids',
+			'meta_key'   => 'commented_user_id',
+			'meta_value' => $user_id,
 		];
 
 		$comment_ids = \get_comments( $args );

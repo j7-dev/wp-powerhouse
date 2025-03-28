@@ -114,6 +114,10 @@ div[class^="ant-"] {
 		// 因為 md 以上顯示 admin bar，所以 top 要設定為 8
 		@apply top-0 md:top-8 sticky z-10 bg-white;
 	}
+	.pc-nav {
+		// 因為 md 以上顯示 admin bar，所以 top 要設定為 8
+		@apply top-0 md:top-8 sticky z-10 bg-white;
+	}
 }
 
 .ant-layout-sider {

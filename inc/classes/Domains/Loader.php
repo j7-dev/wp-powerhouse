@@ -18,6 +18,7 @@ final class Loader {
 	 * Constructor
 	 */
 	public function __construct() {
+		Comment\Core\V2Api::instance();
 		Post\Core\V2Api::instance();
 		User\Core\V2Api::instance();
 		Product\Core\V2Api::instance();

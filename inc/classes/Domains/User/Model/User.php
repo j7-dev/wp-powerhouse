@@ -127,7 +127,13 @@ final class User extends DTO {
 	 * */
 	public array $shipping = [];
 
-	/** @var array<string, mixed> 聯絡註記 Edit 時才暴露 */
+	/** @var array{
+	 * id: string,
+	 * date_created: string,
+	 * content: string,
+	 * added_by: string,
+	 * user_id: string,
+	 * } 聯絡註記 Edit 時才暴露 */
 	public array $contact_remarks = [];
 
 	/** @var array<string, mixed> 其他 meta 資料 Edit 時才暴露 */
