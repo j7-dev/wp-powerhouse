@@ -300,7 +300,7 @@ class Utils {
 		unset($saved_codes[ $product_slug ]);
 		\update_option(self::KEY, $saved_codes);
 		$delete_transient_result = \delete_transient("lc_{$product_slug}");
-		return $delete_transient_result;
+		return (bool) $delete_transient_result;
 	}
 
 	/**
