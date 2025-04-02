@@ -147,7 +147,7 @@ abstract class Info {
 			$user_array[ $type ] = [];
 			$fields              = $type === 'shipping' ? self::get_shipping_fields( false ) : self::get_billing_fields( false );
 			foreach ( $fields as $field ) {
-				$user_array[ $type ][ $field ] = \get_user_meta( $user_id, $field, true );
+				$user_array[ $type ][ $field ] = \get_user_meta( $user_id, "{$type}_{$field}", true );
 			}
 		}
 

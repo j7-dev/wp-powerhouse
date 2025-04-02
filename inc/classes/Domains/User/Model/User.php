@@ -44,14 +44,14 @@ final class User extends DTO {
 	/** @var string 用戶描述/簡介 */
 	public string $description = '';
 
-	/** @var array<string> 用戶角色列表 */
-	public array $roles = [];
+	/** @var string 用戶角色 */
+	public string $role = 'subscriber';
 
 	/** @var string 用戶聯絡電話 */
 	public string $billing_phone = '';
 
-	/** @var string 用戶生日 */
-	public string $user_birthday = ''; // TODO
+	/** @var string 用戶生日 格式: YYYY-MM-DD */
+	public string $user_birthday = '';
 
 	/** @var string 用戶編輯頁面 URL */
 	public string $edit_url = '';
@@ -183,9 +183,9 @@ final class User extends DTO {
 			'user_registered_human' => $user_registered_time ? \human_time_diff( $user_registered_time ) : null,
 			'user_avatar_url'       => $user_avatar_url,
 			'description'           => $user->description,
-			'roles'                 => $user->roles,
+			'role'                  => (string) reset( $user->roles ) ?: 'subscriber',
 			'billing_phone'         => \get_user_meta($user_id, 'billing_phone', true),
-			'user_birthday'         => '', // TODO
+			'user_birthday'         => \get_user_meta($user_id, 'user_birthday', true),
 			'edit_url'              => \get_edit_user_link( $user_id ),
 			'date_last_active'      => $customer_history['date_last_active'] ?? null,
 			'date_last_order'       => $customer_history['date_last_order'] ?? null,
@@ -246,7 +246,7 @@ final class User extends DTO {
 	/**
 	 * 取得屬性以外剩餘的 meta_data 資料
 	 *
-	 * @return array<string, mixed>
+	 * @return array<array{umeta_id:string, meta_key:string, meta_value:string}>
 	 */
 	public function get_rest_meta_data(): array {
 		$exclude_fields = [
@@ -257,6 +257,7 @@ final class User extends DTO {
 			'nickname',
 			'user_email',
 			'display_name',
+			'description',
 			'user_avatar_url',
 			'wp_capabilities',
 			'wp_user_level',
@@ -268,23 +269,16 @@ final class User extends DTO {
 			'avg_order_value',
 		];
 
-		$user_data = \get_user_meta( $this->id );
+		global $wpdb;
+		/** @var array<array{umeta_id:string, meta_key:string, meta_value:string}> $user_meta_array */
+		$user_meta_array = $wpdb->get_results( $wpdb->prepare( "SELECT umeta_id, meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d", $this->id ), ARRAY_A );
+
 		$meta_data = [];
-		foreach ($user_data as $key => $value) {
-			if ( in_array( $key, $exclude_fields ) ) {
+		foreach ($user_meta_array as $user_meta_record) {
+			if ( in_array( $user_meta_record['meta_key'], $exclude_fields ) ) {
 				continue;
 			}
-
-			if ( !is_array( $value ) ) {
-				$meta_data[ $key ] = $value;
-				continue;
-			}
-
-			if ( count( $value ) === 1 ) {
-				$meta_data[ $key ] = $value[0];
-				continue;
-			}
-			$meta_data[ $key ] = $value;
+			$meta_data[] = $user_meta_record;
 		}
 
 		return $meta_data;

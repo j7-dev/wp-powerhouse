@@ -1,8 +1,4 @@
 <?php
-/**
- * User CRUD API
- * TODO可以用 filter 來 filter 參數
- */
 
 declare(strict_types=1);
 
@@ -14,7 +10,8 @@ use J7\Powerhouse\Domains\User\Utils\CRUD;
 use J7\Powerhouse\Domains\User\Model\User;
 
 /**
- * Class V2Api
+ * Class User CRUD  V2Api
+ * TODO可以用 filter 來 filter 參數
  */
 final class V2Api extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
@@ -298,30 +295,29 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_users_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('user id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('user id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			$body_params = $request->get_body_params();
-			$body_params = WP::sanitize_text_field_deep( $body_params, false );
-			/** @var array<string, mixed> $body_params */
+		$body_params = $request->get_body_params();
+		$body_params = WP::sanitize_text_field_deep( $body_params, false );
+		/** @var array<string, mixed> $body_params */
 
-			$body_params['ID'] = $id;
+		$body_params['ID'] = $id;
 
-			$update_result = CRUD::update_user( $body_params );
+		$update_result = CRUD::update_user( $body_params );
 
-			if ( !is_numeric( $update_result ) ) {
-				return $update_result;
-			}
+		if ( !is_numeric( $update_result ) ) {
+			return $update_result;
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'update_success',
 				'message' => __('update user success', 'powerhouse'),
@@ -330,17 +326,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-			[
-				'code'    => 'update_failed',
-				'message' => $th->getMessage(),
-				'data'    => null,
-			],
-			400
-			);
-		}
 	}
 
 	/**
@@ -361,6 +346,15 @@ final class V2Api extends ApiBase {
 		$ids = $body_params['ids'] ?? [];
 		/** @var array<string> $ids */
 		$ids = is_array( $ids ) ? $ids : [];
+
+		if (!$ids ) {
+			throw new \Exception(
+				sprintf(
+				__('ids is required', 'powerhouse'),
+				$ids
+			)
+			);
+		}
 
 		try {
 			require_once ABSPATH . 'wp-admin/includes/user.php';
