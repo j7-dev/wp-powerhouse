@@ -161,4 +161,30 @@ abstract class Base {
 
 		return $result;
 	}
+
+	/**
+	 * Get taxonomy options
+	 *
+	 * @param array<string> $object_type Object type
+	 * @return array<array{value: string, label: string}>
+	 */
+	public static function get_taxonomy_options( array $object_type = [ 'product' ] ): array {
+		$taxonomies = \get_taxonomies(
+			[
+				'object_type'  => $object_type,
+				'public'       => true,
+				'show_in_rest' => true,
+			],
+			'objects'
+		);
+
+		$object_taxonomies_array = [];
+		foreach ( $taxonomies as $taxonomy ) {
+			$object_taxonomies_array[] = [
+				'value' => $taxonomy->name,
+				'label' => $taxonomy->label,
+			];
+		}
+		return $object_taxonomies_array;
+	}
 }

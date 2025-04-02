@@ -33,7 +33,7 @@ abstract class CRUD {
 		[
 			'data'      => $data,
 			'meta_data' => $meta_data,
-		] = WP::separator( $args );
+		] = WP::separator( $args, 'user' );
 
 		$data['meta_input'] = $meta_data;
 
@@ -48,6 +48,7 @@ abstract class CRUD {
 	 * @see https://developer.wordpress.org/reference/functions/wp_insert_user/
 	 *
 	 * 簡單的新增，沒有太多參數，所以不使用 Converter
+	 * wp_update_user 接受 role 參數，可以直接修改用戶角色，但只接受小寫
 	 *
 	 * @param array<string, mixed> $args Arguments.
 	 *
@@ -58,9 +59,29 @@ abstract class CRUD {
 		[
 			'data'      => $data,
 			'meta_data' => $meta_data,
-		] = WP::separator( $args );
+		] = WP::separator( $args, 'user' );
+
+		// 如果有 other_meta_data 就額外做處理，直接用 umeta_id 更新
+		$other_meta_data = $data['other_meta_data'] ?? [];
+		$other_meta_data = is_array($other_meta_data) ? $other_meta_data : [];
+		unset( $data['other_meta_data'] );
+
+		/** @var array<array{umeta_id:string, meta_key:string, meta_value:string}> $other_meta_data */
+		foreach ($other_meta_data as $other_meta_data_record) {
+			[
+				'umeta_id' => $umeta_id,
+				'meta_key' => $meta_key,
+				'meta_value' => $meta_value,
+			] = $other_meta_data_record;
+			\update_metadata_by_mid('user', $umeta_id, $meta_value, $meta_key );
+		}
+		// END other_meta_data 儲存處理
 
 		$data['meta_input'] = $meta_data;
+
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log( $data, 'update_user' );
+		// ---------- END TEST ---------- //
 
 		/** @var array{ID?: int, user_pass?: string, user_login?: string, user_nicename?: string, user_url?: string, user_email?: string, display_name?: string, nickname?: string, ...}|object $data */
 		return \wp_update_user($data);
@@ -173,20 +194,12 @@ abstract class CRUD {
 				continue;
 			}
 
-			if ('pc_birthday' === $key && is_array($value)) {
+			if ('user_birthday' === $key) {
 				$data['meta_query'][] = [
-					'key'     => $key,
-					'value'   => $value[0] ?? 0,
-					'compare' => '>=',
-					'type'    => 'NUMERIC',
+					'key'     => 'user_birthday',
+					'value'   => "-{$value}-",
+					'compare' => 'LIKE',
 				];
-				$data['meta_query'][] = [
-					'key'     => $key,
-					'value'   => $value[1] ?? time(),
-					'compare' => '<=',
-					'type'    => 'NUMERIC',
-				];
-
 				continue;
 			}
 			$data['meta_query'][] = [
@@ -199,6 +212,10 @@ abstract class CRUD {
 			'orderby' => 'ID',
 			'order'   => 'DESC',
 		];
+
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log( $data, 'prepare_query_args' );
+		// ---------- END TEST ---------- //
 
 		return \wp_parse_args( $data, $default_args );
 	}

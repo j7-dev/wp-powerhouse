@@ -23,6 +23,7 @@ final class Loader {
 		User\Core\V2Api::instance();
 		Product\Core\V2Api::instance();
 		Option\Core\V2Api::instance();
+		Option\Core\WC_Countries::instance();
 		Shortcode\Core\V2Api::instance();
 		Upload\Core\V2Api::instance();
 		Copy\Core\V2Api::instance();
