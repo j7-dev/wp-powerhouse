@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Domains\Report\Revenue\Core;
 
 use J7\WpUtils\Classes\ApiBase;
-use J7\WpUtils\Classes\General;
 use Automattic\WooCommerce\Admin\API\Reports\Revenue\Query;
 use Automattic\WooCommerce\Admin\API\Reports\GenericQuery as ProductQuery;
 
@@ -15,11 +14,7 @@ use Automattic\WooCommerce\Admin\API\Reports\GenericQuery as ProductQuery;
 final class V2Api extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Namespace
-	 *
-	 * @var string
-	 */
+	/** @var string Namespace */
 	protected $namespace = 'v2/powerhouse';
 
 	/**
@@ -38,20 +33,10 @@ final class V2Api extends ApiBase {
 		],
 	];
 
-
-	/**
-	 * 報表欄位
-	 *
-	 * @var array<string, string>
-	 */
+	/** @var array<string, string> 報表欄位 */
 	protected $extra_report_columns = [];
 
-
-	/**
-	 * 報表欄位型別 intval|floatval
-	 *
-	 * @var array<string, string>
-	 */
+	/** @var array<string, string> 報表欄位型別 intval|floatval*/
 	protected $extra_report_column_types = [
 		// 取得退款訂單數量
 		'refunded_orders_count'     => 'intval',
@@ -81,8 +66,6 @@ final class V2Api extends ApiBase {
 		\add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_cache_in_local' ], 100, 2 );
 	}
 
-
-
 	/**
 	 * 取得報表收入統計資料 API
 	 *
@@ -93,6 +76,71 @@ final class V2Api extends ApiBase {
 		// 從請求中取得查詢參數
 		$params = $request->get_query_params();
 
+		$filtered_data = $this->get_reports_revenue_stats($params);
+
+		// 如果沒有找到數據，返回空響應
+		if (empty($filtered_data)) {
+			return new \WP_REST_Response(
+				[
+					'code'    => 200,
+					'message' => '未找到數據',
+					'data'    => null,
+				],
+				200
+			);
+		}
+
+		return new \WP_REST_Response(
+			$filtered_data,
+			200
+		);
+	}
+
+	/**
+	 * 取得報表收入統計資料 API
+	 *
+	 * @param array<string, mixed> $params 參數
+	 * @return object{
+	 *     totals: object{
+	 *         orders_count: int,
+	 *         num_items_sold: int,
+	 *         total_sales: float,
+	 *         coupons: float,
+	 *         coupons_count: int,
+	 *         refunds: float,
+	 *         taxes: float,
+	 *         shipping: float,
+	 *         net_revenue: float,
+	 *         gross_sales: float,
+	 *         products: int,
+	 *         segments: array<mixed>
+	 *     },
+	 *     intervals: array<array{
+	 *         interval: string,
+	 *         date_start: string,
+	 *         date_start_gmt: string,
+	 *         date_end: string,
+	 *         date_end_gmt: string,
+	 *         subtotals: object{
+	 *             orders_count: int,
+	 *             num_items_sold: int,
+	 *             total_sales: float,
+	 *             coupons: float,
+	 *             coupons_count: int,
+	 *             refunds: float,
+	 *             taxes: float,
+	 *             shipping: float,
+	 *             net_revenue: float,
+	 *             gross_sales: float,
+	 *             products: int,
+	 *             segments: array<mixed>
+	 *         }
+	 *     }>,
+	 *     total: int,
+	 *     pages: int
+	 * } $filtered_data
+	 */
+	public function get_reports_revenue_stats( array $params = [] ): object {
 		// 設定預設的分頁參數
 		$params['page']     = 1;
 		$params['per_page'] = 10000; // 設定一個大數值以一次性取得所有記錄
@@ -187,26 +235,52 @@ final class V2Api extends ApiBase {
 		 *     pages: int
 		 * } $data
 		 */
-		$data = $query->get_data(); // 是物件
+		$data = $query->get_data();
 
 		$filtered_data = \apply_filters('powerhouse/report/revenue/stats', $data, $query_args);
 
-		// 如果沒有找到數據，返回空響應
-		if (empty($filtered_data)) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 200,
-					'message' => '未找到數據',
-					'data'    => null,
-				],
-				200
-			);
-		}
-
-		return new \WP_REST_Response(
-			$filtered_data,
-			200
-		);
+		/**
+		 * @var object{
+		 *     totals: object{
+		 *         orders_count: int,
+		 *         num_items_sold: int,
+		 *         total_sales: float,
+		 *         coupons: float,
+		 *         coupons_count: int,
+		 *         refunds: float,
+		 *         taxes: float,
+		 *         shipping: float,
+		 *         net_revenue: float,
+		 *         gross_sales: float,
+		 *         products: int,
+		 *         segments: array<mixed>
+		 *     },
+		 *     intervals: array<array{
+		 *         interval: string,
+		 *         date_start: string,
+		 *         date_start_gmt: string,
+		 *         date_end: string,
+		 *         date_end_gmt: string,
+		 *         subtotals: object{
+		 *             orders_count: int,
+		 *             num_items_sold: int,
+		 *             total_sales: float,
+		 *             coupons: float,
+		 *             coupons_count: int,
+		 *             refunds: float,
+		 *             taxes: float,
+		 *             shipping: float,
+		 *             net_revenue: float,
+		 *             gross_sales: float,
+		 *             products: int,
+		 *             segments: array<mixed>
+		 *         }
+		 *     }>,
+		 *     total: int,
+		 *     pages: int
+		 * } $filtered_data
+		 */
+		return $filtered_data;
 	}
 
 
