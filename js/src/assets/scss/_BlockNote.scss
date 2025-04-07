@@ -29,6 +29,10 @@
 		}
 	}
 
+	.bn-block-content:has(img) {
+		padding: 0px;
+	}
+
 	.bn-block-content {
 		&[data-content-type="customHTML"] {
 			> div {
