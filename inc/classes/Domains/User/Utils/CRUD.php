@@ -371,4 +371,32 @@ abstract class CRUD {
 		}
 		return $comments;
 	}
+
+	/**
+	 * 取得新註冊用戶數量
+	 *
+	 * @param \DateTime $start_date 開始日期
+	 * @param \DateTime $end_date 結束日期
+	 * @return int
+	 */
+	public static function get_new_registration_in_range( \DateTime $start_date, \DateTime $end_date ): int {
+		global $wpdb;
+
+		// 格式化為 MySQL 日期格式
+		$start = $start_date->format('Y-m-d H:i:s');
+		$end   = $end_date->format('Y-m-d H:i:s');
+
+		// 查詢時間區間內的新註冊用戶數量
+		$sql = $wpdb->prepare(
+		"SELECT COUNT(ID)
+        FROM {$wpdb->users}
+        WHERE user_registered BETWEEN %s AND %s",
+		$start,
+		$end
+		);
+
+		$total = $wpdb->get_var($sql); // phpcs:ignore
+
+		return (int) $total;
+	}
 }

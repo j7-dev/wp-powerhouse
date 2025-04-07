@@ -342,4 +342,61 @@ abstract class CRUD {
 
 		return $formatted_terms;
 	}
+
+
+	/**
+	 * 取得時間範圍內的訂單
+	 *
+	 * @param \DateTime     $start_date 開始日期
+	 * @param \DateTime     $end_date 結束日期
+	 * @param array<string> $statuses 訂單狀態
+	 * @return \WC_Order[]
+	 */
+	public static function get_orders_in_range( \DateTime $start_date, \DateTime $end_date, $statuses = [ 'completed', 'processing' ] ): array {
+		// 格式化為 MySQL 日期格式
+		$start = $start_date->format('Y-m-d H:i:s');
+		$end   = $end_date->format('Y-m-d H:i:s');
+
+		$args = [
+			'status'       => $statuses,
+			'date_created' => "{$start}...{$end}",
+			'limit'        => -1,
+			'return'       => 'objects',
+		];
+
+		// 使用 wc_get_orders - 此 API 完全支援 HPOS
+		$orders = \wc_get_orders($args);
+		return $orders;
+	}
+
+	/**
+	 * 取得時間範圍內的訂單總金額
+	 *
+	 * @param \DateTime $start_date 開始日期
+	 * @param \DateTime $end_date 結束日期
+	 * @return float
+	 */
+	public static function get_order_total_in_range( \DateTime $start_date, \DateTime $end_date, $statuses = [ 'completed', 'processing' ] ): float {
+		$orders = self::get_orders_in_range($start_date, $end_date, $statuses);
+		$total  = 0;
+
+		foreach ($orders as $order) {
+			$total += $order->get_total();
+		}
+
+		return (float) $total;
+	}
+
+	/**
+	 * 取得時間範圍內的訂單數量
+	 *
+	 * @param \DateTime     $start_date 開始日期
+	 * @param \DateTime     $end_date 結束日期
+	 * @param array<string> $statuses 訂單狀態
+	 * @return int
+	 */
+	public static function get_order_count_in_range( \DateTime $start_date, \DateTime $end_date, $statuses = [ 'processing', 'completed' ] ): int {
+		$orders = self::get_orders_in_range($start_date, $end_date, $statuses);
+		return count($orders);
+	}
 }
