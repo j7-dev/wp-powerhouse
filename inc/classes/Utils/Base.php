@@ -1,7 +1,4 @@
 <?php
-/**
- * Base
- */
 
 declare ( strict_types=1 );
 
