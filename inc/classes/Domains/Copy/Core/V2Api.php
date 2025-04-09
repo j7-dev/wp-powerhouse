@@ -41,30 +41,19 @@ final class V2Api extends ApiBase {
 	 */
 	public function post_copy_with_id_callback( $request ): \WP_REST_Response {
 		$id = $request['id'] ?? null;
-		try {
-			if (!$id || !is_numeric( $id ) ) {
-				throw new \Exception( 'id is required' );
-			}
+		if (!$id || !is_numeric( $id ) ) {
+			throw new \Exception( 'id is required' );
+		}
 
-			$copy   = Copy::instance();
-			$new_id = $copy->process( (int) $id, true, true );
+		$copy   = Copy::instance();
+		$new_id = $copy->process( (int) $id, true, true );
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'post_copy_success',
 				'message' => '複製成功',
 				'data'    => $new_id,
 			]
 			);
-
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-			[
-				'code'    => 'post_copy_error',
-				'message' => $th->getMessage(),
-			],
-			500
-			);
-		}
 	}
 }
