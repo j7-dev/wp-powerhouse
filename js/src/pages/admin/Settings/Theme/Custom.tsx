@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Heading } from 'antd-toolkit'
 import { Form, ColorPicker, InputNumber } from 'antd'
 import { COLOR_MAPPER, THEME_MAPPER, NUMBER_MAPPER } from './constants'
 import { oklchToHex, hexToOklch } from './utils'
+import { Heading, Switch } from 'antd-toolkit'
 
 const { Item } = Form
 
@@ -37,6 +37,12 @@ const Custom = () => {
 
 	return (
 		<>
+			<Heading className="mt-8">啟用 Power 外掛主題色</Heading>
+			<Switch
+				formItemProps={{
+					name: ['powerhouse_settings', 'enable_theme'],
+				}}
+			/>
 			<Heading className="mt-8">自訂主題</Heading>
 			<div className="flex flex-wrap gap-2">
 				{COLOR_MAPPER.map(({ label, key, defaultValue }) => (

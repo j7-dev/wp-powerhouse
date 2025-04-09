@@ -23,6 +23,9 @@ final class DTO extends BaseDTO {
 	/** @var string $enable_theme_changer 啟用主題切換器 */
 	public string $enable_theme_changer = 'no';
 
+	/** @var string $enable_theme 啟用主題 */
+	public string $enable_theme = 'yes';
+
 	/** @var array<string, string> $theme_css 當選擇 custom 主題時，使用自訂的 css */
 	public array $theme_css = [];
 

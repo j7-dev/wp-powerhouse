@@ -40,6 +40,11 @@ final class FrontEnd {
 			return $output;
 		}
 
+		// 是否啟用 Power 外掛主題色
+		if (DTO::instance()->enable_theme !== 'yes') {
+			return "{$output} id=\"tw\" class=\"tailwind\"";
+		}
+
 		$theme = DTO::instance()->theme;
 		return "{$output} id=\"tw\" class=\"tailwind\" data-theme=\"{$theme}\"";
 	}
@@ -51,8 +56,14 @@ final class FrontEnd {
 	 * @return void
 	 */
 	public function custom_theme_color(): void {
+		// 是否啟用 Power 外掛主題色
+		if (DTO::instance()->enable_theme !== 'yes') {
+			return;
+		}
+
 		ThemeDTO::instance()?->print_css();
 
+		// 是否啟用前台切換主題按鈕
 		if (DTO::instance()->enable_theme_changer !== 'yes') {
 			return;
 		}
