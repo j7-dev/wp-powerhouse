@@ -89,7 +89,7 @@ final class Bootstrap {
 	public static function enqueue_frontend_assets(): void {
 		// 後台已經有 blocknote 的 css 了，前台按需載入
 		\wp_register_style( 'blocknote', Plugin::$url . '/js/dist/css/blocknote.min.css', [], Plugin::$version );
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/front.min.css', [], Plugin::$version );
+		\wp_enqueue_style( Plugin::$snake . '_front', Plugin::$url . '/js/dist/css/front.min.css', [], Plugin::$version );
 	}
 
 	/**
@@ -102,9 +102,9 @@ final class Bootstrap {
 			return;
 		}
 		// 後台載入統一樣式
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/admin.min.css', [], Plugin::$version );
+		\wp_enqueue_style( Plugin::$snake . '_admin', Plugin::$url . '/js/dist/css/admin.min.css', [], Plugin::$version );
 		// 這支是 antd-toolkit 的 css
-		\wp_enqueue_style( Plugin::$snake, Plugin::$url . '/js/dist/css/style.css', [], Plugin::$version );
+		\wp_enqueue_style( Plugin::$snake . '_antd_toolkit', Plugin::$url . '/js/dist/css/style.css', [], Plugin::$version );
 
 		if (!General::in_url(
 			[
