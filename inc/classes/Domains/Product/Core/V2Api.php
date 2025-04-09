@@ -124,7 +124,7 @@ final class V2Api extends ApiBase {
 		$params = WP::sanitize_text_field_deep( $params, false );
 
 		$default_args = [
-			'status'         => [ 'publish', 'draft' ],
+			'status'         => [ 'publish', 'draft', 'pending' ],
 			'paginate'       => true,
 			'posts_per_page' => 20,
 			'paged'          => 1,
@@ -321,14 +321,34 @@ final class V2Api extends ApiBase {
 
 	/**
 	 * Post post callback
-	 * 創建商品
+	 * 批量創建 或 批量更新 商品 (用 action 來區分，有帶 action update-many 就是批量更新)
 	 *
 	 * @param \WP_REST_Request $request Request.
-	 * @return \WP_REST_Response|\WP_Error
+	 * @return \WP_REST_Response
 	 * @throws \Exception 當新增商品失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_products_callback( $request ): \WP_REST_Response|\WP_Error {
+	public function post_products_callback( $request ): \WP_REST_Response {
+
+		$body_params = $request->get_body_params();
+
+		if (@$body_params['action'] === 'update-many') {
+			return $this->update_many( $request );
+		}
+
+		return $this->create_many( $request );
+	}
+
+
+	/**
+	 * 批量創建
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 * @throws \Exception 當新增商品失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	private function create_many( $request ): \WP_REST_Response {
 		[
 				'data'      => $data,
 				'meta_data' => $meta_data,
@@ -348,6 +368,50 @@ final class V2Api extends ApiBase {
 				[
 					'code'    => 'create_success',
 					'message' => __('create products success', 'powerhouse'),
+					'data'    => $success_ids,
+				],
+			);
+	}
+
+	/**
+	 * 批量更新
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 * @throws \Exception 當新增商品失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	private function update_many( $request ): \WP_REST_Response|\WP_Error {
+		[
+				'data'      => $data,
+				'meta_data' => $meta_data,
+			] = $this->separator( $request, false );
+
+		// action, ids 不用存入 db
+		$ids = $meta_data['ids'] ?? [];
+		$ids = is_array($ids) ? $ids : [];
+		unset($meta_data['action']);
+		unset($meta_data['ids']);
+
+		if (!$ids) {
+			throw new \Exception( __('ids is required', 'powerhouse') );
+		}
+
+		$success_ids = [];
+
+		foreach ($ids as $id) {
+			$product = \wc_get_product( (int) $id );
+			if (!$product) {
+				continue;
+			}
+			CRUD::update_product( $product, $data, $meta_data );
+			$success_ids[] = $id;
+		}
+
+		return new \WP_REST_Response(
+				[
+					'code'    => 'update_success',
+					'message' => __('update products success', 'powerhouse'),
 					'data'    => $success_ids,
 				],
 			);
