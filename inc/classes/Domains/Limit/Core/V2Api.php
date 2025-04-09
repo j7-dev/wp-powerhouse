@@ -69,26 +69,25 @@ final class V2Api extends ApiBase {
 	public function post_limit_grant_users_callback( \WP_REST_Request $request ): \WP_REST_Response {
 
 		$body_params = $request->get_body_params();
-		try {
-			WP::include_required_params( $body_params, [ 'user_ids', 'item_ids', 'expire_date' ] );
-			$body_params = WP::sanitize_text_field_deep($body_params, false );
+		WP::include_required_params( $body_params, [ 'user_ids', 'item_ids', 'expire_date' ] );
+		$body_params = WP::sanitize_text_field_deep($body_params, false );
 
-			/** @var array<string, mixed> $body_params */
-			$user_ids    = \is_array( $body_params['user_ids'] ) ? $body_params['user_ids'] : [];
-			$item_ids    = \is_array( $body_params['item_ids'] ) ? $body_params['item_ids'] : [];
-			$expire_date = $body_params['expire_date'] ?? 0;
+		/** @var array<string, mixed> $body_params */
+		$user_ids    = \is_array( $body_params['user_ids'] ) ? $body_params['user_ids'] : [];
+		$item_ids    = \is_array( $body_params['item_ids'] ) ? $body_params['item_ids'] : [];
+		$expire_date = $body_params['expire_date'] ?? 0;
 
-			if (!$user_ids || !$item_ids) {
-				throw new \Exception(__('Failed to add users, missing user_ids or item_ids', 'powerhouse'));
+		if (!$user_ids || !$item_ids) {
+			throw new \Exception(__('Failed to add users, missing user_ids or item_ids', 'powerhouse'));
+		}
+
+		foreach ($item_ids as $item_id) {
+			foreach ($user_ids as  $user_id) {
+				\do_action( Models\LifeCycle::GRANT_USER_TO_ITEM_ACTION, (int) $user_id, (int) $item_id, $expire_date, null );
 			}
+		}
 
-			foreach ($item_ids as $item_id) {
-				foreach ($user_ids as  $user_id) {
-					\do_action( Models\LifeCycle::GRANT_USER_TO_ITEM_ACTION, (int) $user_id, (int) $item_id, $expire_date, null );
-				}
-			}
-
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'grant_users_success',
 				'message' => __('Users granted successfully', 'powerhouse'),
@@ -100,21 +99,6 @@ final class V2Api extends ApiBase {
 			],
 			200
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'grant_users_failed',
-					'message' => $th->getMessage(),
-					'data'    => [
-						'user_ids'    => \implode(',', $body_params['user_ids']),
-						'item_ids'    => \implode(',', $body_params['item_ids']),
-						'expire_date' => $body_params['expire_date'],
-					],
-
-				],
-				400
-			);
-		}
 	}
 
 	/**
@@ -128,22 +112,21 @@ final class V2Api extends ApiBase {
 	 */
 	public function post_limit_update_users_callback( \WP_REST_Request $request ): \WP_REST_Response {
 		$body_params = $request->get_body_params();
-		try {
-			WP::include_required_params( $body_params, [ 'user_ids', 'item_ids', 'timestamp' ] );
-			$body_params = WP::sanitize_text_field_deep( $body_params, false );
+		WP::include_required_params( $body_params, [ 'user_ids', 'item_ids', 'timestamp' ] );
+		$body_params = WP::sanitize_text_field_deep( $body_params, false );
 
-			/** @var array<string, mixed> $body_params */
-			$user_ids  = \is_array( $body_params['user_ids'] ) ? $body_params['user_ids'] : [];
-			$timestamp = (int) ( $body_params['timestamp'] ?? 0 ); // 一般為 10 位數字，如果是0就是無期限 //TODO 可能會跟隨訂閱!?
-			$item_ids  = \is_array( $body_params['item_ids'] ) ? $body_params['item_ids'] : [];
+		/** @var array<string, mixed> $body_params */
+		$user_ids  = \is_array( $body_params['user_ids'] ) ? $body_params['user_ids'] : [];
+		$timestamp = (int) ( $body_params['timestamp'] ?? 0 ); // 一般為 10 位數字，如果是0就是無期限 //TODO 可能會跟隨訂閱!?
+		$item_ids  = \is_array( $body_params['item_ids'] ) ? $body_params['item_ids'] : [];
 
-			foreach ($item_ids as $item_id) {
-				foreach ($user_ids as  $user_id) {
-					\do_action(Models\LifeCycle::AFTER_UPDATE_USER_FROM_ITEM_ACTION, $user_id, $item_id, $timestamp);
-				}
+		foreach ($item_ids as $item_id) {
+			foreach ($user_ids as  $user_id) {
+				\do_action(Models\LifeCycle::AFTER_UPDATE_USER_FROM_ITEM_ACTION, $user_id, $item_id, $timestamp);
 			}
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'update_users_success',
 				'message' => __('Batch update successfully', 'powerhouse'),
@@ -155,20 +138,6 @@ final class V2Api extends ApiBase {
 
 			]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'update_users_failed',
-					'message' => $th->getMessage(),
-					'data'    => [
-						'user_ids'  => \implode(',', $body_params['user_ids']),
-						'item_ids'  => \implode(',', $body_params['item_ids']),
-						'timestamp' => $body_params['timestamp'],
-					],
-				],
-				400
-			);
-		}
 	}
 
 
@@ -183,24 +152,23 @@ final class V2Api extends ApiBase {
 	 */
 	public function post_limit_revoke_users_callback( \WP_REST_Request $request ): \WP_REST_Response {
 		$body_params = $request->get_body_params();
-		try {
-			WP::include_required_params( $body_params, [ 'user_ids', 'item_ids' ] );
-			$body_params = WP::sanitize_text_field_deep( $body_params, false );
-			/** @var array<string, mixed> $body_params */
-			$user_ids = \is_array( $body_params['user_ids'] ) ? $body_params['user_ids'] : [];
-			$item_ids = \is_array( $body_params['item_ids'] ) ? $body_params['item_ids'] : [];
+		WP::include_required_params( $body_params, [ 'user_ids', 'item_ids' ] );
+		$body_params = WP::sanitize_text_field_deep( $body_params, false );
+		/** @var array<string, mixed> $body_params */
+		$user_ids = \is_array( $body_params['user_ids'] ) ? $body_params['user_ids'] : [];
+		$item_ids = \is_array( $body_params['item_ids'] ) ? $body_params['item_ids'] : [];
 
-			if (!$user_ids || !$item_ids) {
-				throw new \Exception(__('Failed to revoke users, missing user_ids or item_ids', 'powerhouse'));
+		if (!$user_ids || !$item_ids) {
+			throw new \Exception(__('Failed to revoke users, missing user_ids or item_ids', 'powerhouse'));
+		}
+
+		foreach ($item_ids as $item_id) {
+			foreach ($user_ids as $user_id) {
+				\do_action(Models\LifeCycle::AFTER_REVOKE_USER_FROM_ITEM_ACTION, $user_id, $item_id);
 			}
+		}
 
-			foreach ($item_ids as $item_id) {
-				foreach ($user_ids as $user_id) {
-					\do_action(Models\LifeCycle::AFTER_REVOKE_USER_FROM_ITEM_ACTION, $user_id, $item_id);
-				}
-			}
-
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 				[
 					'code'    => 'revoke_users_success',
 					'message' => __('Users revoked successfully', 'powerhouse'),
@@ -212,19 +180,5 @@ final class V2Api extends ApiBase {
 				],
 				200
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'revoke_users_failed',
-					'message' => $th->getMessage(),
-					'data'    => [
-						'user_ids' => \implode(',', $body_params['user_ids']),
-						'item_ids' => \implode(',', $body_params['item_ids']),
-					],
-
-				],
-				400
-			);
-		}
 	}
 }

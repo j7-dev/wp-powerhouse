@@ -70,9 +70,8 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_lc_activate_callback( \WP_REST_Request $request ): \WP_REST_Response {
-		try {
-			$body_params = $request->get_json_params();
-			WP::include_required_params(
+		$body_params = $request->get_json_params();
+		WP::include_required_params(
 				$body_params,
 				[
 					'code',
@@ -80,34 +79,24 @@ final class V2Api extends ApiBase {
 				]
 			);
 
-			[
+		[
 				'code'         => $code,
 				'product_slug' => $product_slug,
 			] = $body_params;
 
-			$result = Base::activate( $code, $product_slug );
+		$result = Base::activate( $code, $product_slug );
 
-			if ( \is_wp_error( $result ) ) {
-				throw new \Exception( $result->get_error_message() );
-			}
+		if ( \is_wp_error( $result ) ) {
+			throw new \Exception( $result->get_error_message() );
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'activate_lc_success',
 				'message' => "授權碼 《{$code}》 啟用成功",
 				'data'    => $result,
 			]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'activate_lc_failed',
-					'message' => '啟用失敗，' . $th->getMessage(),
-					'data'    => null,
-				],
-				500
-			);
-		}
 	}
 
 	/**
@@ -120,11 +109,9 @@ final class V2Api extends ApiBase {
 	 */
 	public function post_lc_deactivate_callback( \WP_REST_Request $request ): \WP_REST_Response {
 
-		try {
+		$body_params = $request->get_json_params();
 
-			$body_params = $request->get_json_params();
-
-			WP::include_required_params(
+		WP::include_required_params(
 			$body_params,
 			[
 				'code',
@@ -132,14 +119,14 @@ final class V2Api extends ApiBase {
 			]
 			);
 
-			[
+		[
 			'code'         => $code,
 			'product_slug' => $product_slug,
 			] = $body_params;
 
-			$result = Base::deactivate( $code, $product_slug );
+		$result = Base::deactivate( $code, $product_slug );
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'deactivate_lc_success',
 				'message' => "授權碼 《{$code}》 棄用成功",
@@ -147,16 +134,6 @@ final class V2Api extends ApiBase {
 			],
 			200
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-			[
-				'code'    => 'deactivate_lc_failed',
-				'message' => '棄用失敗，' . $th->getMessage(),
-				'data'    => null,
-			],
-			500
-			);
-		}
 	}
 
 

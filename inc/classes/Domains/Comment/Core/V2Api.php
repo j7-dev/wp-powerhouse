@@ -120,36 +120,25 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_comments_with_id_callback( $request ) { // phpcs:ignore
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('user id format not match #%s', 'powerhouse'),
-					$id
-				)
-					);
-			}
-
-			$params    = $request->get_query_params();
-			$params    = WP::sanitize_text_field_deep( $params, false );
-			$meta_keys = $params['meta_keys'] ?? [];
-
-			$user_array = User::instance( (int) $id, $meta_keys )->to_array('edit');
-
-			$response = new \WP_REST_Response( $user_array );
-
-			return $response;
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'get_failed',
-					'message' => $th->getMessage(),
-					'data'    => null,
-				],
-				400
-			);
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('user id format not match #%s', 'powerhouse'),
+				$id
+			)
+				);
 		}
+
+		$params    = $request->get_query_params();
+		$params    = WP::sanitize_text_field_deep( $params, false );
+		$meta_keys = $params['meta_keys'] ?? [];
+
+		$user_array = User::instance( (int) $id, $meta_keys )->to_array('edit');
+
+		$response = new \WP_REST_Response( $user_array );
+
+		return $response;
 	}
 
 	/**
@@ -209,30 +198,29 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_comments_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('user id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('user id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			$body_params = $request->get_body_params();
-			$body_params = WP::sanitize_text_field_deep( $body_params, false );
-			/** @var array<string, mixed> $body_params */
+		$body_params = $request->get_body_params();
+		$body_params = WP::sanitize_text_field_deep( $body_params, false );
+		/** @var array<string, mixed> $body_params */
 
-			$body_params['ID'] = $id;
+		$body_params['ID'] = $id;
 
-			$update_result = CRUD::update_user( $body_params );
+		$update_result = CRUD::update_user( $body_params );
 
-			if ( !is_numeric( $update_result ) ) {
-				return $update_result;
-			}
+		if ( !is_numeric( $update_result ) ) {
+			return $update_result;
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'update_success',
 				'message' => __('update user success', 'powerhouse'),
@@ -241,70 +229,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-			[
-				'code'    => 'update_failed',
-				'message' => $th->getMessage(),
-				'data'    => null,
-			],
-			400
-			);
-		}
-	}
-
-	/**
-	 * 批量寄送重設密碼信
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @return \WP_REST_Response|\WP_Error
-	 * @throws \Exception 當寄送重設密碼信失敗時拋出異常
-	 * @phpstan-ignore-next-line
-	 */
-	public function post_comments_resetpassword_callback( $request ): \WP_REST_Response|\WP_Error {
-
-		$body_params = $request->get_json_params();
-
-		/** @var array<string, mixed> $body_params */
-		$body_params = WP::sanitize_text_field_deep( $body_params, false );
-
-		$ids = $body_params['ids'] ?? [];
-		/** @var array<string> $ids */
-		$ids = is_array( $ids ) ? $ids : [];
-
-		try {
-			require_once ABSPATH . 'wp-admin/includes/user.php';
-			foreach ($ids as $id) {
-				$user = \get_user_by( 'ID', $id );
-
-				if ( !$user ) {
-					continue;
-				}
-
-				$result = \retrieve_password( $user->user_login );
-				if (true !== $result) {
-					throw new \Exception($result->get_error_message());
-				}
-			}
-
-			return new \WP_REST_Response(
-				[
-					'code'    => 'resetpassword_success',
-					'message' => __('reset password success', 'powerhouse'),
-					'data'    => $ids,
-				]
-			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'resetpassword_failed',
-					'message' => $th->getMessage(),
-					'data'    => $ids,
-				],
-				400
-			);
-		}
 	}
 
 
@@ -327,37 +251,26 @@ final class V2Api extends ApiBase {
 		/** @var array<string> $ids */
 		$ids = is_array( $ids ) ? $ids : [];
 
-		try {
-			require_once ABSPATH . 'wp-admin/includes/user.php';
-			foreach ($ids as $id) {
-				$result = \wp_delete_user( (int) $id );
-				if (!$result) {
-					throw new \Exception(
-						sprintf(
-						__('delete user failed #%s', 'powerhouse'),
-						$id
-					)
-					);
-				}
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+		foreach ($ids as $id) {
+			$result = \wp_delete_user( (int) $id );
+			if (!$result) {
+				throw new \Exception(
+					sprintf(
+					__('delete user failed #%s', 'powerhouse'),
+					$id
+				)
+				);
 			}
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
 					'message' => __('delete user success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'delete_failed',
-					'message' => $th->getMessage(),
-					'data'    => $ids,
-				],
-				400
-			);
-		}
 	}
 
 	/**

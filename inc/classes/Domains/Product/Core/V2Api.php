@@ -231,42 +231,30 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_products_with_id_callback( $request ) { // phpcs:ignore
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception('id 格式不符合');
+		}
 
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception('id 格式不符合');
-			}
+		/** @var array<string, mixed>|null $params */
+		$params = $request->get_query_params();
+		$params = is_array($params) ? $params : [];
+		/** @var array<string, mixed> $params */
+		$params = WP::sanitize_text_field_deep( $params, false );
 
-			/** @var array<string, mixed>|null $params */
-			$params = $request->get_query_params();
-			$params = is_array($params) ? $params : [];
-			/** @var array<string, mixed> $params */
-			$params = WP::sanitize_text_field_deep( $params, false );
+		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
+		$params = General::parse( $params );
 
-			// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
-			$params = General::parse( $params );
-
-			[
+		[
 				'meta_keys' => $meta_keys,
 				'with_description' => $with_description,
 			] = PostCRUD::handle_args($params);
 
-			$product_array = CRUD::format_product_details( (int) $id, $with_description, $meta_keys );
+		$product_array = CRUD::format_product_details( (int) $id, $with_description, $meta_keys );
 
-			$response = new \WP_REST_Response( $product_array );
+		$response = new \WP_REST_Response( $product_array );
 
-			return $response;
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'get_failed',
-					'message' => $th->getMessage(),
-					'data'    => null,
-				],
-				400
-			);
-		}
+		return $response;
 	}
 
 
@@ -341,40 +329,28 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_callback( $request ): \WP_REST_Response|\WP_Error {
-
-		try {
-			[
+		[
 				'data'      => $data,
 				'meta_data' => $meta_data,
 			] = $this->separator( $request, false );
 
-			$qty = (int) ( $meta_data['qty'] ?? 1 );
-			unset($meta_data['qty']);
+		$qty = (int) ( $meta_data['qty'] ?? 1 );
+		unset($meta_data['qty']);
 
-			$success_ids = [];
+		$success_ids = [];
 
-			for ($i = 0; $i < $qty; $i++) {
-				$product_id    = CRUD::create_product( $data, $meta_data );
-				$success_ids[] = $product_id;
-			}
+		for ($i = 0; $i < $qty; $i++) {
+			$product_id    = CRUD::create_product( $data, $meta_data );
+			$success_ids[] = $product_id;
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 				[
 					'code'    => 'create_success',
 					'message' => __('create products success', 'powerhouse'),
 					'data'    => $success_ids,
 				],
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'create_failed',
-					'message' => $th->getMessage(),
-					'data'    => null,
-				],
-				400
-			);
-		}
 	}
 
 	/**
@@ -386,18 +362,17 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
-		try {
 
-			[
+		[
 				'product' => $product,
 				'data'      => $data,
 				'meta_data' => $meta_data,
 			] = $this->separator( $request );
 
-			/** @var \WC_Product $product */
-			CRUD::update_product( $product, $data, $meta_data );
+		/** @var \WC_Product $product */
+		CRUD::update_product( $product, $data, $meta_data );
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'update_success',
 				'message' => __('update product success', 'powerhouse'),
@@ -406,17 +381,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-			[
-				'code'    => 'update_failed',
-				'message' => $th->getMessage(),
-				'data'    => null,
-			],
-			400
-			);
-		}
 	}
 
 	/**
@@ -439,47 +403,36 @@ final class V2Api extends ApiBase {
 		$ids          = is_array( $ids ) ? $ids : [];
 		$force_delete = $body_params['force_delete'] ?? false;
 
-		try {
-			foreach ($ids as $id) {
-				$product = \wc_get_product( (int) $id );
+		foreach ($ids as $id) {
+			$product = \wc_get_product( (int) $id );
 
-				if (!$product) {
-					throw new \Exception(
-						sprintf(
-						__('product not found #%s', 'powerhouse'),
-						$id
-					)
-					);
-				}
-
-				$result = $product->delete( (bool) $force_delete );
-				if (!$result) {
-					throw new \Exception(
-						sprintf(
-						__('delete product failed #%s', 'powerhouse'),
-						$id
-					)
-					);
-				}
+			if (!$product) {
+				throw new \Exception(
+					sprintf(
+					__('product not found #%s', 'powerhouse'),
+					$id
+				)
+				);
 			}
 
-			return new \WP_REST_Response(
+			$result = $product->delete( (bool) $force_delete );
+			if (!$result) {
+				throw new \Exception(
+					sprintf(
+					__('delete product failed #%s', 'powerhouse'),
+					$id
+				)
+				);
+			}
+		}
+
+		return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
 					'message' => __('delete product success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'delete_failed',
-					'message' => $th->getMessage(),
-					'data'    => $ids,
-				],
-				400
-			);
-		}
 	}
 
 	/**
@@ -492,41 +445,40 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function delete_products_with_id_callback( $request ): \WP_REST_Response {
-		try {
-			$id = $request['id'] ?? null;
-			if (!is_numeric($id)) {
-				throw new \Exception(
-					sprintf(
-					__('product id format not match #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('product id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			$product = \wc_get_product( (int) $id );
+		$product = \wc_get_product( (int) $id );
 
-			if (!$product) {
-				throw new \Exception(
-					sprintf(
-					__('product not found #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		if (!$product) {
+			throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			$body_params  = $request->get_json_params();
-			$force_delete = $body_params['force_delete'] ?? false;
-			$result       = $product->delete( (bool) $force_delete );
-			if (!$result) {
-				throw new \Exception(
-					sprintf(
-					__('delete product failed #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+		$body_params  = $request->get_json_params();
+		$force_delete = $body_params['force_delete'] ?? false;
+		$result       = $product->delete( (bool) $force_delete );
+		if (!$result) {
+			throw new \Exception(
+				sprintf(
+				__('delete product failed #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'delete_success',
 				'message' => __('delete product success', 'powerhouse'),
@@ -535,18 +487,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'delete_failed',
-					'message' => $th->getMessage(),
-					'data'    => [
-						'id' => $id,
-					],
-				],
-				400
-				);
-		}
 	}
 
 
@@ -617,32 +557,31 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_bind_items_callback( $request ) {
-		try {
-			$body_params = $request->get_body_params();
-			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type', 'meta_key' ] );
+		$body_params = $request->get_body_params();
+		WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type', 'meta_key' ] );
 
-			$body_params = WP::sanitize_text_field_deep( $body_params );
+		$body_params = WP::sanitize_text_field_deep( $body_params );
 
-			/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, limit_type: string, limit_value: int|null, limit_unit: string, meta_key: string} $body_params */
-			$product_ids = $body_params['product_ids'];
-			$item_ids    = $body_params['item_ids'];
-			$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
+		/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, limit_type: string, limit_value: int|null, limit_unit: string, meta_key: string} $body_params */
+		$product_ids = $body_params['product_ids'];
+		$item_ids    = $body_params['item_ids'];
+		$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
 
-			$meta_key = $body_params['meta_key'];
+		$meta_key = $body_params['meta_key'];
 
-			foreach ($product_ids as $product_id) {
-				$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key );
+		foreach ($product_ids as $product_id) {
+			$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key );
 
-				foreach ($item_ids as $item_id) {
-					$bind_items_data_instance->add_item_data(
-					(int) $item_id,
-					$limit
-					);
-				}
-				$bind_items_data_instance->save();
+			foreach ($item_ids as $item_id) {
+				$bind_items_data_instance->add_item_data(
+				(int) $item_id,
+				$limit
+				);
 			}
+			$bind_items_data_instance->save();
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'success',
 				'message' => '綁定成功',
@@ -652,15 +591,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'error',
-					'message' => $th->getMessage(),
-				],
-				400
-				);
-		}
 	}
 
 
@@ -673,29 +603,27 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_update_bound_items_callback( $request ) {
-		try {
+		$body_params = $request->get_body_params();
 
-			$body_params = $request->get_body_params();
+		WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type', 'meta_key' ] );
 
-			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'limit_type', 'meta_key' ] );
+		$body_params = WP::sanitize_text_field_deep( $body_params );
 
-			$body_params = WP::sanitize_text_field_deep( $body_params );
+		/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, limit_type: string, limit_value: int|null, limit_unit: string, meta_key: string} $body_params */
+		$product_ids = $body_params['product_ids'];
+		$item_ids    = $body_params['item_ids'];
+		$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
+		$meta_key    = $body_params['meta_key'];
 
-			/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, limit_type: string, limit_value: int|null, limit_unit: string, meta_key: string} $body_params */
-			$product_ids = $body_params['product_ids'];
-			$item_ids    = $body_params['item_ids'];
-			$limit       = new Limit( $body_params['limit_type'], (int) $body_params['limit_value'], $body_params['limit_unit'] );
-			$meta_key    = $body_params['meta_key'];
-
-			foreach ($product_ids as $product_id) {
-				$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key);
-				foreach ($item_ids as $item_id) {
-					$bind_items_data_instance->update_item_data( (int) $item_id, $limit );
-				}
-				$bind_items_data_instance->save();
+		foreach ($product_ids as $product_id) {
+			$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key);
+			foreach ($item_ids as $item_id) {
+				$bind_items_data_instance->update_item_data( (int) $item_id, $limit );
 			}
+			$bind_items_data_instance->save();
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'success',
 				'message' => '修改成功',
@@ -705,15 +633,6 @@ final class V2Api extends ApiBase {
 				],
 			]
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'error',
-					'message' => $th->getMessage(),
-				],
-				400
-				);
-		}
 	}
 
 
@@ -727,29 +646,28 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_products_unbind_items_callback( $request ) {
-		try {
 
-			$body_params = $request->get_body_params();
+		$body_params = $request->get_body_params();
 
-			WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'meta_key' ] );
+		WP::include_required_params( $body_params, [ 'product_ids', 'item_ids', 'meta_key' ] );
 
-			$body_params = WP::sanitize_text_field_deep( $body_params );
+		$body_params = WP::sanitize_text_field_deep( $body_params );
 
-			/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, meta_key: string} $body_params */
-			$product_ids = $body_params['product_ids'];
-			$item_ids    = $body_params['item_ids'];
-			$meta_key    = $body_params['meta_key'];
+		/** @var array{product_ids: array<int|string>, item_ids: array<int|string>, meta_key: string} $body_params */
+		$product_ids = $body_params['product_ids'];
+		$item_ids    = $body_params['item_ids'];
+		$meta_key    = $body_params['meta_key'];
 
-			foreach ($product_ids as $product_id) {
-				$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key );
-				foreach ($item_ids as $item_id) {
-					$bind_items_data_instance->remove_item_data( (int) $item_id );
-				}
-				$bind_items_data_instance->save();
-				$success_ids[] = $product_id;
+		foreach ($product_ids as $product_id) {
+			$bind_items_data_instance = new BoundItemsData( (int) $product_id, $meta_key );
+			foreach ($item_ids as $item_id) {
+				$bind_items_data_instance->remove_item_data( (int) $item_id );
 			}
+			$bind_items_data_instance->save();
+			$success_ids[] = $product_id;
+		}
 
-			return new \WP_REST_Response(
+		return new \WP_REST_Response(
 			[
 				'code'    => 'success',
 				'message' => '解除綁定成功',
@@ -760,14 +678,5 @@ final class V2Api extends ApiBase {
 			],
 			200
 			);
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'error',
-					'message' => $th->getMessage(),
-				],
-				400
-				);
-		}
 	}
 }

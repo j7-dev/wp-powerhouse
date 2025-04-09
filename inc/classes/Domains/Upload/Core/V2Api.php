@@ -69,33 +69,22 @@ final class V2Api extends ApiBase {
 		$file_params = $request->get_file_params();
 		$body_params = $request->get_body_params();
 		$upload_only = $body_params['upload_only'] ?? '0';
-		try {
-			if ( (bool) $file_params['files']['tmp_name'] ) {
+		if ( (bool) $file_params['files']['tmp_name'] ) {
 
-				if ( ! function_exists( 'media_handle_upload' ) ) {
-					require_once ABSPATH . 'wp-admin/includes/image.php';
-					require_once ABSPATH . 'wp-admin/includes/file.php';
-					require_once ABSPATH . 'wp-admin/includes/media.php';
-				}
-
-				if (\is_array($file_params['files']['tmp_name'])) {
-					return $this->handle_multiple_upload( $file_params['files'], $upload_only);
-				}
-				return $this->handle_single_upload( $file_params['files'], $upload_only);
-
+			if ( ! function_exists( 'media_handle_upload' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/image.php';
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				require_once ABSPATH . 'wp-admin/includes/media.php';
 			}
 
-			throw new \Exception(__('upload file not found', 'powerhouse'));
-		} catch (\Throwable $th) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'upload_error',
-					'message' => $th->getMessage(),
-					'data'    => $file_params,
-				],
-				400
-			);
+			if (\is_array($file_params['files']['tmp_name'])) {
+				return $this->handle_multiple_upload( $file_params['files'], $upload_only);
+			}
+			return $this->handle_single_upload( $file_params['files'], $upload_only);
+
 		}
+
+		throw new \Exception(__('upload file not found', 'powerhouse'));
 	}
 
 	/**
