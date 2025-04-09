@@ -19,7 +19,7 @@ abstract class DateTimeHandler {
 	 * 通常做圖表時使用
 	 *
 	 * @param \DateTime $date_time 日期時間
-	 * @param string    $compare_type 比較類型 'day', 'month', 'year'，前N天，前N個月，前N年
+	 * @param string    $compare_type 比較類型 'day', 'week', 'month', 'year'，前N天，前N週，前N個月，前N年
 	 * @param int       $compare_value 比較值，預設為1，前一天，前一個月，前一年
 	 * @return \DateTime
 	 * @throws \InvalidArgumentException 如果比較類型不支持
@@ -34,6 +34,10 @@ abstract class DateTimeHandler {
 				$compared_date->modify("-{$compare_value} day");
 				break;
 
+			case 'week':
+				// 前一周
+				$compared_date->modify("-{$compare_value} week");
+				break;
 			case 'month':
 				// 取得當前日期的日、月、年
 				$current_day = (int) $date_time->format('d');
@@ -60,7 +64,7 @@ abstract class DateTimeHandler {
 				break;
 
 			default:
-				throw new \InvalidArgumentException("不支持的比較類型: {$compare_type}，支持的類型為: 'day', 'month', 'year'");
+				throw new \InvalidArgumentException("不支持的比較類型: {$compare_type}，支持的類型為: 'day', 'week', 'month', 'year'");
 		}
 
 		return $compared_date;

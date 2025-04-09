@@ -153,7 +153,7 @@ final class V2Api extends ApiBase {
 			'page'                => $params['page'],
 			'per_page'            => $params['per_page'],
 			'orderby'             => $params['orderby'] ?? null,
-			'order'               => $params['order'] ?? null,
+			'order'               => $params['order'] ?? 'asc',
 			'segmentby'           => $params['segmentby'] ?? null,
 			'force_cache_refresh' => $params['force_cache_refresh'] ?? false,
 			'date_type'           => $params['date_type'] ?? null,

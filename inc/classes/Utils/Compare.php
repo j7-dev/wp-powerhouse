@@ -24,7 +24,7 @@ class Compare {
 	public \DateTime $before_compared;
 
 
-	/** @var 'day' | 'month' | 'year' 比較時間區間 type */
+	/** @var 'day' | 'week' | 'month' | 'year' 比較時間區間 type */
 	public string $compare_type;
 
 	/** @var int 比較時間區間 value */
@@ -42,6 +42,9 @@ class Compare {
 			'compare_type' => $compare_type,
 			'compare_value' => $compare_value,
 		] = $args;
+
+		$compare_type  = (string) $compare_type;
+		$compare_value = (int) $compare_value;
 
 		$this->compare_type  = $compare_type;
 		$this->compare_value = $compare_value;
