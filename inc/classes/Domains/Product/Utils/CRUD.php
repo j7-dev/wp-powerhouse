@@ -203,7 +203,7 @@ abstract class CRUD {
 			'menu_order'         => $product->get_menu_order(),
 			'virtual'            => $product->get_virtual(),
 			'downloadable'       => $product->get_downloadable(),
-			'permalink'          => \get_permalink( $product_id ),
+			'permalink'          => $product->get_permalink(),
 
 			// 商品價格
 			'price_html'         => $price_html,

@@ -1,7 +1,4 @@
 <?php
-/**
- * Option API
- */
 
 declare(strict_types=1);
 
