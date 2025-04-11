@@ -146,14 +146,15 @@ final class V2Api extends ApiBase {
 			'with_description' => $with_description,
 		] = PostCRUD::handle_args($args);
 
-		$args['fields'] = 'ids';  // 確保只返回 id
+		if (isset($args['fields'])) {
+			unset($args['fields']);// 確保只返回 \WC_Product
+		}
 
 		/** @var object{total:int, max_num_pages:int, products:array<int, \WC_Product>} $results */
 		$results     = \wc_get_products( $args );
 		$total       = $results->total;
 		$total_pages = $results->max_num_pages;
-
-		$products = $results->products;
+		$products    = $results->products;
 
 		$formatted_products = [];
 		foreach ($products as $product) {
