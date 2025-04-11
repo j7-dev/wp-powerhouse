@@ -127,3 +127,59 @@ div[class^="ant-"] {
 		display: none !important;
 	}
 }
+
+// 超小 form item input 的 label 樣式
+.field-xs {
+	.ant-form-item {
+		margin-bottom: 0.5rem;
+		position: relative;
+		input,
+		.ant-select-selection-item {
+			font-size: 0.75rem;
+			line-height: 1.5rem;
+		}
+		.ant-picker {
+			height: 22px;
+		}
+		.ant-form-item-label {
+			position: absolute;
+			top: -0.625rem;
+			left: 0rem;
+			label {
+				@apply text-gray-400;
+				height: fit-content;
+				font-weight: 300;
+				font-size: 0.75rem;
+				z-index: 1;
+				padding: 0 0.5rem;
+				&::after {
+					content: "";
+					height: 5px;
+					width: 100%;
+					position: absolute;
+					bottom: 0.4em;
+					left: 0;
+					width: 100%;
+					background-color: #fff;
+					z-index: -1;
+				}
+			}
+		}
+		.ant-switch {
+			margin-left: 0.5rem;
+		}
+
+		// 如果是 table
+		tr:hover {
+			.ant-form-item {
+				.ant-form-item-label {
+					label {
+						&::after {
+							background-color: #fafafa;
+						}
+					}
+				}
+			}
+		}
+	}
+}
