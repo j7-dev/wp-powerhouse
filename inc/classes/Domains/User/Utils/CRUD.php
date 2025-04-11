@@ -213,13 +213,8 @@ abstract class CRUD {
 			'order'   => 'DESC',
 		];
 
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log( $data, 'prepare_query_args' );
-		// ---------- END TEST ---------- //
-
 		return \wp_parse_args( $data, $default_args );
 	}
-
 
 	/**
 	 * 取得指定用戶 ID 的購物車內容

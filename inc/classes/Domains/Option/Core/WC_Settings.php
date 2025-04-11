@@ -143,16 +143,16 @@ class WC_Settings extends DTO {
 	/** @var string 是否通知無庫存 "yes" | "no" */
 	public string $notify_no_stock;
 
-	/** @var string 庫存通知收件者 j7.dev.gg@gmail.com */
+	/** @var string 通知收件人 j7.dev.gg@gmail.com */
 	public string $stock_email_recipient;
 
-	/** @var string 低庫存通知數量 2 */
+	/** @var string 低庫存臨界值 2 */
 	public string $notify_low_stock_amount;
 
-	/** @var string 無庫存通知數量 0 */
+	/** @var string 無庫存臨界值 0 */
 	public string $notify_no_stock_amount;
 
-	/** @var string 是否隱藏缺貨商品 "yes" | "no" */
+	/** @var string 無庫存可見度 在目錄裡隱藏無庫存的品項 "yes" | "no" */
 	public string $hide_out_of_stock_items;
 
 	/**
