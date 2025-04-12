@@ -133,7 +133,9 @@ div[class^="ant-"] {
 	.ant-form-item {
 		margin-bottom: 0.5rem;
 		position: relative;
+
 		input,
+		.ant-input-group-addon,
 		.ant-select-selection-item {
 			font-size: 0.75rem;
 			line-height: 1.5rem;

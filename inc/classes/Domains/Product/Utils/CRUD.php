@@ -1,7 +1,4 @@
 <?php
-/**
- * Product Utils
- */
 
 declare(strict_types=1);
 
