@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Model;
 
-use J7\WpUtils\Classes\DTO;
 use J7\Powerhouse\Domains\Product\Utils\CRUD;
 
 /**
  * 商品價格 DTO
  */
-abstract class Price extends DTO {
+final class Price extends DTO {
 	/** @var string $price_html 價格 HTML 字串 */
 	public string $price_html;
 
@@ -36,24 +35,29 @@ abstract class Price extends DTO {
 	public int $total_sales;
 
 	/**
-	 * 建構子
+	 * 取得實例
 	 *
 	 * @param \WC_Product $product 商品
 	 */
-	public function __construct( $product ) {
+	public static function instance( $product ): self {
 
 		$price_html = CRUD::get_price_html( $product );
 
 		// 優惠日期 [timestamp, timestamp]
 		$sale_date_range = [ (int) $product->get_date_on_sale_from()?->getTimestamp(), (int) $product->get_date_on_sale_to()?->getTimestamp() ];
 
-		$this->price_html        = $price_html;
-		$this->regular_price     = $product->get_regular_price();
-		$this->sale_price        = $product->get_sale_price();
-		$this->on_sale           = $product->is_on_sale();
-		$this->sale_date_range   = $sale_date_range;
-		$this->date_on_sale_from = $sale_date_range[0];
-		$this->date_on_sale_to   = $sale_date_range[1];
-		$this->total_sales       = $product->get_total_sales();
+		$args = [
+			'price_html'        => $price_html,
+			'regular_price'     => $product->get_regular_price(),
+			'sale_price'        => $product->get_sale_price(),
+			'on_sale'           => $product->is_on_sale(),
+			'sale_date_range'   => $sale_date_range,
+			'date_on_sale_from' => $sale_date_range[0],
+			'date_on_sale_to'   => $sale_date_range[1],
+			'total_sales'       => $product->get_total_sales(),
+		];
+
+		$instance = new self( $args );
+		return $instance;
 	}
 }

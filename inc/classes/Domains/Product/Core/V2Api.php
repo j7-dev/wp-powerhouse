@@ -16,6 +16,7 @@ use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
 use J7\Powerhouse\Domains\Limit\Models\Limit;
 use J7\Powerhouse\Domains\Limit\Models\BoundItemsData;
 use J7\Powerhouse\Domains\Product\Utils\CRUD;
+use J7\Powerhouse\Domains\Product\Model\Product;
 
 
 /**
@@ -158,7 +159,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_products = [];
 		foreach ($products as $product) {
-			$formatted_products[] = CRUD::format_product_details( $product, $with_description, $meta_keys );
+			$formatted_products[] = Product::instance( $product, $with_description, $meta_keys )->to_array();
 		}
 		$formatted_products = array_filter( $formatted_products );
 
@@ -251,7 +252,17 @@ final class V2Api extends ApiBase {
 				'with_description' => $with_description,
 			] = PostCRUD::handle_args($params);
 
-		$product_array = CRUD::format_product_details( (int) $id, $with_description, $meta_keys );
+		$product = \wc_get_product( (int) $id );
+		if (!$product) {
+			throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$id
+				)
+				);
+		}
+
+		$product_array = Product::instance( $product, $with_description, $meta_keys )->to_array();
 
 		$response = new \WP_REST_Response( $product_array );
 

@@ -1,8 +1,4 @@
 <?php
-/**
- * Product Subscription
- * 訂閱相關 Helper
- */
 
 declare(strict_types=1);
 
@@ -10,24 +6,34 @@ namespace J7\Powerhouse\Domains\Product\Utils;
 
 /**
  * Class Subscription
+ * 訂閱相關 Helper
  */
 abstract class Subscription {
 
 	/**
 	 * 取得訂閱商品的 meta data 欄位
 	 *
+	 * @param bool $with_underline 是否包含底線
+	 *
 	 * @return array<string>
 	 */
-	public static function get_fields(): array {
-		return [
-			'_subscription_price',
-			'_subscription_period',
-			'_subscription_period_interval',
-			'_subscription_length',
-			'_subscription_sign_up_fee',
-			'_subscription_trial_length',
-			'_subscription_trial_period',
+	public static function get_fields( bool $with_underline = true ): array {
+
+		$fields = [
+			'subscription_price',
+			'subscription_period',
+			'subscription_period_interval',
+			'subscription_length',
+			'subscription_sign_up_fee',
+			'subscription_trial_length',
+			'subscription_trial_period',
 		];
+
+		if ($with_underline) {
+			return array_map(fn( $field ) => "_{$field}", $fields);
+		}
+
+		return $fields;
 	}
 
 	/**

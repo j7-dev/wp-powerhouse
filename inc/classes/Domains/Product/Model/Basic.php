@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Model;
 
-use J7\WpUtils\Classes\DTO;
+use J7\WpUtils\Classes\WP;
 
 /**
  * 商品基本資料 DTO
  */
-abstract class Basic extends DTO {
+final class Basic extends DTO {
 
 	/** @var string $id 商品ID */
 	public string $id;
@@ -22,6 +22,9 @@ abstract class Basic extends DTO {
 
 	/** @var string $slug 商品別名 */
 	public string $slug;
+
+	/** @var array<array{id: string, url: string}> $images 商品圖片 */
+	public array $images;
 
 	/** @var string|null $date_created 建立日期 */
 	public ?string $date_created;
@@ -53,25 +56,69 @@ abstract class Basic extends DTO {
 	/** @var string $permalink 商品永久連結 */
 	public string $permalink;
 
+	/** @var string $parent_id 父商品ID */
+	public string $parent_id;
+
 	/**
-	 * 建構子
+	 * 取得實例
 	 *
 	 * @param \WC_Product $product 商品
 	 */
-	public function __construct( $product ) {
-		$this->id                 = (string) $product->get_id();
-		$this->type               = $product->get_type();
-		$this->name               = $product->get_name();
-		$this->slug               = $product->get_slug();
-		$this->date_created       = $product->get_date_created()?->date( 'Y-m-d H:i:s' );
-		$this->date_modified      = $product->get_date_modified()?->date( 'Y-m-d H:i:s' );
-		$this->status             = $product->get_status();
-		$this->featured           = $product->get_featured();
-		$this->catalog_visibility = $product->get_catalog_visibility();
-		$this->sku                = $product->get_sku();
-		$this->menu_order         = $product->get_menu_order();
-		$this->virtual            = $product->get_virtual();
-		$this->downloadable       = $product->get_downloadable();
-		$this->permalink          = $product->get_permalink();
+	public static function instance( $product ): self {
+
+		// 組合 $images
+		$image_id          = $product->get_image_id();
+		$gallery_image_ids = $product->get_gallery_image_ids();
+		$image_ids         = [ $image_id, ...$gallery_image_ids ];
+		$images            = [];
+		foreach ($image_ids as $image_id) {
+			$image_info = WP::get_image_info($image_id);
+			/** @var array{id: string, url: string}|null $image_info */
+			if ($image_info) {
+				$images[] = $image_info;
+			}
+		}
+
+		$args = [
+			'id'                 => (string) $product->get_id(),
+			'type'               => $product->get_type(),
+			'name'               => $product->get_name(),
+			'slug'               => $product->get_slug(),
+			'images'             => $images,
+			'date_created'       => $product->get_date_created()?->date( 'Y-m-d H:i:s' ),
+			'date_modified'      => $product->get_date_modified()?->date( 'Y-m-d H:i:s' ),
+			'status'             => $product->get_status(),
+			'featured'           => $product->get_featured(),
+			'catalog_visibility' => $product->get_catalog_visibility(),
+			'sku'                => $product->get_sku(),
+			'menu_order'         => $product->get_menu_order(),
+			'virtual'            => $product->get_virtual(),
+			'downloadable'       => $product->get_downloadable(),
+			'permalink'          => $product->get_permalink(),
+			'parent_id'          => $product->get_parent_id() ? (string) $product->get_parent_id() : '',
+
+			// protected
+			'product'            => $product,
+		];
+
+		$instance = new self($args);
+		return $instance;
+	}
+
+	/**
+	 * 轉換為陣列
+	 *
+	 * @param bool $with_description 是否包含描述
+	 * @return array
+	 */
+	public function to_array( $with_description = false ): array {
+		$array = parent::to_array();
+
+		if ($with_description) {
+			$array['description']       = $this->product->get_description();
+			$array['short_description'] = $this->product->get_short_description();
+		}
+
+		return $array;
 	}
 }
