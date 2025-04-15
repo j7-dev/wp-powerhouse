@@ -10,28 +10,28 @@ namespace J7\Powerhouse\Domains\Product\Model;
 final class Stock extends DTO {
 
 	/** @var int|null $stock 庫存數量 */
-	protected int|null $stock;
+	public int|null $stock;
 
 	/** @var string $stock_status 庫存狀態 */
-	protected string $stock_status;
+	public string $stock_status;
 
 	/** @var bool $manage_stock 是否管理庫存 */
-	protected bool $manage_stock;
+	public bool $manage_stock;
 
 	/** @var int|null $stock_quantity 庫存數量 */
-	protected int|null $stock_quantity;
+	public int|null $stock_quantity;
 
 	/** @var string $backorders 允許缺貨訂單 */
-	protected string $backorders;
+	public string $backorders;
 
 	/** @var bool $backorders_allowed 是否允許缺貨訂單 */
-	protected bool $backorders_allowed;
+	public bool $backorders_allowed;
 
 	/** @var bool $backordered 是否缺貨中 */
-	protected bool $backordered;
+	public bool $backordered;
 
 	/** @var int|string $low_stock_amount 低庫存警告數量 */
-	protected int|string $low_stock_amount;
+	public int|string $low_stock_amount;
 
 	/**
 	 * 取得實例
