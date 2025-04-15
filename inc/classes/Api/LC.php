@@ -18,6 +18,9 @@ use J7\WpUtils\Classes\ApiBase;
 final class LC extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
+	/** @var string 命名空間 */
+	protected $namespace = 'powerhouse';
+
 	/** @var array{endpoint:string,method:string,permission_callback: ?callable }[] APIs */
 	protected $apis = [
 		[

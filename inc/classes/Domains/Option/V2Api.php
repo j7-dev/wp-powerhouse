@@ -32,11 +32,6 @@ final class V2Api extends ApiBase {
 			'method'              => 'post',
 			'permission_callback' => null,
 		],
-		[
-			'endpoint'            => 'duplicate/(?P<id>\d+)',
-			'method'              => 'post',
-			'permission_callback' => null,
-		],
 	];
 
 	/** @var array<string, mixed> $fields 允許更新的欄位名稱 */
