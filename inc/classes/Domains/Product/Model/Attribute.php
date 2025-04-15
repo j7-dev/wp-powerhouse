@@ -24,6 +24,9 @@ final class Attribute extends DTO {
 	 * */
 	public array $attributes;
 
+	/** @var string $attribute_summary 變體屬性的名稱 */
+	public string $attribute_summary = '';
+
 	/**
 	 * 取得實例
 	 *
@@ -31,7 +34,8 @@ final class Attribute extends DTO {
 	 */
 	public static function instance( \WC_Product $product ): self {
 		// 組合商品屬性 $attributes_arr
-		$attributes     = $product->get_attributes(); // get attributes object
+		$attributes = $product->get_attributes(); // get attributes object
+
 		$attributes_arr = [];
 		foreach ( $attributes as $key => $attribute ) {
 			// 如果是 "可變商品" 會顯示選項
@@ -48,12 +52,20 @@ final class Attribute extends DTO {
 
 			// 如果是 "變體" 會顯示 屬性 => 屬性值 array
 			if ( is_string( $key ) && is_string( $attribute ) ) {
-				$attributes_arr[ urldecode( $key ) ] = $attribute;
+				$decoded_key                    = urldecode( $key );
+				$attributes_arr[ $decoded_key ] = $attribute;
 			}
 		}
 
+		$attributes_string = '';
+		if (method_exists($product, 'get_attribute_summary')) {
+			/** @var \WC_Product_Variation $product */
+			$attributes_string = $product->get_attribute_summary();
+		}
+
 		$args = [
-			'attributes' => $attributes_arr,
+			'attributes'        => $attributes_arr,
+			'attribute_summary' => $attributes_string,
 		];
 
 		$instance = new self( $args );
