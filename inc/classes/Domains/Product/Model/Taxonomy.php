@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Model;
 
-use J7\Powerhouse\Domains\Post\Utils\CRUD as PostCRUD;
-
 /**
  * 商品分類、標籤、品牌 DTO
+ * 如果要在前端 mapping 分類、標籤的名稱，可以用 products/options API
  */
 final class Taxonomy extends DTO {
 
-	/** @var array{id:string, name:string}[] $categories 商品分類 */
-	public array $categories;
+	/** @var array<string> $category_ids 商品分類 ids */
+	public array $category_ids;
 
-	/** @var array{id:string, name:string}[] $tags 商品標籤 */
-	public array $tags;
+	/** @var array<string> $tag_ids 商品標籤 ids */
+	public array $tag_ids;
 
 	/**
 	 * 取得實例
@@ -23,20 +22,9 @@ final class Taxonomy extends DTO {
 	 * @param \WC_Product $product 商品
 	 */
 	public static function instance( $product ): self {
-		$product_id = $product->get_id();
-		$args       = [
-			'categories' => PostCRUD::format_terms(
-				[
-					'taxonomy'   => 'product_cat',
-					'object_ids' => $product_id,
-				]
-				),
-			'tags' => PostCRUD::format_terms(
-				[
-					'taxonomy'   => 'product_tag',
-					'object_ids' => $product_id,
-				]
-				),
+		$args = [
+			'category_ids' => array_map( 'strval', $product->get_category_ids() ),
+			'tag_ids'      => array_map( 'strval', $product->get_tag_ids() ),
 		];
 
 		$instance = new self( $args );

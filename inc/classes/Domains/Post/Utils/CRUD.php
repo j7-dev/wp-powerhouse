@@ -402,16 +402,15 @@ abstract class CRUD {
 		];
 	}
 
-
 	/**
 	 * Format terms, 例如 分類、標籤, product_cat, product_tag
 	 * 只回簡單的欄位，通常是做 options 使用
 	 *
 	 * @param array<string, mixed> $params Params.
 	 *
-	 * @return array{id:string, name:string}[]
+	 * @return array{value:string, label:string}[]
 	 */
-	public static function format_terms( array $params = [] ): array {
+	public static function get_term_options( array $params = [] ): array {
 		// it seems no need to add post_per_page, get_terms will return all terms
 		$default_args = [
 			'taxonomy'   => 'product_cat',
@@ -431,8 +430,8 @@ abstract class CRUD {
 		$formatted_terms = [];
 		foreach ($terms as $term_id => $term_name) {
 			$formatted_terms[] = [
-				'id'   => (string) $term_id,
-				'name' => $term_name,
+				'value' => (string) $term_id,
+				'label' => $term_name,
 			];
 		}
 

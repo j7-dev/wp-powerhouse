@@ -582,12 +582,12 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_products_options_callback( $request ) { // phpcs:ignore
-		$formatted_cats = PostCRUD::format_terms(
+		$formatted_cats = PostCRUD::get_term_options(
 			[
 				'taxonomy' => 'product_cat',
 			]
 			);
-		$formatted_tags = PostCRUD::format_terms(
+		$formatted_tags = PostCRUD::get_term_options(
 			[
 				'taxonomy' => 'product_tag',
 			]
@@ -601,8 +601,8 @@ final class V2Api extends ApiBase {
 		] = CRUD::get_max_min_prices();
 
 		/** @var array{
-		 *  product_cats: array{id: string, name: string, slug: string}[],
-		 *  product_tags: array{id: string, name: string, slug: string}[],
+		 *  product_cats: array{value: string, label: string}[],
+		 *  product_tags: array{value: string, label: string}[],
 		 *  top_sales_products: array{id: string, name: string, slug: string}[],
 		 *  max_price: float,
 		 *  min_price: float,
