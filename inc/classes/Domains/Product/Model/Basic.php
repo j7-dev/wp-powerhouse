@@ -35,23 +35,20 @@ final class Basic extends DTO {
 	/** @var string $status 商品狀態 */
 	public string $status;
 
-	/** @var bool $featured 是否為精選商品 */
-	public bool $featured;
+	/** @var 'yes'|'no' $featured 是否為精選商品 */
+	public string $featured;
 
 	/** @var string $catalog_visibility 目錄可見性 */
 	public string $catalog_visibility;
 
-	/** @var string $sku 商品編號 */
-	public string $sku;
-
 	/** @var int $menu_order 選單排序 */
 	public int $menu_order;
 
-	/** @var bool $virtual 是否為虛擬商品 */
-	public bool $virtual;
+	/** @var 'yes'|'no' $virtual 是否為虛擬商品 */
+	public string $virtual;
 
-	/** @var bool $downloadable 是否為可下載商品 */
-	public bool $downloadable;
+	/** @var 'yes'|'no' $downloadable 是否為可下載商品 */
+	public string $downloadable;
 
 	/** @var string $permalink 商品永久連結 */
 	public string $permalink;
@@ -88,12 +85,11 @@ final class Basic extends DTO {
 			'date_created'       => $product->get_date_created()?->date( 'Y-m-d H:i:s' ),
 			'date_modified'      => $product->get_date_modified()?->date( 'Y-m-d H:i:s' ),
 			'status'             => $product->get_status(),
-			'featured'           => $product->get_featured(),
+			'featured'           => \wc_bool_to_string( $product->get_featured() ),
 			'catalog_visibility' => $product->get_catalog_visibility(),
-			'sku'                => $product->get_sku(),
 			'menu_order'         => $product->get_menu_order(),
-			'virtual'            => $product->get_virtual(),
-			'downloadable'       => $product->get_downloadable(),
+			'virtual'            => \wc_bool_to_string( $product->get_virtual() ),
+			'downloadable'       => \wc_bool_to_string( $product->get_downloadable() ),
 			'permalink'          => $product->get_permalink(),
 			'parent_id'          => $product->get_parent_id() ? (string) $product->get_parent_id() : '',
 

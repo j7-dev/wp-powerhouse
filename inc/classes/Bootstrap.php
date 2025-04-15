@@ -23,9 +23,7 @@ final class Bootstrap {
 
 	const LC_MENU_SLUG = 'powerhouse-license-codes';
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		Compatibility\Compatibility::instance();
 		Admin\Entry::instance();

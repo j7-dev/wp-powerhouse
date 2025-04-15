@@ -593,6 +593,12 @@ final class V2Api extends ApiBase {
 			]
 			);
 
+		$formatted_shipping_classes = PostCRUD::get_term_options(
+			[
+				'taxonomy' => 'product_shipping_class',
+			]
+			);
+
 		$top_sales_products = WC::get_top_sales_products( 5 );
 
 		[
@@ -603,6 +609,7 @@ final class V2Api extends ApiBase {
 		/** @var array{
 		 *  product_cats: array{value: string, label: string}[],
 		 *  product_tags: array{value: string, label: string}[],
+		 *  product_shipping_classes: array{value: string, label: string}[],
 		 *  top_sales_products: array{id: string, name: string, slug: string}[],
 		 *  max_price: float,
 		 *  min_price: float,
@@ -612,11 +619,12 @@ final class V2Api extends ApiBase {
 		$options = \apply_filters(
 			'powerhouse/product/get_options',
 			[
-				'product_cats'       => $formatted_cats,
-				'product_tags'       => $formatted_tags,
-				'top_sales_products' => $top_sales_products,
-				'max_price'          => $max_price,
-				'min_price'          => $min_price,
+				'product_cats'             => $formatted_cats,
+				'product_tags'             => $formatted_tags,
+				'product_shipping_classes' => $formatted_shipping_classes,
+				'top_sales_products'       => $top_sales_products,
+				'max_price'                => $max_price,
+				'min_price'                => $min_price,
 			],
 			$request
 			);

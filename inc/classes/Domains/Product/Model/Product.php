@@ -25,6 +25,9 @@ final class Product extends DTO {
 	/** @var Sales $sales 促銷、交叉銷售相關 */
 	protected Sales $sales;
 
+	/** @var Size $size 商品尺寸 */
+	protected Size $size;
+
 	/** @var Attribute $attribute 商品屬性 */
 	protected Attribute $attribute;
 
@@ -58,6 +61,7 @@ final class Product extends DTO {
 			'price'            => Price::instance($product),
 			'stock'            => Stock::instance($product),
 			'sales'            => Sales::instance($product),
+			'size'             => Size::instance($product),
 			'subscription'     => Subscription::instance($product),
 			'taxonomy'         => Taxonomy::instance($product),
 			'attribute'        => Attribute::instance($product),
@@ -84,6 +88,7 @@ final class Product extends DTO {
 		$this->price->to_array(),
 		$this->stock->to_array(),
 		$this->sales->to_array(),
+		$this->size->to_array(),
 		$this->subscription->to_array(),
 		$this->taxonomy->to_array(),
 		$this->attribute->to_array(),
