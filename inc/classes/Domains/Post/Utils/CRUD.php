@@ -109,13 +109,13 @@ abstract class CRUD {
 			'status'        => $post->post_status,
 			'menu_order'    => (int) $post->menu_order,
 			'permalink'     => \get_permalink($post->ID),
-			'category_ids'  => self::format_terms(
+			'category_ids'  => self::get_term_options(
 				[
 					'taxonomy'   => 'category',
 					'object_ids' => $post->ID,
 				]
 				),
-			'tag_ids'       => self::format_terms(
+			'tag_ids'       => self::get_term_options(
 				[
 					'taxonomy'   => 'post_tag',
 					'object_ids' => $post->ID,

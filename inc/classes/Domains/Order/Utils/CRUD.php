@@ -307,43 +307,6 @@ abstract class CRUD {
 	}
 
 
-	/**TODO
-	 * Format terms, 例如 分類、標籤, product_cat, product_tag
-	 * 只回簡單的欄位，通常是做 options 使用
-	 *
-	 * @param array<string, mixed> $params Params.
-	 *
-	 * @return array{id:string, name:string}[]
-	 */
-	public static function format_terms( array $params = [] ): array {
-		// it seems no need to add post_per_page, get_terms will return all terms
-		$default_args = [
-			'taxonomy'   => 'product_cat',
-			'fields'     => 'id=>name',
-			'hide_empty' => false,
-			'orderby'    => 'name',
-			'order'      => 'ASC',
-		];
-
-		$args = \wp_parse_args(
-				$params,
-				$default_args,
-			);
-		/** @var array<int, string> $terms id=>name */
-		$terms = \get_terms( $args );
-
-		$formatted_terms = [];
-		foreach ($terms as $term_id => $term_name) {
-			$formatted_terms[] = [
-				'id'   => (string) $term_id,
-				'name' => $term_name,
-			];
-		}
-
-		return $formatted_terms;
-	}
-
-
 	/**
 	 * 取得時間範圍內的訂單
 	 *
