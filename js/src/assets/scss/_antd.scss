@@ -134,9 +134,14 @@ div[class^="ant-"] {
 		margin-bottom: 0.5rem;
 		position: relative;
 
+		.ant-select-selection-item-content {
+			line-height: 0.875rem;
+			font-size: 0.65rem;
+		}
 		input,
 		.ant-input-group-addon,
-		.ant-select-selection-item {
+		.ant-select-selection-item,
+		.ant-select-selection-placeholder {
 			font-size: 0.75rem;
 			line-height: 1.5rem;
 		}
