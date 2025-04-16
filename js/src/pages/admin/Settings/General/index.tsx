@@ -10,8 +10,9 @@ const index = () => {
 	const { roles } = useUserOptions()
 	const { SITE_URL } = useEnv()
 	const form = useFormInstance()
-	const watchEnableCaptcha =
-		Form.useWatch(['powerhouse_settings', 'enable_captcha'], form) === 'yes'
+	const watchEnableCaptchaLogin =
+		Form.useWatch(['powerhouse_settings', 'enable_captcha_login'], form) ===
+		'yes'
 
 	return (
 		<div className="flex flex-col md:flex-row gap-8">
@@ -51,14 +52,14 @@ const index = () => {
 
 				<Switch
 					formItemProps={{
-						name: ['powerhouse_settings', 'enable_captcha'],
+						name: ['powerhouse_settings', 'enable_captcha_login'],
 						label: '啟用登入驗證碼 (推薦啟用)',
 						tooltip: '啟用後，可以提高帳號安全性',
 						initialValue: 'yes',
 					}}
 				/>
 
-				{watchEnableCaptcha && (
+				{watchEnableCaptchaLogin && (
 					<Item
 						name={['powerhouse_settings', 'captcha_role_list']}
 						label="那些角色登入需要驗證碼?"
@@ -66,6 +67,15 @@ const index = () => {
 						<Checkbox.Group options={roles} />
 					</Item>
 				)}
+
+				<Switch
+					formItemProps={{
+						name: ['powerhouse_settings', 'enable_captcha_register'],
+						label: '啟用註冊驗證碼 (推薦啟用)',
+						tooltip: '啟用後，可以防止機器人註冊',
+						initialValue: 'yes',
+					}}
+				/>
 			</div>
 			<div className="flex-1 h-auto md:h-[calc(100%-5.375rem)] md:overflow-y-auto"></div>
 		</div>

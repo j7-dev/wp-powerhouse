@@ -20,7 +20,7 @@ final class Login extends Base {
 	/** Constructor */
 	public function __construct() {
 		$settings = SettingsDTO::instance();
-		if ($settings->enable_captcha !== 'yes') {
+		if ($settings->enable_captcha_login !== 'yes') {
 			return;
 		}
 		parent::__construct();
