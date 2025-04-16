@@ -6,6 +6,7 @@ namespace J7\Powerhouse\Captcha;
 
 use Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
+use J7\Powerhouse\Settings\DTO as SettingsDTO;
 
 /**
  * Class Core
@@ -41,6 +42,11 @@ final class Core {
 
 	/** Constructor */
 	public function __construct() {
+		$settings = SettingsDTO::instance();
+		if ($settings->enable_captcha !== 'yes') {
+			return;
+		}
+
 		\add_filter('authenticate', [ $this, 'authenticate' ], 999, 3);
 		\add_action('init', [ $this, 'session_start' ], 1);
 

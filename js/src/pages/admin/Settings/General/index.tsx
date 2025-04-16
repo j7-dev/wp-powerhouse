@@ -36,6 +36,17 @@ const index = () => {
 						initialValue: 'yes',
 					}}
 				/>
+
+				<Heading className="mt-16">登入驗證碼</Heading>
+
+				<Switch
+					formItemProps={{
+						name: ['powerhouse_settings', 'enable_captcha'],
+						label: '啟用登入驗證碼 (推薦啟用)',
+						tooltip: '啟用後，可以提高帳號安全性',
+						initialValue: 'yes',
+					}}
+				/>
 			</div>
 			<div className="flex-1 h-auto md:h-[calc(100%-5.375rem)] md:overflow-y-auto"></div>
 		</div>
