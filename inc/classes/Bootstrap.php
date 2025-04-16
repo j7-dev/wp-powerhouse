@@ -146,6 +146,7 @@ final class Bootstrap {
 				'NONCE'                => \wp_create_nonce( 'wp_rest' ),
 				'APP1_SELECTOR'        => Base::APP1_SELECTOR,
 				'ELEMENTOR_ENABLED'    => \in_array( 'elementor/elementor.php', $active_plugins, true ), // 檢查 elementor 是否啟用,
+				'ROLES'                => \get_editable_roles(),
 			]
 		);
 

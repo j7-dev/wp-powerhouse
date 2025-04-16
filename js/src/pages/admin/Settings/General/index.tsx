@@ -1,8 +1,18 @@
 import { memo } from 'react'
+import { Checkbox, Form } from 'antd'
 import { Heading, Switch, useEnv } from 'antd-toolkit'
+import { useUserOptions } from '@/hooks'
+import useFormInstance from 'antd/es/form/hooks/useFormInstance'
+
+const { Item } = Form
 
 const index = () => {
+	const { roles } = useUserOptions()
 	const { SITE_URL } = useEnv()
+	const form = useFormInstance()
+	const watchEnableCaptcha =
+		Form.useWatch(['powerhouse_settings', 'enable_captcha'], form) === 'yes'
+
 	return (
 		<div className="flex flex-col md:flex-row gap-8">
 			<div className="w-full max-w-[400px]">
@@ -37,7 +47,7 @@ const index = () => {
 					}}
 				/>
 
-				<Heading className="mt-16">登入驗證碼</Heading>
+				<Heading className="mt-16">登入安全</Heading>
 
 				<Switch
 					formItemProps={{
@@ -47,6 +57,15 @@ const index = () => {
 						initialValue: 'yes',
 					}}
 				/>
+
+				{watchEnableCaptcha && (
+					<Item
+						name={['powerhouse_settings', 'captcha_role_list']}
+						label="那些角色登入需要驗證碼?"
+					>
+						<Checkbox.Group options={roles} />
+					</Item>
+				)}
 			</div>
 			<div className="flex-1 h-auto md:h-[calc(100%-5.375rem)] md:overflow-y-auto"></div>
 		</div>

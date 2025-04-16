@@ -66,6 +66,14 @@ final class Core {
 	 * @return null|\WP_User|\WP_Error
 	 */
 	public function authenticate( null|\WP_User|\WP_Error $user, string $username, string $password ) {
+		if (!( $user instanceof \WP_User )) {
+			return $user;
+		}
+
+		if (!$this->in_role_list($user)) {
+			return $user;
+		}
+
 		$user_input = $_POST[ self::CAPTCHA_NAME ] ?? ''; // phpcs:ignore
 		if (!$this->test_phrase($user_input)) {
 			return new \WP_Error('captcha_failed', '驗證碼錯誤');
@@ -185,5 +193,25 @@ final class Core {
 			return false;
 		}
 		return $user_input == $_SESSION[ self::SESSION_KEY ]; // phpcs:ignore
+	}
+
+	/**
+	 * 檢查用戶是否在角色列表中
+	 *
+	 * @param \WP_User $user 用戶
+	 * @return bool
+	 */
+	private function in_role_list( \WP_User $user ): bool {
+		$settings  = SettingsDTO::instance();
+		$role_list = $settings->captcha_role_list;
+
+		// 符合直接回 true
+		foreach ($role_list as $role) {
+			if (in_array($role, (array) $user->roles, true)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
