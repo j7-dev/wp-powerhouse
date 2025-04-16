@@ -56,6 +56,7 @@ final class Core {
 
 		// ajax
 		\add_action('wp_ajax_nopriv_get_captcha', [ $this, 'generate_captcha' ]);
+		\add_action('wp_ajax_nopriv_need_captcha', [ $this, 'need_captcha' ]);
 	}
 
 	/** 驗證碼驗證
@@ -92,21 +93,22 @@ final class Core {
 	/** 渲染驗證碼欄位 */
 	public function render_captcha_field(): void {
 		$name = self::CAPTCHA_NAME;
-
 		// render
+		echo '<div id="powerhouse_captcha_container" style="display: none;">';
 		printf(/*html*/'<label for="%s">驗證碼</label>', $name);
 		printf(
 			/*html*/'
-				<p>
-					<div id="powerhouse_captcha_container" style="display: none; align-items: end; gap: 10px; margin-bottom: 10px;">
-						<img />
-						<span id="powerhouse_captcha_refresh" style="cursor: pointer;">換一組</span>
-					</div>
+				<div>
+						<div style="display: flex; align-items: end; gap: 10px; margin-bottom: 10px;">
+							<img src="" />
+							<span id="powerhouse_captcha_refresh" style="cursor: pointer;">換一組</span>
+						</div>
 						<input type="text" name="%1$s" id="%1$s" class="input" />
-				</p>
+				</div>
 				',
 			$name
 			);
+		echo '</div>';
 
 		?>
 			<script type="module" defer>
@@ -115,6 +117,9 @@ final class Core {
 						const $container = $('#powerhouse_captcha_container');
 						const $img = $container.find('img');
 						const $refresh = $container.find('#powerhouse_captcha_refresh');
+						const $form = $container.closest('form');
+
+						let shouldBlock = true; // 是否需要阻擋提交
 
 						function getCaptcha(){
 							$.ajax({
@@ -125,22 +130,76 @@ final class Core {
 									nonce: '<?php echo \wp_create_nonce(self::NONCE_ACTION); ?>',
 								},
 								success: function(response){
-									if(!response?.url){
-										alert('獲取驗證碼生成失敗');
+									if(!response?.success){
+										alert(`獲取驗證碼生成失敗: ${response?.data}`);
 										return;
 									}
-									$img.attr('src', response?.url);
-									$container.css('display', 'flex');
+									$img.attr('src', response?.data);
+									$container.show();
+									shouldBlock = false;
 								},
 								error: function(response){
-									alert('獲取驗證碼生成失敗');
+									alert(`獲取驗證碼生成失敗: ${response?.data}`);
 									return;
 								},
-								});
+							});
 						}
 
-						$refresh.on('click', getCaptcha);
-						getCaptcha();
+						function needCaptcha(form){
+							const $username = $form.find('#user_login, input[name="username"]').first();
+							$.ajax({
+								url: '<?php echo \admin_url('admin-ajax.php'); ?>',
+								type: 'POST',
+								data: {
+									action: 'need_captcha',
+									nonce: '<?php echo \wp_create_nonce(self::NONCE_ACTION); ?>',
+									username: $username.val(),
+								},
+								success: function(response){
+									// 如果不需要驗證就表單提交
+									// 檢查 response.data 是否為 true
+									if(response?.data !== true || !response?.success){
+										shouldBlock = response?.data !== false
+										submitForm(form)
+										return;
+									}
+									// 如果需要就取得授權碼
+									getCaptcha()
+								},
+								error: function(response){
+									console.error(response?.data)
+									return;
+								},
+							});
+						}
+
+						function blockSubmit(){
+							$form.on('submit', function(e){
+								if(shouldBlock){
+									e.preventDefault();
+									e.stopPropagation();
+									needCaptcha(this)
+									return;
+								}
+							});
+						}
+
+
+						function submitForm(form){
+							const submitButton = $(form).find('[type="submit"]')
+							if(submitButton?.length){
+								submitButton.click()
+							}else{
+								form.submit()
+							}
+						}
+
+						function init(){
+							$refresh.on('click', getCaptcha);
+							blockSubmit();
+						}
+
+						init();
 					});
 				})(jQuery);
 			</script>
@@ -150,23 +209,45 @@ final class Core {
 	/** AJAX 生成驗證碼 */
 	public function generate_captcha(): void {
 		if (!\wp_verify_nonce($_POST['nonce'] ?? '', self::NONCE_ACTION)) { // phpcs:ignore
-			\wp_send_json(
-				[
-					'error' => '驗證 nonce 錯誤',
-				]
-				);
+			\wp_send_json_error('驗證 nonce 錯誤');
 		}
 
 		$this->init();
 
 		\wp_send_json(
 			[
-				'phrase' => $_SESSION[ self::SESSION_KEY ], // phpcs:ignore
-				'url' => $_SESSION[ self::SESSION_KEY . '_url' ], // phpcs:ignore
+				'success' => true,
+				'data' => $_SESSION[ self::SESSION_KEY . '_url' ], // phpcs:ignore
 			]
 			);
 	}
 
+	/** AJAX 檢查要登入的用戶是否需要驗證碼 */
+	public function need_captcha(): void {
+		if (!\wp_verify_nonce($_POST['nonce'] ?? '', self::NONCE_ACTION)) { // phpcs:ignore
+			\wp_send_json_error('驗證 nonce 錯誤');
+		}
+
+		$username = $_POST['username'] ?? ''; // phpcs:ignore
+
+		if (!$username) {
+			\wp_send_json_error([ '缺少用戶名稱' ]);
+		}
+
+		$user = \get_user_by('login', $username);
+
+		if (!$user) {
+			\wp_send_json_error([ '找不到此用戶名稱' ]);
+		}
+
+		\wp_send_json(
+			[
+				'success' => true,
+				'data'    => $this->in_role_list($user),
+			]
+			);
+		exit;
+	}
 
 	/** 初始化 */
 	private function init(): void {
@@ -204,7 +285,6 @@ final class Core {
 	private function in_role_list( \WP_User $user ): bool {
 		$settings  = SettingsDTO::instance();
 		$role_list = $settings->captcha_role_list;
-
 		// 符合直接回 true
 		foreach ($role_list as $role) {
 			if (in_array($role, (array) $user->roles, true)) {
