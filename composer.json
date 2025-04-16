@@ -31,7 +31,9 @@
 	"require": {
 		"kucrut/vite-for-wp": "^0.8.0",
 		"j7-dev/wp-utils": "0.3.30",
-		"brainfoolong/js-aes-php": "^1.0"
+		"brainfoolong/js-aes-php": "^1.0",
+		"gregwar/captcha": "^1.2",
+		"symfony/finder": "6.0.19"
 	},
 	"require-dev": {
 		"squizlabs/php_codesniffer": "@stable",
@@ -45,5 +47,8 @@
 	},
 	"scripts": {
 		"lint": "phpcs"
+	},
+	"conflict": {
+		"symfony/finder": ">6.0.19"
 	}
 }
