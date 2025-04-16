@@ -38,7 +38,8 @@ final class Bootstrap {
 		Api\LC::instance();
 		Domains\Loader::instance();
 		Theme\FrontEnd::instance();
-		Captcha\Core::instance();
+		Captcha\Core\Login::instance();
+		Captcha\Core\Register::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
