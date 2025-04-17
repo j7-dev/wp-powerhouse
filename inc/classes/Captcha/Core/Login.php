@@ -74,7 +74,10 @@ final class Login extends Base {
 		$user = \get_user_by('login', $username);
 
 		if (!$user) {
-			\wp_send_json_error([ '找不到此用戶名稱' ]);
+			$user = \get_user_by('email', $username);
+			if (!$user) {
+				\wp_send_json_error([ '找不到此用戶名稱' ]);
+			}
 		}
 
 		\wp_send_json(
