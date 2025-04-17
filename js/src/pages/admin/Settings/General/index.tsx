@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Checkbox, Form } from 'antd'
-import { Heading, Switch, useEnv } from 'antd-toolkit'
+import { Heading, Switch } from 'antd-toolkit'
 import { useUserOptions } from '@/hooks'
 import useFormInstance from 'antd/es/form/hooks/useFormInstance'
 
@@ -8,7 +8,6 @@ const { Item } = Form
 
 const index = () => {
 	const { roles } = useUserOptions()
-	const { SITE_URL } = useEnv()
 	const form = useFormInstance()
 	const watchEnableCaptchaLogin =
 		Form.useWatch(['powerhouse_settings', 'enable_captcha_login'], form) ===
@@ -17,37 +16,6 @@ const index = () => {
 	return (
 		<div className="flex flex-col md:flex-row gap-8">
 			<div className="w-full max-w-[400px]">
-				<Heading className="mt-8">結帳優化</Heading>
-				<Switch
-					formItemProps={{
-						name: ['powerhouse_settings', 'delay_email'],
-						label: '使用非同步方式寄送 Email，加快結帳速度',
-						help: (
-							<>
-								可以前往{' '}
-								<a
-									href={`${SITE_URL}/wp-admin/admin.php?page=wc-status&tab=action-scheduler&s=powerhouse_delay_email&action=-1&paged=1&action2=-1`}
-								>
-									Scheduled Actions
-								</a>{' '}
-								查看信件寄送的狀況
-							</>
-						),
-						initialValue: 'yes',
-					}}
-				/>
-
-				<Heading className="mt-16">My Account 帳號欄位優化</Heading>
-
-				<Switch
-					formItemProps={{
-						name: ['powerhouse_settings', 'last_name_optional'],
-						label: '使姓氏欄位為非必填',
-						tooltip: '啟用後，不再強制要求用戶必須填寫姓氏',
-						initialValue: 'yes',
-					}}
-				/>
-
 				<Heading className="mt-16">登入安全</Heading>
 
 				<Switch

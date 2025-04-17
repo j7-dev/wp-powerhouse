@@ -9,26 +9,18 @@ use J7\WpUtils\Classes\General;
 if ( class_exists( 'J7\Powerhouse\Admin\Debug' ) ) {
 	return;
 }
-/**
- * Class Debug
- */
+/** Debug */
 final class Debug {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		\add_action( 'admin_menu', [ $this, 'add_debug_submenu_page' ], -10 );
 		\add_action('admin_bar_menu', [ $this, 'add_debug_admin_bar_menu' ], 100);
 		\add_action('admin_post_delete_debug_log', [ $this, 'handle_delete_debug_log' ]);
 	}
 
-	/**
-	 * 添加 debug 子選單
-	 *
-	 * @return void
-	 */
+	/** 添加 debug 子選單 */
 	public function add_debug_submenu_page(): void {
 		global $submenu;
 

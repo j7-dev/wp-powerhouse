@@ -37,26 +37,13 @@ if ( \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/inc/classes/Domains/LC/Utils.php';
 
-/**
- * Class Plugin
- */
+/** Class Plugin */
 final class Plugin {
 	use \J7\WpUtils\Traits\PluginTrait;
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
-
-		$this->required_plugins = [
-			[
-				'name'     => 'WooCommerce',
-				'slug'     => 'woocommerce',
-				'required' => true,
-				'version'  => '7.6.0',
-			],
-		];
 
 		$this->init(
 		[

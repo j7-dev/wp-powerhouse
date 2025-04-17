@@ -1,8 +1,10 @@
 import { memo } from 'react'
 import { Form, Button, Tabs, TabsProps } from 'antd'
+import { useEnv } from 'antd-toolkit'
 import useOptions from './hooks/useOptions'
 import useSave from './hooks/useSave'
 import General from './General'
+import WooCommerce from './WooCommerce'
 import Lab from './Lab'
 import Theme from './Theme'
 
@@ -11,6 +13,11 @@ const items: TabsProps['items'] = [
 		key: 'general',
 		label: '一般設定',
 		children: <General />,
+	},
+	{
+		key: 'woocommerce',
+		label: 'WooCommerce 相關',
+		children: <WooCommerce />,
 	},
 	{
 		key: 'theme',
@@ -32,6 +39,7 @@ const items: TabsProps['items'] = [
 ]
 
 const SettingsPage = () => {
+	const { WOOCOMMERCE_ENABLED = true } = useEnv()
 	const [form] = Form.useForm()
 	const { handleSave, mutation } = useSave({ form })
 	const { isLoading: isSaveLoading } = mutation
@@ -54,7 +62,11 @@ const SettingsPage = () => {
 					),
 				}}
 				defaultActiveKey="general"
-				items={items}
+				items={
+					WOOCOMMERCE_ENABLED
+						? items
+						: items.filter((item) => item.key !== 'woocommerce')
+				}
 			/>
 		</Form>
 	)
