@@ -6,8 +6,9 @@ namespace J7\Powerhouse\Captcha\Core;
 
 use Gregwar\Captcha\CaptchaBuilder;
 use Gregwar\Captcha\PhraseBuilder;
+
 /**
- * Class Base
+ * Class 基類抽象
  */
 abstract class Base {
 
@@ -41,9 +42,22 @@ abstract class Base {
 	/** Constructor */
 	public function __construct() {
 		\add_action('init', [ $this, 'session_start' ], 1);
+		\add_action('wp_enqueue_scripts', [ $this, 'enqueue_block_ui' ]);
+		\add_action('login_enqueue_scripts', [ $this, 'enqueue_block_ui' ]);
+		\add_action('admin_enqueue_scripts', [ $this, 'enqueue_block_ui' ]);
 
 		// ajax
 		\add_action('wp_ajax_nopriv_get_captcha', [ $this, 'generate_captcha' ]);
+	}
+
+	/** 註冊腳本 */
+	public function enqueue_block_ui(): void {
+		// 先確認是否已經註冊
+		if (!wp_script_is('jquery-blockui', 'registered')) {
+			$blockui_path = \untrailingslashit(\WP_PLUGIN_URL . '/woocommerce/assets/js/jquery-blockui/jquery.blockUI.min.js');
+			\wp_register_script('jquery-blockui', $blockui_path, [ 'jquery' ], '2.70', true);
+		}
+		\wp_enqueue_script('jquery-blockui');
 	}
 
 	/** 開啟 session 支持 */
@@ -71,7 +85,7 @@ abstract class Base {
 								<img class="captcha-img" src="" />
 								<span class="refresh-captcha" style="cursor: pointer;">換一組</span>
 							</div>
-							<input type="text" name="%1$s" class="input" />
+							<input type="text" name="%1$s" class="input input-text" />
 					</div>
 					',
 			$name
@@ -81,98 +95,171 @@ abstract class Base {
 		?>
 				<script type="module" defer>
 					(function($){
-						const type = '<?php echo $this->container_class; ?>';
 						$(document).ready(function(){
-							const $container = $(`.captcha_container.${type}`);
-							const $img = $container.find('.captcha-img');
-							const $refresh = $container.find('.refresh-captcha');
-							const $form = $container.closest('form');
 
-							let shouldBlock = true; // 是否需要阻擋提交
+							class Core{
+								type = '<?php echo $this->container_class; ?>'; // login | register
+								ajaxUrl = '<?php echo \admin_url('admin-ajax.php'); ?>';
+								ajaxNonce = '<?php echo \wp_create_nonce($this->nonce_action); ?>';
+								$container; // 容器 jQuery 實例
+								$img; // 圖片 jQuery 實例
+								$refresh; // 刷新按鈕 jQuery 實例
+								$form; // 表單 jQuery 實例
+								$formRenderer; // 表單渲染器 jQuery 實例
+								shouldBlock = true;// 是否需要阻擋提交
 
-							function getCaptcha(){
-								$.ajax({
-									url: '<?php echo \admin_url('admin-ajax.php'); ?>',
-									type: 'POST',
-									data: {
-										action: 'get_captcha',
-										nonce: '<?php echo \wp_create_nonce($this->nonce_action); ?>',
-									},
-									success: function(response){
-										if(!response?.success){
+								constructor(){
+									this.$container = $(`.captcha_container.${this.type}`);
+									this.$img = this.$container.find('.captcha-img');
+									this.$refresh = this.$container.find('.refresh-captcha');
+									this.$form = this.$container.closest('form');
+									this.$formRenderer = new Renderer(this.$form);
+
+									this.$refresh.on('click', () => this.getCaptcha());
+									if(this.type === 'login'){
+										this.blockSubmit();
+									}else{
+										this.getCaptcha()
+									}
+								}
+
+								/** AJAX 取得驗證碼 */
+								getCaptcha = () => {
+									this.$formRenderer.isLoading = true;
+									$.ajax({
+										url: this.ajaxUrl,
+										type: 'POST',
+										data: {
+											action: 'get_captcha',
+											nonce: this.ajaxNonce,
+										},
+										success: (response) => {
+											if(!response?.success){
+												alert(`獲取驗證碼生成失敗: ${response?.data}`);
+												return;
+											}
+											this.$img.attr('src', response?.data);
+											this.$container.show();
+											this.shouldBlock = false;
+										},
+										error: (response) => {
 											alert(`獲取驗證碼生成失敗: ${response?.data}`);
 											return;
-										}
-										$img.attr('src', response?.data);
-										$container.show();
-										shouldBlock = false;
-									},
-									error: function(response){
-										alert(`獲取驗證碼生成失敗: ${response?.data}`);
-										return;
-									},
-								});
-							}
+										},
+										complete: () => {
+											this.$formRenderer.isLoading = false;
+										},
+									});
+								}
 
-							function needCaptcha(form){
-								// wp-admin & woocommerce 的 username 欄位名稱不同
-								const $username = $form.find('#user_login, input[name="username"]').first();
-								$.ajax({
-									url: '<?php echo \admin_url('admin-ajax.php'); ?>',
-									type: 'POST',
-									data: {
-										action: 'need_captcha',
-										nonce: '<?php echo \wp_create_nonce($this->nonce_action); ?>',
-										username: $username.val(),
-									},
-									success: function(response){
-										// 如果不需要驗證就表單提交
-										// 檢查 response.data 是否為 true
-										if(response?.data !== true || !response?.success){
-											shouldBlock = response?.data !== false
-											submitForm(form)
+								/** 判斷用戶是否為需要驗證的腳色 */
+								needCaptcha = () => {
+									this.$formRenderer.isLoading = true;
+									// wp-admin & woocommerce 的 username 欄位名稱不同
+									const $username = this.$form.find('#user_login, input[name="username"]').first();
+									$.ajax({
+										url: this.ajaxUrl,
+										type: 'POST',
+										data: {
+											action: 'need_captcha',
+											nonce: this.ajaxNonce,
+											username: $username.val(),
+										},
+										success: (response) => {
+											// 如果不需要驗證就表單提交
+											// 檢查 response.data 是否為 true
+											if(response?.data !== true || !response?.success){
+												this.shouldBlock = response?.data !== false
+												this.submitForm(this.$form[0])
+												return;
+											}
+											// 如果需要就取得授權碼
+											this.getCaptcha()
+										},
+										error: (response) => {
+											console.error(response?.data)
+											return;
+										},
+										complete: () => {
+											this.$formRenderer.isLoading = false;
+										},
+									});
+								}
+
+								/** 阻擋表單提交 */
+								blockSubmit = () => {
+									this.$form.on('submit', (e) => {
+										if(this.shouldBlock){
+											e.preventDefault();
+											e.stopPropagation();
+											this.needCaptcha(this)
 											return;
 										}
-										// 如果需要就取得授權碼
-										getCaptcha()
-									},
-									error: function(response){
-										console.error(response?.data)
-										return;
-									},
-								});
-							}
+									});
+								}
 
-							function blockSubmit(){
-								$form.on('submit', function(e){
-									if(shouldBlock){
-										e.preventDefault();
-										e.stopPropagation();
-										needCaptcha(this)
-										return;
+
+								/** 提交表單 */
+								submitForm = () => {
+									const submitButton = $(this.$form[0]).find('[type="submit"]')
+									if(submitButton?.length){
+										submitButton.click()
+									}else{
+										this.$form[0].submit()
 									}
-								});
-							}
-
-							function submitForm(form){
-								const submitButton = $(form).find('[type="submit"]')
-								if(submitButton?.length){
-									submitButton.click()
-								}else{
-									form.submit()
 								}
 							}
 
-							function init(){
-								$refresh.on('click', getCaptcha);
-								if(type === 'login'){
-									blockSubmit();
-								}else{
-									getCaptcha()
-								}
+						/** UI renderer */
+						class Renderer{
+							$blockEl; // 要 block 的 element jQuery 實例
+							_isLoading = false; // 是否正在載入
+							defaultBlockUIProps = {
+								css: {
+									border: 'none',
+									backgroundColor: 'transparent',
+									color: '#999',
+								},
+								overlayCSS:  {
+									backgroundColor: 'transparent',
+									opacity:         0,
+									cursor:          'wait'
+								},
+								message: `<svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+								width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+								<path fill="#999" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z">
+								<animateTransform attributeType="xml"
+									attributeName="transform"
+									type="rotate"
+									from="0 25 25"
+									to="360 25 25"
+									dur="0.6s"
+									repeatCount="indefinite"/>
+								</path>
+								</svg>`
 							}
 
-							init();
+							/** Constructor */
+							constructor($blockEl){
+								this.$blockEl = $blockEl;
+							}
+
+							get isLoading(){
+								return this._isLoading;
+							}
+
+							set isLoading(isLoading){
+								this._isLoading = isLoading;
+								if(isLoading){
+									this.$blockEl?.block(this.defaultBlockUIProps);
+								}else{
+									this.$blockEl?.unblock();
+								}
+							}
+						}
+
+						new Core();
+
 						});
 					})(jQuery);
 				</script>
