@@ -42,7 +42,7 @@ final class DTO extends BaseDTO {
 	public array $captcha_role_list = [ 'administrator' ];
 
 	/** @var string $enable_captcha_register 啟用註冊驗證碼 */
-	public string $enable_captcha_register = 'yes';
+	public string $enable_captcha_register = 'no';
 
 	/** @var string $enable_api_booster 啟用 API 加速器 */
 	public string $enable_api_booster = 'no';

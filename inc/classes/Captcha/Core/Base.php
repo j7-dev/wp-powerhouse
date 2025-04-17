@@ -192,7 +192,7 @@ abstract class Base {
 										if(this.shouldBlock){
 											e.preventDefault();
 											e.stopPropagation();
-											this.needCaptcha(this)
+											this.needCaptcha()
 											return;
 										}
 									});
