@@ -169,7 +169,7 @@ abstract class Base {
 											// 如果不需要驗證就表單提交
 											// 檢查 response.data 是否為 true
 											if(response?.data !== true || !response?.success){
-												this.shouldBlock = response?.data !== false
+												this.shouldBlock = response?.data !== false && response?.success === true
 												this.submitForm(this.$form[0])
 												return;
 											}
