@@ -1,7 +1,4 @@
 <?php
-/**
- * DelayEmail 延遲寄送 Email
- */
 
 declare(strict_types=1);
 
@@ -12,15 +9,11 @@ use J7\Powerhouse\Settings\DTO;
 if ( class_exists( 'J7\Powerhouse\Admin\DelayEmail' ) ) {
 	return;
 }
-/**
- * Class DelayEmail
- */
+/** DelayEmail 延遲寄送 Email */
 final class DelayEmail {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		$delay_email = DTO::instance()->delay_email;
 

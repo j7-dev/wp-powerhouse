@@ -35,6 +35,15 @@ final class DTO extends BaseDTO {
 	/** @var string $last_name_optional 姓氏可選 */
 	public string $last_name_optional = 'yes';
 
+	/** @var string $enable_captcha_login 啟用登入驗證碼 */
+	public string $enable_captcha_login = 'yes';
+
+	/** @var array<string> $captcha_role_list 驗證碼角色列表 */
+	public array $captcha_role_list = [ 'administrator' ];
+
+	/** @var string $enable_captcha_register 啟用註冊驗證碼 */
+	public string $enable_captcha_register = 'no';
+
 	/** @var string $enable_api_booster 啟用 API 加速器 */
 	public string $enable_api_booster = 'no';
 

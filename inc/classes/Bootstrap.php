@@ -1,7 +1,4 @@
 <?php
-/**
- * Bootstrap
- */
 
 declare (strict_types = 1);
 
@@ -15,9 +12,7 @@ use Kucrut\Vite;
 if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
 	return;
 }
-/**
- * Class Bootstrap
- */
+/** Bootstrap */
 final class Bootstrap {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
@@ -27,15 +22,21 @@ final class Bootstrap {
 	public function __construct() {
 		Compatibility\Compatibility::instance();
 		Admin\Entry::instance();
-		Admin\Debug::instance();
 		Admin\Account::instance();
-		// Admin\OrderDetail::instance();
-		Admin\OrderList::instance();
-		Admin\DelayEmail::instance();
+
+		if ( class_exists( '\WooCommerce' ) ) {
+			Admin\Debug::instance();
+			Admin\OrderList::instance();
+			// Admin\OrderDetail::instance();
+			Admin\DelayEmail::instance();
+		}
+
 		Api\Base::instance();
 		Api\LC::instance();
 		Domains\Loader::instance();
 		Theme\FrontEnd::instance();
+		Captcha\Core\Login::instance();
+		Captcha\Core\Register::instance();
 
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
@@ -143,6 +144,8 @@ final class Bootstrap {
 				'NONCE'                => \wp_create_nonce( 'wp_rest' ),
 				'APP1_SELECTOR'        => Base::APP1_SELECTOR,
 				'ELEMENTOR_ENABLED'    => \in_array( 'elementor/elementor.php', $active_plugins, true ), // 檢查 elementor 是否啟用,
+				'ROLES'                => \get_editable_roles(),
+				'WOOCOMMERCE_ENABLED'  => class_exists( '\WooCommerce' ),
 			]
 		);
 

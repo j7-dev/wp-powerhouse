@@ -16,6 +16,18 @@ const useSave = ({ form }: { form: FormInstance }) => {
 					url: `${apiUrl}/options`,
 					method: 'post',
 					values,
+					successNotification: (data, values) => {
+						return {
+							message: data?.data?.message || '儲存成功',
+							type: 'success',
+						}
+					},
+					errorNotification: (data, values) => {
+						return {
+							message: data?.data?.message || '儲存失敗',
+							type: 'error',
+						}
+					},
 				},
 				{
 					onSuccess: () => {

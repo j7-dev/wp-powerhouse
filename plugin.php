@@ -3,7 +3,7 @@
  * Plugin Name:       Powerhouse
  * Plugin URI:        https://github.com/j7-dev/powerhouse
  * Description:       方便開發 WordPress 的工具包，以及優化功能
- * Version:           3.2.12
+ * Version:           3.2.13
  * Requires at least: 5.7
  * Requires PHP:      8.0
  * Author:            J7
@@ -37,26 +37,13 @@ if ( \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/inc/classes/Domains/LC/Utils/Base.php';
 
-/**
- * Class Plugin
- */
+/** Class Plugin */
 final class Plugin {
 	use \J7\WpUtils\Traits\PluginTrait;
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
-
-		$this->required_plugins = [
-			[
-				'name'     => 'WooCommerce',
-				'slug'     => 'woocommerce',
-				'required' => true,
-				'version'  => '7.6.0',
-			],
-		];
 
 		$this->init(
 		[
