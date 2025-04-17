@@ -6,9 +6,7 @@ namespace J7\Powerhouse\Domains\Product\Model;
 
 use J7\Powerhouse\Domains\Product\Utils\Subscription as SubscriptionUtils;
 
-/**
- * 訂閱相關 DTO
- */
+/** 訂閱相關 DTO */
 final class Subscription extends DTO {
 
 	/** @var string $subscription_price 訂閱價格 */
@@ -32,6 +30,17 @@ final class Subscription extends DTO {
 	/** @var 'day' | 'week' | 'month' | 'year' $subscription_trial_period 試用期週期（天、週、月、年） */
 	public string $subscription_trial_period = 'month';
 
+	/**
+	 * 轉換為陣列
+	 *
+	 * @return array
+	 */
+	public function to_array(): array {
+		if (!class_exists('\WC_Subscriptions')) {
+			return [];
+		}
+		return parent::to_array();
+	}
 
 	/**
 	 * 取得實例

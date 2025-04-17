@@ -6,9 +6,7 @@ namespace J7\Powerhouse\Domains\Product\Model;
 
 use J7\WpUtils\Classes\WP;
 
-/**
- * 商品基本資料 DTO
- */
+/** 商品基本資料 DTO */
 final class Basic extends DTO {
 
 	/** @var string $id 商品ID */
@@ -92,29 +90,9 @@ final class Basic extends DTO {
 			'downloadable'       => \wc_bool_to_string( $product->get_downloadable() ),
 			'permalink'          => $product->get_permalink(),
 			'parent_id'          => $product->get_parent_id() ? (string) $product->get_parent_id() : '',
-
-			// protected
-			'product'            => $product,
 		];
 
 		$instance = new self($args);
 		return $instance;
-	}
-
-	/**
-	 * 轉換為陣列
-	 *
-	 * @param bool $with_description 是否包含描述
-	 * @return array
-	 */
-	public function to_array( $with_description = false ): array {
-		$array = parent::to_array();
-
-		if ($with_description) {
-			$array['description']       = $this->product->get_description();
-			$array['short_description'] = $this->product->get_short_description();
-		}
-
-		return $array;
 	}
 }

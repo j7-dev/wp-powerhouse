@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Model;
 
-/**
- * 促銷、交叉銷售相關 DTO
- */
+/** 促銷、交叉銷售相關 DTO */
 final class Sales extends DTO {
 
 	/** @var array<string> $upsell_ids 交叉銷售商品ID */

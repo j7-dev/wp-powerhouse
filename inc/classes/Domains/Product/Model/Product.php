@@ -40,35 +40,30 @@ final class Product extends DTO {
 	/** @var array<string> $meta_keys 要包含的 meta 欄位 */
 	protected array $meta_keys = [];
 
-	/** @var bool $with_description 是否包含描述 */
-	protected bool $with_description = false;
-
 	/**
 	 * 取得實例
 	 *
 	 * @param \WC_Product $product 商品
-	 * @param bool        $with_description 是否包含描述
 	 * @param array       $meta_keys 要包含的 meta 欄位
 	 */
 	public static function instance(
 		\WC_Product $product,
-		bool $with_description = false,
 		array $meta_keys = []
 	): self {
 
 		$args = [
-			'basic'            => Basic::instance($product),
-			'price'            => Price::instance($product),
-			'stock'            => Stock::instance($product),
-			'sales'            => Sales::instance($product),
-			'size'             => Size::instance($product),
-			'subscription'     => Subscription::instance($product),
-			'taxonomy'         => Taxonomy::instance($product),
-			'attribute'        => Attribute::instance($product),
-			'variation'        => Variation::instance($product, $with_description, $meta_keys),
-			'product'          => $product,
-			'meta_keys'        => $meta_keys,
-			'with_description' => $with_description,
+			'basic'        => Basic::instance($product),
+			'detail'       => Detail::instance($product),
+			'price'        => Price::instance($product),
+			'stock'        => Stock::instance($product),
+			'sales'        => Sales::instance($product),
+			'size'         => Size::instance($product),
+			'subscription' => Subscription::instance($product),
+			'taxonomy'     => Taxonomy::instance($product),
+			'attribute'    => Attribute::instance($product),
+			'variation'    => Variation::instance($product, $meta_keys),
+			'product'      => $product,
+			'meta_keys'    => $meta_keys,
 		];
 
 		$strict = \wp_get_environment_type() === 'local';
@@ -80,20 +75,38 @@ final class Product extends DTO {
 	/**
 	 * 轉換為陣列
 	 *
+	 * @param array<string>|null $partials 要包含的 partial，可以輸入 'basic', 'detail', 'price', 'stock', 'sales', 'size', 'subscription', 'taxonomy', 'attribute', 'variation'
 	 * @return array
 	 */
-	public function to_array(): array {
+	public function to_array( $partials = null ): array {
+		$partials = $partials ? $partials : [
+			'basic',
+			// 'detail',
+			'price',
+			'stock',
+			'sales',
+			'size',
+			// 'subscription',
+			'taxonomy',
+			'attribute',
+			'variation',
+		];
+		$array    = [];
+		// TEST 印出 WC Logger 記得移除 ---- //
+		\J7\WpUtils\Classes\WC::log( $partials, 'partials');
+		// ---------- END TEST ---------- //
+		foreach ($partials as $partial) {
+			if ('variation' === $partial) {
+				$array = array_merge($array, $this->variation->to_array($partials));
+				continue;
+			}
+
+			$array = array_merge($array, $this->{$partial}->to_array());
+		}
+
 		return array_merge(
-		$this->basic->to_array( $this->with_description ),
-		$this->price->to_array(),
-		$this->stock->to_array(),
-		$this->sales->to_array(),
-		$this->size->to_array(),
-		$this->subscription->to_array(),
-		$this->taxonomy->to_array(),
-		$this->attribute->to_array(),
-		$this->variation->to_array(),
-		$this->get_meta_keys_array(),
+			$array,
+			$this->get_meta_keys_array(),
 		);
 	}
 

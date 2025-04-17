@@ -144,7 +144,7 @@ final class V2Api extends ApiBase {
 		[
 			'args' => $args,
 			'meta_keys' => $meta_keys,
-			'with_description' => $with_description,
+			'partials' => $partials,
 		] = PostCRUD::handle_args($args);
 
 		if (isset($args['fields'])) {
@@ -159,7 +159,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_products = [];
 		foreach ($products as $product) {
-			$formatted_products[] = Product::instance( $product, $with_description, $meta_keys )->to_array();
+			$formatted_products[] = Product::instance( $product, $meta_keys )->to_array($partials);
 		}
 		$formatted_products = array_filter( $formatted_products );
 
@@ -249,7 +249,7 @@ final class V2Api extends ApiBase {
 
 		[
 				'meta_keys' => $meta_keys,
-				'with_description' => $with_description,
+				'partials' => $partials,
 			] = PostCRUD::handle_args($params);
 
 		$product = \wc_get_product( (int) $id );
@@ -262,7 +262,7 @@ final class V2Api extends ApiBase {
 				);
 		}
 
-		$product_array = Product::instance( $product, $with_description, $meta_keys )->to_array();
+		$product_array = Product::instance( $product, $meta_keys )->to_array($partials);
 
 		$response = new \WP_REST_Response( $product_array );
 

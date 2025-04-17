@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Model;
 
-/**
- * 商品庫存 DTO
- */
+/** 商品庫存 DTO */
 final class Stock extends DTO {
 
 	/** @var string $stock_status 庫存狀態 */

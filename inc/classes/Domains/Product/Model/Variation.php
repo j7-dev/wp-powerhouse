@@ -9,15 +9,50 @@ namespace J7\Powerhouse\Domains\Product\Model;
  */
 final class Variation extends DTO {
 
-	/** @var array<array<string, mixed>>|null $children 變體的商品 DTO 資料 */
+	/** @var array<Product>|null $children 變體的商品 DTO 資料 */
 	public array|null $children = null;
+
+	/**
+	 * 轉換為陣列
+	 *
+	 * @param array<string>|null $partials 要包含的 partial，可以輸入 'basic', 'detail', 'price', 'stock', 'sales', 'size', 'subscription', 'taxonomy', 'attribute', 'variation'
+	 * @return array
+	 */
+	public function to_array( $partials = null ): array {
+		$partials = $partials ? $partials : [
+			'basic',
+			// 'detail',
+			'price',
+			'stock',
+			'sales',
+			'size',
+			// 'subscription',
+			'taxonomy',
+			'attribute',
+			'variation',
+		];
+		if (null === $this->children) {
+			return [
+				'children' => null,
+			];
+		}
+
+		$array = [];
+		foreach ($this->children as $product_dto) {
+			$array[] = $product_dto->to_array($partials);
+		}
+
+		return [
+			'children' => $array,
+		];
+	}
 
 	/**
 	 * 取得實例
 	 *
 	 * @param \WC_Product $product 商品
 	 */
-	public static function instance( \WC_Product $product, bool $with_description = false, array $meta_keys = [] ): self {
+	public static function instance( \WC_Product $product, array $meta_keys = [] ): self {
 		// 將變體加入倒 children
 		$variation_ids = $product->get_children(); // get variations
 		$children      = null;
@@ -28,7 +63,7 @@ final class Variation extends DTO {
 				if (!$variation_product) {
 					continue;
 				}
-				$variation_product_array[] = Product::instance( $variation_product, $with_description, $meta_keys )->to_array();
+				$variation_product_array[] = Product::instance( $variation_product, $meta_keys );
 			}
 
 			$children = $variation_product_array;

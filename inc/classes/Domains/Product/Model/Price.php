@@ -6,9 +6,7 @@ namespace J7\Powerhouse\Domains\Product\Model;
 
 use J7\Powerhouse\Domains\Product\Utils\CRUD;
 
-/**
- * 商品價格 DTO
- */
+/** 商品價格 DTO */
 final class Price extends DTO {
 	/** @var string $price_html 價格 HTML 字串 */
 	public string $price_html;

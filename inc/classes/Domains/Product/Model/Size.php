@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Model;
 
-/**
- * 尺寸相關 DTO
- */
+/** 尺寸相關 DTO */
 final class Size extends DTO {
 
 	/** @var string $length 尺寸長度 */

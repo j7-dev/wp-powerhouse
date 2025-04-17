@@ -365,7 +365,7 @@ abstract class CRUD {
 
 	/**
 	 * 分離參數
-	 * 會從前端傳入 'meta_keys', 'with_description', 'depth', 'recursive_args' 等 array 參數
+	 * 會從前端傳入 'meta_keys', 'with_description', 'depth', 'recursive_args', 'partials' 等 array 參數
 	 * 這個 function 會將這些參數分離出來，給後續 function 使用
 	 *
 	 * @param array<string, mixed> $args 參數.
@@ -374,9 +374,11 @@ abstract class CRUD {
 	public static function handle_args( array $args ): array {
 		$default = [
 			'meta_keys'        => [],
+			/* @deprecated with_description 即將棄用，用 partials 取代 */
 			'with_description' => false,
 			'depth'            => 0,
 			'recursive_args'   => null,
+			'partials'         => null,
 		];
 
 		$args = \wp_parse_args( $args, $default );
@@ -386,12 +388,14 @@ abstract class CRUD {
 			'with_description' => $with_description,
 			'depth'            => $depth,
 			'recursive_args'   => $recursive_args,
+			'partials'         => $partials,
 		] = $args;
 
 		unset($args['meta_keys']);
 		unset($args['with_description']);
 		unset($args['depth']);
 		unset($args['recursive_args']);
+		unset($args['partials']);
 
 		return [
 			'args'             => $args,
@@ -399,6 +403,7 @@ abstract class CRUD {
 			'with_description' => (bool) $with_description,
 			'depth'            => $depth,
 			'recursive_args'   => $recursive_args,
+			'partials'         => $partials,
 		];
 	}
 
