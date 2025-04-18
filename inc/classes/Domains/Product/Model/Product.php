@@ -92,9 +92,7 @@ final class Product extends DTO {
 			'variation',
 		];
 		$array    = [];
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log( $partials, 'partials');
-		// ---------- END TEST ---------- //
+
 		foreach ($partials as $partial) {
 			if ('variation' === $partial) {
 				$array = array_merge($array, $this->variation->to_array($partials));

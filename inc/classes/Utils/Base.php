@@ -162,24 +162,30 @@ abstract class Base {
 	/**
 	 * Get taxonomy options
 	 *
-	 * @param array<string> $object_type Object type
-	 * @return array<array{value: string, label: string}>
+	 * @param array{
+	 *  object_type: array<string>,
+	 *  public: bool,
+	 *  ...
+	 * } $args 參數
+	 * @see https://developer.wordpress.org/reference/functions/get_taxonomies/
+	 * @return array<array{value: string, label: string, hierarchical: bool}>
 	 */
-	public static function get_taxonomy_options( array $object_type = [ 'product' ] ): array {
+	public static function get_taxonomy_options( array $args = [
+		'object_type' => [ 'product' ],
+		'public'      => true,
+	] ): array {
+
 		$taxonomies = \get_taxonomies(
-			[
-				'object_type'  => $object_type,
-				'public'       => true,
-				'show_in_rest' => true,
-			],
+			$args,
 			'objects'
 		);
 
 		$object_taxonomies_array = [];
 		foreach ( $taxonomies as $taxonomy ) {
 			$object_taxonomies_array[] = [
-				'value' => $taxonomy->name,
-				'label' => $taxonomy->label,
+				'value'        => $taxonomy->name,
+				'label'        => $taxonomy->label,
+				'hierarchical' => $taxonomy->hierarchical, // 是否為階層式分類
 			];
 		}
 		return $object_taxonomies_array;

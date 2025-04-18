@@ -15,6 +15,7 @@ final class Loader {
 	public function __construct() {
 		Comment\Core\V2Api::instance();
 		Post\Core\V2Api::instance();
+		Term\Core\V2Api::instance();
 		User\Core\V2Api::instance();
 		Option\Core\V2Api::instance();
 		Shortcode\Core\V2Api::instance();

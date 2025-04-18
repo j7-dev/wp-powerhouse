@@ -289,7 +289,7 @@ abstract class CRUD {
 	 * @param string|int           $id   post id.
 	 * @param array<string, mixed> $args Arguments.
 	 *
-	 * @return integer|\WP_Error
+	 * @return int|\WP_Error
 	 */
 	public static function update_post( string|int $id, array $args ): int|\WP_Error {
 		$default_args = [
