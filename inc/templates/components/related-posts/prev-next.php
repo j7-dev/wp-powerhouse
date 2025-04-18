@@ -10,7 +10,7 @@ global $post;
 
 $top_parent_id = PostUtils::get_top_post_id($post->ID);
 
-$all_children_ids = PostUtils::get_flatten_post_ids( $top_parent_id);
+$all_children_ids = PostUtils::get_flatten_post_ids( $top_parent_id, [ 'post_status' => 'publish' ] );
 
 // find index of current post id
 /** @var int|false $current_post_index */
