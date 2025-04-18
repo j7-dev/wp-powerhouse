@@ -251,9 +251,17 @@ abstract class Base {
 							set isLoading(isLoading){
 								this._isLoading = isLoading;
 								if(isLoading){
-									this.$blockEl?.block(this.defaultBlockUIProps);
+									if(typeof this.$blockEl?.block === 'function'){
+										this.$blockEl?.block(this.defaultBlockUIProps);
+									}else{
+										this.$blockEl.css('cursor', 'wait');
+									}
 								}else{
-									this.$blockEl?.unblock();
+									if(typeof this.$blockEl?.unblock === 'function'){
+										this.$blockEl?.unblock();
+									}else{
+										this.$blockEl.css('cursor', 'default');
+									}
 								}
 							}
 						}
