@@ -18,10 +18,10 @@ abstract class CRUD {
 	 * @return int|\WP_Error
 	 */
 	public static function create_term( array $args = [] ): int|\WP_Error {
+
 		$handled_args = self::handle_args( $args );
 
 		[
-			'term'     => $term,
 			'taxonomy' => $taxonomy,
 			'args'     => $args,
 		] = $handled_args;
@@ -29,7 +29,10 @@ abstract class CRUD {
 		[
 			'data' => $data,
 			'meta_data' => $meta_data,
-		] = WP::separator($args);
+		] = WP::separator($args, 'term');
+
+		$term = $data['name'];
+		unset($data['name']);
 
 		/** @var array{term_id: int, term_taxonomy_id: int}|\WP_Error $result */
 		$result = \wp_insert_term($term, $taxonomy, $data);
@@ -53,10 +56,16 @@ abstract class CRUD {
 	 * @param array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $params Parameters.
 	 *
 	 * @return true|\WP_Error
+	 * @throws \Exception 當 taxonomy 不存在時拋出異常
 	 */
 	public static function sort_terms( array $params ): bool|\WP_Error {
 		$from_tree = $params['from_tree'] ?? []; // @phpstan-ignore-line
 		$to_tree   = $params['to_tree'] ?? []; // @phpstan-ignore-line
+		$taxonomy  = $params['taxonomy'] ?? ''; // @phpstan-ignore-line
+
+		if (!$taxonomy) {
+			throw new \Exception(__('taxonomy is required', 'powerhouse'));
+		}
 
 		$delete_ids = [];
 		foreach ($from_tree as $from_node) {
@@ -72,6 +81,7 @@ abstract class CRUD {
 			$args        = $node;
 			unset($args['id']); // 不存 id
 
+			$args['taxonomy'] = $taxonomy;
 			if ($is_new_term) {
 				$insert_result = self::create_term($args);
 			} else {
@@ -83,10 +93,40 @@ abstract class CRUD {
 		}
 
 		foreach ($delete_ids as $id) {
-			\wp_trash_post( (int) $id );
+			self::delete_term( (int) $id, $taxonomy );
 		}
 
 		return true;
+	}
+
+	/**
+	 * 刪除 term
+	 *
+	 * @param int    $id       term id.
+	 * @param string $taxonomy taxonomy.
+	 *
+	 * @return bool|int|\WP_Error
+	 * @throws \Exception 刪除 term 失敗時拋出異常
+	 */
+	public static function delete_term( int $id, string $taxonomy ): bool|int|\WP_Error {
+		if (!$taxonomy) {
+			throw new \Exception(__('taxonomy is required', 'powerhouse'));
+		}
+
+		$result = \wp_delete_term( $id, $taxonomy );
+		if (false === $result) {
+			throw new \Exception(__('term not exists', 'powerhouse'));
+		}
+
+		if (0 === $result) {
+			throw new \Exception(__('Attempted deletion of default Category', 'powerhouse'));
+		}
+
+		if (\is_wp_error($result)) {
+			throw new \Exception($result->get_error_message());
+		}
+
+		return $result;
 	}
 
 	/**
@@ -109,7 +149,7 @@ abstract class CRUD {
 		[
 			'data' => $data,
 			'meta_data' => $meta_data,
-		] = WP::separator($args);
+		] = WP::separator($args, 'term');
 
 		/** @var array{term_id: int, term_taxonomy_id: int}|\WP_Error $result */
 		$result = \wp_update_term($term_id, $taxonomy, $data);
@@ -177,11 +217,10 @@ abstract class CRUD {
 	 * 這個 function 會將這些參數分離出來，給後續 function 使用
 	 *
 	 * @param array<string, mixed> $args 參數.
-	 * @return array{args: array<string, mixed>, term: string, taxonomy: string}
+	 * @return array{args: array<string, mixed>, taxonomy: string}
 	 */
 	public static function handle_args( array $args ): array {
 		$default = [
-			'term'        => '', // 應該是 term slug
 			'taxonomy'    => '',
 			'name'        => '',
 			'alias_of'    => '',
@@ -193,16 +232,13 @@ abstract class CRUD {
 		$args = \wp_parse_args( $args, $default );
 
 		[
-			'term'        => $term,
 			'taxonomy' => $taxonomy,
 		] = $args;
 
-		unset($args['term']);
 		unset($args['taxonomy']);
 
 		return [
 			'args'     => $args,
-			'term'     => $term,
 			'taxonomy' => $taxonomy,
 		];
 	}

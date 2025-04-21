@@ -200,7 +200,7 @@ abstract class CRUD {
 
 		// 可以改寫 meta_keys
 		// @phpstan-ignore-next-line
-		return \apply_filters( 'powerhouse/post/get_meta_keys_array', $meta_keys_array, $post );
+		return \apply_filters( 'powerhouse/order/get_meta_keys_array', $meta_keys_array, $post );
 	}
 
 

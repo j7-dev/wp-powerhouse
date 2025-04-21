@@ -18,6 +18,12 @@ final class Term extends DTO {
 	/** @var string $slug */
 	public string $slug = '';
 
+	/** @var string $permalink 連結 */
+	public string $permalink = '';
+
+	/** @var string $edit_url 編輯連結 */
+	public string $edit_url = '';
+
 	/** @var string $term_taxonomy_id */
 	public string $term_taxonomy_id = '';
 
@@ -39,6 +45,9 @@ final class Term extends DTO {
 	/** @var Term[]|null  $children 子孫 */
 	public array|null $children = null;
 
+	/** @var string $thumbnail_id 縮圖 id，DB 是存 id，但前端拿 url 直接顯示 */
+	public string $thumbnail_id = '';
+
 	/**
 	 * 取得實例
 	 *
@@ -56,20 +65,32 @@ final class Term extends DTO {
 			]
 			);
 
+		$permalink = \get_term_link( $term, $term->taxonomy );
+		$permalink = \is_wp_error( $permalink ) ? '' : $permalink;
+
+		$thumb_id      = \get_term_meta( $term->term_id, 'thumbnail_id', true );
+		$thumbnail_url = \wp_get_attachment_url(  $thumb_id );
+		$thumbnail_url = $thumbnail_url ? $thumbnail_url : '';
+
+		$order = \get_term_meta( $term->term_id, 'order', true );
+
 		$args = [
 			'id'               => (string) $term->term_id,
 			'name'             => $term->name,
 			'slug'             => $term->slug,
+			'permalink'        => $permalink,
+			'edit_url'         => \get_edit_term_link( $term->term_id, $term->taxonomy ),
 			'term_taxonomy_id' => (string) $term->term_taxonomy_id,
 			'taxonomy'         => $term->taxonomy,
 			'description'      => $term->description,
 			'parent'           => $term->parent ? (string) $term->parent : '',
 			'count'            => (int) $term->count,
-			'order'            => (int) \get_term_meta( $term->term_id, 'order', true ),
+			'order'            => (int) $order,
 			'children'         => array_map(
 				fn ( \WP_Term $child ) => self::instance( $child ),
 				$children
 			),
+			'thumbnail_id'     => $thumbnail_url,
 		];
 
 		$strict = \wp_get_environment_type() === 'local';

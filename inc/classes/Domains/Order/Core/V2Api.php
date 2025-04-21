@@ -260,7 +260,7 @@ final class V2Api extends ApiBase {
 		$body_params = General::parse( $body_params );
 
 		/** @var array<string, mixed> $body_params */
-		$body_params = \apply_filters('powerhouse/post/separator_body_params', $body_params, $request);
+		$body_params = \apply_filters('powerhouse/order/separator_body_params', $body_params, $request);
 
 		$separated_data = WP::separator( $body_params, 'post', $file_params['images'] ?? [] );
 

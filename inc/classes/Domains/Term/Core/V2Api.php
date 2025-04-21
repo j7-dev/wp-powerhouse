@@ -71,6 +71,126 @@ final class V2Api extends ApiBase {
 		],
 	];
 
+	/** Constructor */
+	public function __construct() {
+		parent::__construct();
+		\add_filter('powerhouse/term/create_term_args', [ $this, 'handle_upload' ], 10, 2);
+		\add_filter('powerhouse/term/update_term_args', [ $this, 'handle_upload' ], 10, 2);
+	}
+
+	/**
+	 * 處理上傳圖片
+	 *
+	 * @param array<string, mixed> $body_params Arguments.
+	 * @param \WP_REST_Request     $request Request.
+
+	 * @return array<string, mixed>
+	 */
+	public function handle_upload( array $body_params, $request ): array {
+		$image_names = [ 'thumbnail_id' ];
+		$file_params = $request->get_file_params();
+
+		foreach ($image_names as $image_name) {
+			if (isset($file_params[ $image_name ])) {
+				try {
+					$upload_results = WP::upload_files( $file_params[ $image_name ] );
+					// db 儲存 image id
+					$body_params[ $image_name ] = $upload_results[0]['id'];
+				} catch (\Throwable $th) {
+					\J7\WpUtils\Classes\WC::log( $th->getMessage(), 'upload_files error' );
+				}
+			}
+		}
+
+		foreach ($image_names as $image_name) {
+			// 如果前端傳 delete 過來，則刪除 db 的 image id
+			if ('delete' === ( $body_params[ $image_name ] ?? '' )) {
+				$body_params[ $image_name ] = '';
+				continue;
+			}
+			// 如果不是 delete 也不是數字，那代表沒有動作，那也不用傳給 db
+			if (!\is_numeric($body_params[ $image_name ])) {
+				unset($body_params[ $image_name ]);
+			}
+		}
+		return $body_params;
+	}
+
+	/**
+	 * 取得 term 列表
+	 * WordPress 原本的 get_terms 函數很難支援多重篩選功能，所以自己實現
+	 *
+	 * @param array<string, mixed> $args 參數.
+	 *
+	 * @return array<\WP_Term>
+	 */
+	private static function get_terms_by_order( array $args ): array {
+		// 將 posts_per_page, paged 轉換為 number offset
+		$args['number'] = $args['posts_per_page'] <= 0 ? 0 : $args['posts_per_page'];
+		$args['offset'] = ( $args['paged'] - 1 ) * $args['number'];
+		$current_page   = $args['paged'];
+		unset($args['posts_per_page']);
+		unset($args['paged']);
+
+		global $wpdb;
+		/**
+		 * Example:
+		 * SELECT tt.*, COALESCE(tm.meta_value, '0') AS `order`
+		 * FROM wp_term_taxonomy tt
+		 * LEFT JOIN wp_termmeta tm
+		 * ON tt.term_id = tm.term_id AND tm.meta_key = 'order'
+		 * ORDER BY CAST(COALESCE(tm.meta_value, '0') AS SIGNED) ASC, tt.term_id DESC
+		 * LIMIT 20 OFFSET 0
+		 */
+		// phpcs:disable
+		$prepare = $wpdb->prepare(
+			"SELECT tt.*, COALESCE(tm.meta_value, '0') AS `order`
+			FROM {$wpdb->term_taxonomy} tt
+			LEFT JOIN {$wpdb->termmeta} tm
+			ON tt.term_id = tm.term_id AND tm.meta_key = 'order'
+			WHERE tt.taxonomy = '%s'
+			AND tt.parent = %d
+			ORDER BY CAST(COALESCE(tm.meta_value, '0') AS SIGNED) ASC, tt.term_id DESC",
+			$args['taxonomy'],
+			$args['parent']
+		);
+		// phpcs:enable
+
+		if ($args['number'] > 0) {
+			$prepare .= $wpdb->prepare(
+				'LIMIT %d OFFSET %d',
+				$args['number'],
+				$args['offset']
+			);
+		}
+
+		/**
+		 * @var array<object{
+		 * term_taxonomy_id: string,
+		 * term_id: string,
+		 * taxonomy: string,
+		 * description: string,
+		 * parent: string,
+		 * count: string,
+		 * order: string,
+		 * }>
+		 */
+		$records = $wpdb->get_results( $prepare ); // phpcs:ignore
+
+		$terms = [];
+		foreach ($records as $record) {
+			$term = \get_term( (int) $record->term_id, $record->taxonomy );
+			if ($term instanceof \WP_Term) {
+				$terms[] = $term;
+			}
+			if (\is_wp_error($term)) {
+				\J7\WpUtils\Classes\WC::log( $term->get_error_message(), 'get_term error' );
+			}
+		}
+
+		return $terms;
+	}
+
 	/**
 	 * Get terms callback 取得 term 列表
 	 * 傳入 taxonomy 可以取得特定 taxonomy 的 term 列表
@@ -92,8 +212,10 @@ final class V2Api extends ApiBase {
 			'hide_empty'     => false,
 			'posts_per_page' => 20,
 			'paged'          => 1,
-			'orderby'        => 'order',
+			'meta_key'       => 'order',  // 指定用於排序的 meta_key
+			'orderby'        => 'meta_value_num',  // 以數值方式排序 meta 值
 			'order'          => 'ASC',
+			'parent'         => 0,
 		];
 
 		// number offset
@@ -106,17 +228,15 @@ final class V2Api extends ApiBase {
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$args = General::parse( $args );
 
-		// 將 posts_per_page, paged 轉換為 number offset
-		$args['number'] = $args['posts_per_page'] <= 0 ? 0 : $args['posts_per_page'];
-		$args['offset'] = ( $args['paged'] - 1 ) * $args['number'];
-		$current_page   = $args['paged'];
-		unset($args['posts_per_page']);
-		unset($args['paged']);
-
 		/** @var \WP_Term[] $terms */
-		$terms = \get_terms($args);
+		$terms = self::get_terms_by_order($args);
+
+		// 取得總數
+		$count_args           = $args;
+		$count_args['fields'] = 'count';
+		unset($count_args['parent']);
 		/** @var int $total */
-		$total = \get_terms(array_merge($args, [ 'fields' => 'count' ]));
+		$total = \get_terms($count_args);
 
 		$total_pages = $args['number'] > 0 ? \ceil($total / $args['number']) : 1;
 
@@ -130,6 +250,7 @@ final class V2Api extends ApiBase {
 		// set pagination in header
 		$response->header( 'X-WP-Total', (string) $total );
 		$response->header( 'X-WP-TotalPages', (string) $total_pages );
+		$current_page = $args['paged'];
 		$response->header( 'X-WP-CurrentPage', (string) $current_page );
 		$response->header( 'X-WP-PageSize', (string) $args['number'] );
 
@@ -199,31 +320,29 @@ final class V2Api extends ApiBase {
 
 		$success_ids = [];
 
+		/** @var array<string, mixed> $body_params */
+		$body_params = \apply_filters('powerhouse/term/create_term_args', $body_params, $request);
+
 		for ($i = 0; $i < $qty; $i++) {
-			$post_id = CRUD::create_term( $body_params );
-			if (is_numeric($post_id)) {
-				$success_ids[] = $post_id;
+			$term_id = CRUD::create_term( $body_params );
+			if (is_numeric($term_id)) {
+				$success_ids[] = $term_id;
 			} else {
-				throw new \Exception(
-					sprintf(
-					__('create post failed, %s', 'powerhouse'),
-					$post_id->get_error_message()
-				)
-				);
+				throw new \Exception($term_id->get_error_message());
 			}
 		}
 
 		return new \WP_REST_Response(
 				[
 					'code'    => 'create_success',
-					'message' => __('create post success', 'powerhouse'),
+					'message' => __('create term success', 'powerhouse'),
 					'data'    => $success_ids,
 				],
 			);
 	}
 
 	/**
-	 * Post post sort callback
+	 * Post term sort callback
 	 * 處理排序
 	 *
 	 * @param \WP_REST_Request $request Request.
@@ -253,11 +372,11 @@ final class V2Api extends ApiBase {
 	}
 
 	/**
-	 * Patch post callback
+	 * 修改 term
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response|\WP_Error
-	 * @throws \Exception 當更新文章失敗時拋出異常
+	 * @throws \Exception 當更新 term 失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
 	public function post_terms_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
@@ -272,7 +391,10 @@ final class V2Api extends ApiBase {
 		}
 
 		$body_params = $request->get_body_params();
-		$body_params = WP::sanitize_text_field_deep( $body_params, false );
+		$body_params = WP::sanitize_text_field_deep( $body_params );
+
+		/** @var array<string, mixed> $body_params */
+		$body_params = \apply_filters('powerhouse/term/update_term_args', $body_params, $request);
 
 		$update_result = CRUD::update_term(
 				(int) $id,
@@ -316,33 +438,25 @@ final class V2Api extends ApiBase {
 		$taxonomy = $body_params['taxonomy'] ?? '';
 
 		foreach ($ids as $id) {
-			$result = \wp_delete_term( (int) $id, $taxonomy );
-			if ($result !== true) {
-				throw new \Exception(
-					sprintf(
-					__('delete post data failed #%s', 'powerhouse'),
-					$id
-				)
-				);
-			}
+			CRUD::delete_term( (int) $id, $taxonomy );
 		}
 
 		return new \WP_REST_Response(
 				[
 					'code'    => 'delete_success',
-					'message' => __('delete post data success', 'powerhouse'),
+					'message' => __('delete term data success', 'powerhouse'),
 					'data'    => $ids,
 				]
 			);
 	}
 
 	/**
-	 * Delete post callback
-	 * 刪除文章
+	 * Delete term callback
+	 * 刪除 term
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @return \WP_REST_Response
-	 * @throws \Exception 當刪除文章失敗時拋出異常
+	 * @throws \Exception 當刪除 term 失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
 	public function delete_terms_with_id_callback( $request ): \WP_REST_Response {
@@ -350,7 +464,7 @@ final class V2Api extends ApiBase {
 		if (!is_numeric($id)) {
 			throw new \Exception(
 				sprintf(
-				__('post id format not match #%s', 'powerhouse'),
+				__('term id format not match #%s', 'powerhouse'),
 				$id
 			)
 			);
@@ -360,20 +474,12 @@ final class V2Api extends ApiBase {
 		$body_params = WP::sanitize_text_field_deep( $body_params, false );
 		$taxonomy    = $body_params['taxonomy'] ?? '';
 
-		$result = \wp_delete_term( (int) $id, $taxonomy );
-		if ($result !== true) {
-			throw new \Exception(
-				sprintf(
-				__('delete post failed #%s', 'powerhouse'),
-				$id
-			)
-			);
-		}
+		CRUD::delete_term( (int) $id, $taxonomy );
 
 		return new \WP_REST_Response(
 			[
 				'code'    => 'delete_success',
-				'message' => __('delete post success', 'powerhouse'),
+				'message' => __('delete term success', 'powerhouse'),
 				'data'    => [
 					'id' => $id,
 				],
