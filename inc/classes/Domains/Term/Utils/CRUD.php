@@ -71,16 +71,13 @@ abstract class CRUD {
 			}
 		}
 		foreach ($to_tree as $node) {
-			$to_id       = $node['id'];
-			$is_new_term = \str_starts_with($to_id, 'new-'); // 用 new- 開頭的 id 是新章節
-			$args        = $node;
+			$to_id = $node['id'];
+
+			$args = $node;
 			unset($args['id']); // 不存 id
 
-			if ($is_new_term) {
-				$insert_result = self::create_term($taxonomy, $args);
-			} else {
-				$insert_result = self::update_term($to_id, $taxonomy, $args);
-			}
+			$insert_result = self::update_term($to_id, $taxonomy, $args);
+
 			if (\is_wp_error($insert_result)) {
 				return $insert_result;
 			}

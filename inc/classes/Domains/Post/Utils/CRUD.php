@@ -222,15 +222,11 @@ abstract class CRUD {
 			}
 		}
 		foreach ($to_tree as $node) {
-			$to_id       = $node['id'];
-			$is_new_post = strpos($to_id, 'new-') === 0; // 用 new- 開頭的 id 是新章節
-			$args        = self::converter($node);
+			$to_id = $node['id'];
+			$args  = self::converter($node);
 
-			if ($is_new_post) {
-				$insert_result = self::create_post($args);
-			} else {
-				$insert_result = self::update_post($to_id, $args);
-			}
+			$insert_result = self::update_post($to_id, $args);
+
 			if (\is_wp_error($insert_result)) {
 				return $insert_result;
 			}

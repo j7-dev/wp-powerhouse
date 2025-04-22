@@ -13,6 +13,9 @@ final class Product extends DTO {
 	/** @var Basic $basic 商品基本資料 */
 	protected Basic $basic;
 
+	/** @var Detail $detail 商品詳細資料 */
+	protected Detail $detail;
+
 	/** @var Price $price 商品價格 */
 	protected Price $price;
 
