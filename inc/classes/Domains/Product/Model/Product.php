@@ -10,35 +10,35 @@ namespace J7\Powerhouse\Domains\Product\Model;
  */
 final class Product extends DTO {
 
-	/** @var Basic $basic 商品基本資料 */
-	protected Basic $basic;
+	/** @var string $basic 商品基本資料 Class */
+	protected string $basic;
 
-	/** @var Detail $detail 商品詳細資料 */
-	protected Detail $detail;
+	/** @var string $detail 商品詳細資料 Class */
+	protected string $detail;
 
-	/** @var Price $price 商品價格 */
-	protected Price $price;
+	/** @var string $price 商品價格 Class */
+	protected string $price;
 
-	/** @var Taxonomy $taxonomy 商品分類、標籤、品牌 */
-	protected Taxonomy $taxonomy;
+	/** @var string $taxonomy 商品分類、標籤、品牌 Class */
+	protected string $taxonomy;
 
-	/** @var Stock $stock 商品庫存 */
-	protected Stock $stock;
+	/** @var string $stock 商品庫存 Class */
+	protected string $stock;
 
-	/** @var Sales $sales 促銷、交叉銷售相關 */
-	protected Sales $sales;
+	/** @var string $sales 促銷、交叉銷售相關 Class */
+	protected string $sales;
 
-	/** @var Size $size 商品尺寸 */
-	protected Size $size;
+	/** @var string $size 商品尺寸 Class */
+	protected string $size;
 
-	/** @var Attribute $attribute 商品屬性 */
-	protected Attribute $attribute;
+	/** @var string $attribute 商品屬性 Class */
+	protected string $attribute;
 
-	/** @var Subscription $subscription 訂閱相關 */
-	protected Subscription $subscription;
+	/** @var string $subscription 訂閱相關 Class */
+	protected string $subscription;
 
-	/** @var Variation $variation 可變商品的變體 */
-	protected Variation $variation;
+	/** @var string $variation 可變商品的變體 Class */
+	protected string $variation;
 
 	/** @var array<string> $meta_keys 要包含的 meta 欄位 */
 	protected array $meta_keys = [];
@@ -55,16 +55,16 @@ final class Product extends DTO {
 	): self {
 
 		$args = [
-			'basic'        => Basic::instance($product),
-			'detail'       => Detail::instance($product),
-			'price'        => Price::instance($product),
-			'stock'        => Stock::instance($product),
-			'sales'        => Sales::instance($product),
-			'size'         => Size::instance($product),
-			'subscription' => Subscription::instance($product),
-			'taxonomy'     => Taxonomy::instance($product),
-			'attribute'    => Attribute::instance($product),
-			'variation'    => Variation::instance($product, $meta_keys),
+			'basic'        => Basic::class,
+			'detail'       => Detail::class,
+			'price'        => Price::class,
+			'stock'        => Stock::class,
+			'sales'        => Sales::class,
+			'size'         => Size::class,
+			'subscription' => Subscription::class,
+			'taxonomy'     => Taxonomy::class,
+			'attribute'    => Attribute::class,
+			'variation'    => Variation::class,
 			'product'      => $product,
 			'meta_keys'    => $meta_keys,
 		];
@@ -98,11 +98,13 @@ final class Product extends DTO {
 
 		foreach ($partials as $partial) {
 			if ('variation' === $partial) {
-				$array = array_merge($array, $this->variation->to_array($partials));
+				$instance = $this->{$partial}::instance($this->product, $this->meta_keys);
+				$array    = array_merge($array, $instance->to_array($partials));
 				continue;
 			}
 
-			$array = array_merge($array, $this->{$partial}->to_array());
+			$instance = $this->{$partial}::instance($this->product);
+			$array    = array_merge($array, $instance->to_array());
 		}
 
 		return array_merge(
