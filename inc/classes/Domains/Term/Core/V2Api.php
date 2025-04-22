@@ -31,42 +31,49 @@ final class V2Api extends ApiBase {
 	/**
 	 * APIs
 	 *
-	 * @var array{endpoint:string,method:string,permission_callback: ?callable }[]
+	 * @var array{endpoint:string,method:string,permission_callback: ?callable, callback: ?callable}[]
 	 */
 	protected $apis = [
 		[
-			'endpoint'            => 'terms',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)',
 			'method'              => 'get',
+			'callback'            => [ __CLASS__, 'get_terms_callback' ],
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'terms/(?P<id>\d+)',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)/(?P<id>\d+)',
 			'method'              => 'get',
+			'callback'            => [ __CLASS__, 'get_terms_with_id_callback' ],
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'terms',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)',
 			'method'              => 'post',
+			'callback'            => [ __CLASS__, 'post_terms_callback' ],
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'terms/(?P<id>\d+)',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)/(?P<id>\d+)',
 			'method'              => 'post',
+			'callback'            => [ __CLASS__, 'post_terms_with_id_callback' ],
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'terms',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)',
 			'method'              => 'delete',
+			'callback'            => [ __CLASS__, 'delete_terms_callback' ],
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'terms/(?P<id>\d+)',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)/(?P<id>\d+)',
 			'method'              => 'delete',
+			'callback'            => [ __CLASS__, 'delete_terms_with_id_callback' ],
 			'permission_callback' => null,
 		],
 		[
-			'endpoint'            => 'terms/sort',
+			'endpoint'            => 'terms/(?P<taxonomy>[a-zA-Z0-9_-]+)/sort',
 			'method'              => 'post',
+			'callback'            => [ __CLASS__, 'post_terms_sort_callback' ],
 			'permission_callback' => null,
 		],
 	];
@@ -128,7 +135,6 @@ final class V2Api extends ApiBase {
 		// 將 posts_per_page, paged 轉換為 number offset
 		$args['number'] = $args['posts_per_page'] <= 0 ? 0 : $args['posts_per_page'];
 		$args['offset'] = ( $args['paged'] - 1 ) * $args['number'];
-		$current_page   = $args['paged'];
 		unset($args['posts_per_page']);
 		unset($args['paged']);
 
@@ -158,7 +164,7 @@ final class V2Api extends ApiBase {
 
 		if ($args['number'] > 0) {
 			$prepare .= $wpdb->prepare(
-				'LIMIT %d OFFSET %d',
+				' LIMIT %d OFFSET %d',
 				$args['number'],
 				$args['offset']
 			);
@@ -201,24 +207,21 @@ final class V2Api extends ApiBase {
 	 * @return \WP_REST_Response|\WP_Error
 	 * @phpstan-ignore-next-line
 	 */
-	public function get_terms_callback( $request ) { // phpcs:ignore
+	public static function get_terms_callback( $request ) { // phpcs:ignore
 
 		$params = $request->get_query_params();
 
 		$params = WP::sanitize_text_field_deep( $params, false );
 
+		$taxonomy = $request['taxonomy'] ?? 'product_cat';
+
 		$default_args = [
-			'taxonomy'       => 'product_cat',
+			'taxonomy'       => $taxonomy,
 			'hide_empty'     => false,
 			'posts_per_page' => 20,
 			'paged'          => 1,
-			'meta_key'       => 'order',  // 指定用於排序的 meta_key
-			'orderby'        => 'meta_value_num',  // 以數值方式排序 meta 值
-			'order'          => 'ASC',
 			'parent'         => 0,
 		];
-
-		// number offset
 
 		$args = \wp_parse_args(
 			$params,
@@ -266,7 +269,7 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當 term 不存在時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function get_terms_with_id_callback( $request ) { // phpcs:ignore
+	public static function get_terms_with_id_callback( $request ) { // phpcs:ignore
 		$id = $request['id'] ?? null;
 		if (!is_numeric($id)) {
 			throw new \Exception(
@@ -278,7 +281,7 @@ final class V2Api extends ApiBase {
 		}
 		$params   = $request->get_query_params();
 		$params   = WP::sanitize_text_field_deep( $params, false );
-		$taxonomy = $params['taxonomy'] ?? '';
+		$taxonomy = $request['taxonomy'] ?? '';
 
 		$term = \get_term( (int) $id, $taxonomy );
 
@@ -311,9 +314,10 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當新增 term 失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_terms_callback( $request ): \WP_REST_Response|\WP_Error {
+	public static function post_terms_callback( $request ): \WP_REST_Response|\WP_Error {
 		$body_params = $request->get_body_params();
 		$body_params = WP::sanitize_text_field_deep( $body_params, false );
+		$taxonomy    = $request['taxonomy'] ?? '';
 
 		$qty = (int) ( $body_params['qty'] ?? 1 );
 		unset($body_params['qty']);
@@ -324,7 +328,7 @@ final class V2Api extends ApiBase {
 		$body_params = \apply_filters('powerhouse/term/create_term_args', $body_params, $request);
 
 		for ($i = 0; $i < $qty; $i++) {
-			$term_id = CRUD::create_term( $body_params );
+			$term_id = CRUD::create_term( $taxonomy, $body_params );
 			if (is_numeric($term_id)) {
 				$success_ids[] = $term_id;
 			} else {
@@ -349,14 +353,16 @@ final class V2Api extends ApiBase {
 	 * @return \WP_REST_Response|\WP_Error
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_terms_sort_callback( $request ): \WP_REST_Response|\WP_Error {
+	public static function post_terms_sort_callback( $request ): \WP_REST_Response|\WP_Error {
 
 		$body_params = $request->get_json_params();
 
 		$body_params = WP::sanitize_text_field_deep( $body_params, false );
 
+		$taxonomy = $request['taxonomy'] ?? '';
+
 		/** @var array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $body_params */
-		$sort_result = CRUD::sort_terms( $body_params );
+		$sort_result = CRUD::sort_terms( $taxonomy, $body_params );
 
 		if ( $sort_result !== true ) {
 			return $sort_result;
@@ -379,7 +385,7 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當更新 term 失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_terms_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
+	public static function post_terms_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
 		$id = $request['id'] ?? null;
 		if (!is_numeric($id)) {
 			throw new \Exception(
@@ -392,12 +398,14 @@ final class V2Api extends ApiBase {
 
 		$body_params = $request->get_body_params();
 		$body_params = WP::sanitize_text_field_deep( $body_params );
+		$taxonomy    = $request['taxonomy'] ?? '';
 
 		/** @var array<string, mixed> $body_params */
 		$body_params = \apply_filters('powerhouse/term/update_term_args', $body_params, $request);
 
 		$update_result = CRUD::update_term(
 				(int) $id,
+				$taxonomy,
 				$body_params
 			);
 
@@ -425,7 +433,7 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當刪除文章資料失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function delete_terms_callback( $request ): \WP_REST_Response|\WP_Error {
+	public static function delete_terms_callback( $request ): \WP_REST_Response|\WP_Error {
 
 		$body_params = $request->get_json_params();
 
@@ -435,7 +443,7 @@ final class V2Api extends ApiBase {
 		$ids = $body_params['ids'] ?? [];
 		/** @var array<string> $ids */
 		$ids      = is_array( $ids ) ? $ids : [];
-		$taxonomy = $body_params['taxonomy'] ?? '';
+		$taxonomy = $request['taxonomy'] ?? '';
 
 		foreach ($ids as $id) {
 			CRUD::delete_term( (int) $id, $taxonomy );
@@ -459,7 +467,7 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當刪除 term 失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function delete_terms_with_id_callback( $request ): \WP_REST_Response {
+	public static function delete_terms_with_id_callback( $request ): \WP_REST_Response {
 		$id = $request['id'] ?? null;
 		if (!is_numeric($id)) {
 			throw new \Exception(
@@ -471,8 +479,10 @@ final class V2Api extends ApiBase {
 		}
 
 		$body_params = $request->get_body_params();
+
 		$body_params = WP::sanitize_text_field_deep( $body_params, false );
-		$taxonomy    = $body_params['taxonomy'] ?? '';
+
+		$taxonomy = $request['taxonomy'] ?? '';
 
 		CRUD::delete_term( (int) $id, $taxonomy );
 

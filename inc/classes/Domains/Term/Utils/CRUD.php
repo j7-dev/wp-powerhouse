@@ -13,18 +13,13 @@ abstract class CRUD {
 	 * Create a new term
 	 *
 	 * @see https://developer.wordpress.org/reference/functions/wp_insert_term/
+	 *
+	 * @param string               $taxonomy taxonomy.
 	 * @param array<string, mixed> $args Arguments.
 	 *
 	 * @return int|\WP_Error
 	 */
-	public static function create_term( array $args = [] ): int|\WP_Error {
-
-		$handled_args = self::handle_args( $args );
-
-		[
-			'taxonomy' => $taxonomy,
-			'args'     => $args,
-		] = $handled_args;
+	public static function create_term( string $taxonomy, array $args = [] ): int|\WP_Error {
 
 		[
 			'data' => $data,
@@ -53,15 +48,15 @@ abstract class CRUD {
 	 * Sort terms
 	 * 改變 term 順序
 	 *
+	 * @param string                                                                        $taxonomy taxonomy.
 	 * @param array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $params Parameters.
 	 *
 	 * @return true|\WP_Error
 	 * @throws \Exception 當 taxonomy 不存在時拋出異常
 	 */
-	public static function sort_terms( array $params ): bool|\WP_Error {
+	public static function sort_terms( string $taxonomy, array $params ): bool|\WP_Error {
 		$from_tree = $params['from_tree'] ?? []; // @phpstan-ignore-line
 		$to_tree   = $params['to_tree'] ?? []; // @phpstan-ignore-line
-		$taxonomy  = $params['taxonomy'] ?? ''; // @phpstan-ignore-line
 
 		if (!$taxonomy) {
 			throw new \Exception(__('taxonomy is required', 'powerhouse'));
@@ -81,11 +76,10 @@ abstract class CRUD {
 			$args        = $node;
 			unset($args['id']); // 不存 id
 
-			$args['taxonomy'] = $taxonomy;
 			if ($is_new_term) {
-				$insert_result = self::create_term($args);
+				$insert_result = self::create_term($taxonomy, $args);
 			} else {
-				$insert_result = self::update_term($to_id, $args);
+				$insert_result = self::update_term($to_id, $taxonomy, $args);
 			}
 			if (\is_wp_error($insert_result)) {
 				return $insert_result;
@@ -133,18 +127,12 @@ abstract class CRUD {
 	 * Update a term
 	 *
 	 * @param string|int           $term_id   term id.
+	 * @param string               $taxonomy  taxonomy.
 	 * @param array<string, mixed> $args Arguments.
 	 *
 	 * @return int|\WP_Error
 	 */
-	public static function update_term( string|int $term_id, array $args ): int|\WP_Error {
-
-		$handled_args = self::handle_args($args);
-
-		[
-			'taxonomy' => $taxonomy,
-			'args'     => $args,
-		] = $handled_args;
+	public static function update_term( string|int $term_id, string $taxonomy, array $args ): int|\WP_Error {
 
 		[
 			'data' => $data,
@@ -209,37 +197,5 @@ abstract class CRUD {
 				'fields'   => 'ids',
 			]
 			);
-	}
-
-	/**
-	 * 分離參數
-	 * 會從前端傳入 'term', 'taxonomy', 等 array 參數
-	 * 這個 function 會將這些參數分離出來，給後續 function 使用
-	 *
-	 * @param array<string, mixed> $args 參數.
-	 * @return array{args: array<string, mixed>, taxonomy: string}
-	 */
-	public static function handle_args( array $args ): array {
-		$default = [
-			'taxonomy'    => '',
-			'name'        => '',
-			'alias_of'    => '',
-			'description' => '',
-			'parent'      => 0,
-			'slug'        => '',
-		];
-
-		$args = \wp_parse_args( $args, $default );
-
-		[
-			'taxonomy' => $taxonomy,
-		] = $args;
-
-		unset($args['taxonomy']);
-
-		return [
-			'args'     => $args,
-			'taxonomy' => $taxonomy,
-		];
 	}
 }
