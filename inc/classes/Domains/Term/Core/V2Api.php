@@ -478,10 +478,6 @@ final class V2Api extends ApiBase {
 			);
 		}
 
-		$body_params = $request->get_body_params();
-
-		$body_params = WP::sanitize_text_field_deep( $body_params, false );
-
 		$taxonomy = $request['taxonomy'] ?? '';
 
 		CRUD::delete_term( (int) $id, $taxonomy );

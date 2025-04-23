@@ -25,6 +25,7 @@ final class Loader {
 		if ( class_exists( '\WooCommerce' ) ) {
 			Option\Core\WC_Countries::instance();
 			Product\Core\V2Api::instance();
+			ProductAttribute\Core\V2Api::instance();
 			Copy\Core\V2Api::instance();
 			Limit\Core\V2Api::instance();
 			Order\Core\V2Api::instance();

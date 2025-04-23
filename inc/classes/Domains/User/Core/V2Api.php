@@ -350,7 +350,10 @@ final class V2Api extends ApiBase {
 		return new \WP_REST_Response(
 				[
 					'code'    => 'resetpassword_success',
-					'message' => __('reset password success', 'powerhouse'),
+					'message' => \sprintf(
+						__('user id %s reset password success ', 'powerhouse'),
+						\implode(', ', $ids)
+					),
 					'data'    => $ids,
 				]
 			);

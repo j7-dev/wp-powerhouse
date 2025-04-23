@@ -181,11 +181,13 @@ abstract class Base {
 		);
 
 		$object_taxonomies_array = [];
+
 		foreach ( $taxonomies as $taxonomy ) {
 			$object_taxonomies_array[] = [
-				'value'        => $taxonomy->name,
-				'label'        => $taxonomy->label,
-				'hierarchical' => $taxonomy->hierarchical, // 是否為階層式分類
+				'value'              => $taxonomy->name,
+				'label'              => $taxonomy->label,
+				'hierarchical'       => $taxonomy->hierarchical, // 是否為階層式分類
+				'publicly_queryable' => $taxonomy->publicly_queryable, // 是否為公開分類
 			];
 		}
 		return $object_taxonomies_array;
