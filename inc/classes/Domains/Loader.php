@@ -23,7 +23,7 @@ final class Loader {
 		LC\Core\V2Api::instance();
 
 		if ( class_exists( '\WooCommerce' ) ) {
-			Option\Core\WC_Countries::instance();
+			Woocommerce\Core\V2Api::instance();
 			Product\Core\V2Api::instance();
 			ProductAttribute\Core\V2Api::instance();
 			Copy\Core\V2Api::instance();

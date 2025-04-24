@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Option\Core;
+namespace J7\Powerhouse\Domains\Woocommerce\Core;
 
 /**
  * Class WC_Countries
  * TODO 之後擴充 city (行政區 & 郵遞區號)
  */
-final class WC_Countries {
+final class Countries {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	/** @var array<string,string> 台灣縣市 */

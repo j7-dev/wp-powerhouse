@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Option\Core;
+namespace J7\Powerhouse\Domains\Woocommerce\Core;
 
 use J7\WpUtils\Classes\DTO;
 
@@ -11,7 +11,7 @@ use J7\WpUtils\Classes\DTO;
  * Woocommerce 設定
  * 從 db 的 wp_options 取得
  */
-class WC_Settings extends DTO {
+class Settings extends DTO {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	const PREFIX = 'woocommerce_';

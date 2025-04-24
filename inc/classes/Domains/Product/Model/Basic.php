@@ -51,6 +51,9 @@ final class Basic extends DTO {
 	/** @var string $permalink 商品永久連結 */
 	public string $permalink;
 
+	/** @var string $edit_url 商品編輯連結 */
+	public string $edit_url;
+
 	/** @var string $parent_id 父商品ID */
 	public string $parent_id;
 
@@ -89,6 +92,7 @@ final class Basic extends DTO {
 			'virtual'            => \wc_bool_to_string( $product->get_virtual() ),
 			'downloadable'       => \wc_bool_to_string( $product->get_downloadable() ),
 			'permalink'          => $product->get_permalink(),
+			'edit_url'           => \get_edit_post_link( $product->get_id(), '&' ),
 			'parent_id'          => $product->get_parent_id() ? (string) $product->get_parent_id() : '',
 		];
 
