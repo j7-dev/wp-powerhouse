@@ -61,7 +61,7 @@ final class V2Api extends ApiBase {
 		$file_params = $request->get_file_params();
 		$body_params = $request->get_body_params();
 		$upload_only = $body_params['upload_only'] ?? '0';
-		if ( (bool) $file_params['files']['tmp_name'] ) {
+		if ( @$file_params['files']['tmp_name'] ) {
 
 			if ( ! function_exists( 'media_handle_upload' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/image.php';
