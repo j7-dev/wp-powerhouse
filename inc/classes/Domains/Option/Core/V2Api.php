@@ -29,6 +29,11 @@ final class V2Api extends ApiBase {
 			'method'              => 'post',
 			'permission_callback' => null,
 		],
+		[
+			'endpoint'            => 'options/upload',
+			'method'              => 'get',
+			'permission_callback' => null,
+		],
 	];
 
 	/** @var array<string, mixed> $fields 允許更新的欄位名稱 */
@@ -103,5 +108,44 @@ final class V2Api extends ApiBase {
 			],
 			200
 			);
+	}
+
+
+	/**
+	 * 獲取選項
+	 *
+	 * @param \WP_REST_Request $request REST請求對象。
+	 * @return \WP_REST_Response 返回包含選項資料的REST響應對象。
+	 * @phpstan-ignore-next-line
+	 */
+	public function get_options_upload_callback( \WP_REST_Request $request ): \WP_REST_Response {
+		/** @var array<string, string> $mime_types */
+		$mime_types    = \get_allowed_mime_types();
+		$accept_values = [];
+
+		// 添加所有 MIME 類型
+		foreach ($mime_types as $ext => $mime) {
+			$accept_values[] = $mime;
+
+			// 添加所有副檔名（以點開頭）
+			$extensions = explode('|', $ext);
+			foreach ($extensions as $extension) {
+				$accept_values[] = '.' . $extension;
+			}
+		}
+
+		// 去除重複並合併為字串
+		$allowed_mime_types = implode(',', array_unique($accept_values));
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'get_options_upload_success',
+				'message' => '獲取上傳選項成功',
+				'data'    => [
+					'allowed_mime_types' => $allowed_mime_types,
+				],
+			],
+			200
+		);
 	}
 }
