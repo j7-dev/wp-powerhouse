@@ -1,9 +1,4 @@
 <?php
-/**
- * Upload API
- * TODO:
- * 限制大小 / MIME
- */
 
 declare(strict_types=1);
 
@@ -13,15 +8,13 @@ use J7\WpUtils\Classes\ApiBase;
 
 /**
  * Class V2Api
+ * TODO:
+ * 限制大小 / MIME
  */
 final class V2Api extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Namespace
-	 *
-	 * @var string
-	 */
+	/** @var string Namespace*/
 	protected $namespace = 'v2/powerhouse';
 
 	/**
@@ -39,14 +32,13 @@ final class V2Api extends ApiBase {
 
 	/**
 	 * 允許的 MIME 類型
+	 * [] = 不限制
 	 *
 	 * @var array<string>
 	 */
 	private $allowed_mime_types = [];
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		parent::__construct();
 		$this->allowed_mime_types = \apply_filters( 'powerhouse/upload/allowed_mime_types', $this->allowed_mime_types ); // @phpstan-ignore-line
