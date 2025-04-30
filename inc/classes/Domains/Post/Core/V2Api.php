@@ -12,6 +12,7 @@ use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
 use J7\Powerhouse\Domains\Post\Utils\CRUD;
+use J7\Powerhouse\Domains\Post\Model\Attachment;
 
 /**
  * Class V2Api
@@ -98,19 +99,19 @@ final class V2Api extends ApiBase {
 		];
 
 		$args = \wp_parse_args(
-			$params,
-			$default_args,
+		$params,
+		$default_args,
 		);
 
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$args = General::parse( $args );
 
 		[
-			'args' => $args,
-			'meta_keys' => $meta_keys,
-			'with_description' => $with_description,
-			'depth' => $depth,
-			'recursive_args' => $recursive_args,
+		'args' => $args,
+		'meta_keys' => $meta_keys,
+		'with_description' => $with_description,
+		'depth' => $depth,
+		'recursive_args' => $recursive_args,
 		] = CRUD::handle_args($args);
 
 		$query       = new \WP_Query($args);
@@ -119,9 +120,16 @@ final class V2Api extends ApiBase {
 		$total_pages = $query->max_num_pages;
 
 		$formatted_posts = [];
-		foreach ($posts as $post) {
-			/** @var \WP_Post $post */
-			$formatted_posts[] = CRUD::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+		if ( $args['post_type'] === 'attachment' ) {
+			foreach ($posts as $post) {
+				/** @var \WP_Post $post */
+				$formatted_posts[] = Attachment::instance( $post )->to_array();
+			}
+		} else {
+			foreach ($posts as $post) {
+				/** @var \WP_Post $post */
+				$formatted_posts[] = CRUD::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
+			}
 		}
 
 		$response = new \WP_REST_Response( $formatted_posts );
@@ -134,9 +142,6 @@ final class V2Api extends ApiBase {
 
 		return $response;
 	}
-
-
-
 
 	/**
 	 * Get posts callback
@@ -192,7 +197,6 @@ final class V2Api extends ApiBase {
 
 		return $response;
 	}
-
 
 	/**
 	 * 處理並分離產品資訊
