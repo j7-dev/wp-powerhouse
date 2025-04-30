@@ -20,6 +20,7 @@ final class Copy {
 	 * @var array<string>
 	 */
 	protected static array $exclude_meta_keys = [
+		'total_sales', // 商品銷售量
 		'_edit_lock',
 		'_edit_last',
 	];
