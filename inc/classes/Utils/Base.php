@@ -70,10 +70,10 @@ abstract class Base {
 		foreach ( $show_plugins as $plugin ) {
 			$plugin_slug    = str_replace('/plugin.php', '', $plugin);
 			$plugin_links[] = [
-				'label'    => self::get_plugin_name($plugin_slug),
-				'url'      => \admin_url("admin.php?page={$plugin_slug}"),
-				'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
-				'disabled' => !in_array($plugin, $active_plugins, true),
+				'label' => self::get_plugin_name($plugin_slug),
+				'url'   => \admin_url("admin.php?page={$plugin_slug}"),
+			'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
+			'disabled'  => !in_array($plugin, $active_plugins, true),
 			];
 		}
 
@@ -176,8 +176,8 @@ abstract class Base {
 	] ): array {
 
 		$taxonomies = \get_taxonomies(
-			$args,
-			'objects'
+		$args,
+		'objects'
 		);
 
 		$object_taxonomies_array = [];
@@ -191,5 +191,57 @@ abstract class Base {
 			];
 		}
 		return $object_taxonomies_array;
+	}
+
+	/**
+	 * 將陣列轉換為 HTML 表格
+	 *
+	 * @param array<string, mixed> $arr 要轉換的陣列
+	 * @param array{
+	 *  title?: string,
+	 *  br?: bool, 是否使用 <br> 不使用 table
+	 * } $options 選項
+	 * @return string
+	 */
+	public static function array_to_html( array $arr, array $options = [] ): string {
+		@[
+		'title' => $title,
+		'br' => $br, // 是否使用 <br> 不使用 table
+		] = $options;
+
+		$html = '';
+
+		if ( $title ) {
+			$html .= "<h3>{$title}</h3>";
+		}
+
+		$html .= $br ? '' : '<table>';
+		foreach ( $arr as $key => $value ) {
+			try {
+				$value_stringify = match (gettype($value)) {
+					'array' => json_encode($value),
+					'object' => $value instanceof \stdClass ? json_encode($value) : $value::class,
+					'boolean' => $value ? 'true' : 'false',
+					'NULL' => 'null',
+					default => $value,
+				};
+			} catch (\Throwable $e) {
+				\J7\WpUtils\Classes\WC::log($e->getMessage(), 'array_to_html error');
+				$value_stringify = json_encode($value);
+			}
+
+			if ( $br ) {
+				$html .= "{$value_stringify}<br>";
+				continue;
+			}
+			$html .= '<tr>';
+			$html .= "<td>{$key}</td>";
+			$html .= "<td>{$value_stringify}</td>";
+			$html .= '</tr>';
+		}
+
+		$html .= $br ? '' : '</table>';
+
+		return $html;
 	}
 }
