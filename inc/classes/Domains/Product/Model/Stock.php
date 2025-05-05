@@ -37,7 +37,6 @@ final class Stock extends DTO {
 	 */
 	public static function instance( $product ): self {
 		$args = [
-
 			'stock_status'       => $product->get_stock_status(),
 			'manage_stock'       => \wc_bool_to_string( $product->get_manage_stock() ),
 			'stock_quantity'     => $product->get_stock_quantity(),

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Utils;
 
-/**
- * Class CRUD
- */
+/** Class CRUD */
 abstract class CRUD {
 
 	/**
