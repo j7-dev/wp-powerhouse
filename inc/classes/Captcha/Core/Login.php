@@ -20,6 +20,12 @@ final class Login extends Base {
 	/** Constructor */
 	public function __construct() {
 		$settings = SettingsDTO::instance();
+
+		$request_url = $_SERVER['REQUEST_URI'] ?? ''; // phpcs:ignore
+		if (\str_contains($request_url, 'power-partner-server/identity')) {
+			return;
+		}
+
 		if ($settings->enable_captcha_login !== 'yes') {
 			return;
 		}
