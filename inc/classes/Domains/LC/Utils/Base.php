@@ -283,16 +283,16 @@ class Base {
 		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
 
 		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
-		$trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
-		$functions = array_map( fn ( $t ) => $t['function'], $trace );
-		\J7\WpUtils\Classes\WC::log(
-			[
-				'functions'    => $functions,
-				'product_slug' => $product_slug,
-				'saved_codes'  => $saved_codes,
-			],
-			'debug_backtrace delete_lc_transient'
-			);
+		// $trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
+		// $functions = array_map( fn ( $t ) => $t['function'], $trace );
+		// \J7\WpUtils\Classes\WC::log(
+		// [
+		// 'functions'    => $functions,
+		// 'product_slug' => $product_slug,
+		// 'saved_codes'  => $saved_codes,
+		// ],
+		// 'debug_backtrace delete_lc_transient'
+		// );
 		// -------------------- END TEST ------------------- //
 
 		unset($saved_codes[ $product_slug ]);
