@@ -48,6 +48,12 @@ final class Basic extends DTO {
 	/** @var 'yes'|'no' $downloadable 是否為可下載商品 */
 	public string $downloadable;
 
+	/** @var 'yes'|'no' $sold_individually 是否為單一銷售 */
+	public string $sold_individually;
+
+	/** @var 'yes'|'no' $reviews_allowed 是否允許評論 */
+	public string $reviews_allowed;
+
 	/** @var string $permalink 商品永久連結 */
 	public string $permalink;
 
@@ -91,6 +97,8 @@ final class Basic extends DTO {
 			'menu_order'         => $product->get_menu_order(),
 			'virtual'            => \wc_bool_to_string( $product->get_virtual() ),
 			'downloadable'       => \wc_bool_to_string( $product->get_downloadable() ),
+			'sold_individually'  => \wc_bool_to_string( $product->get_sold_individually() ),
+			'reviews_allowed'    => \wc_bool_to_string( $product->get_reviews_allowed() ),
 			'permalink'          => $product->get_permalink(),
 			'edit_url'           => \get_edit_post_link( $product->get_id(), '&' ),
 			'parent_id'          => $product->get_parent_id() ? (string) $product->get_parent_id() : '',

@@ -28,8 +28,7 @@ final class Stock extends DTO {
 	/** @var string $low_stock_amount 低庫存警告數量 */
 	public string $low_stock_amount;
 
-	/** @var 'yes'|'no' $sold_individually 是否為單一銷售 */
-	public string $sold_individually;
+
 
 	/**
 	 * 取得實例
@@ -45,7 +44,6 @@ final class Stock extends DTO {
 			'backorders_allowed' => \wc_bool_to_string( $product->backorders_allowed() ),
 			'backordered'        => \wc_bool_to_string( $product->is_on_backorder() ),
 			'low_stock_amount'   => (string) $product->get_low_stock_amount(),
-			'sold_individually'  => \wc_bool_to_string( $product->get_sold_individually() ),
 		];
 
 		$instance = new self( $args );
