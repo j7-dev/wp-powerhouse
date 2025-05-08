@@ -12,7 +12,6 @@ abstract class CRUD {
 	 *
 	 * @see https://wp-kama.com/plugin/woocommerce/function/wc_create_attribute
 	 * @param array{
-	 * id: int,
 	 * name: string,
 	 * slug: string,
 	 * type: string,
@@ -33,14 +32,20 @@ abstract class CRUD {
 
 		// 註冊taxonomy以便立即使用
 		\register_taxonomy(
-				$taxonomy,
-				'product',
-				[
-					'hierarchical'      => false,
-					'show_ui'           => true,
-					'show_in_nav_menus' => false,
-				]
-		);
+					$taxonomy,
+					'product',
+					[
+						'hierarchical'      => false,
+						'show_ui'           => true,
+						'show_in_nav_menus' => false,
+					]
+			);
+
+		// 清除快取以立即生效
+		// \wp_schedule_single_event( time(), 'woocommerce_flush_rewrite_rules' );
+		// \delete_transient('wc_attribute_taxonomies');
+		// \WC_Cache_Helper::invalidate_cache_group( 'woocommerce-attributes' );
+		// \clean_taxonomy_cache( $taxonomy );
 
 		return $attribute_id;
 	}

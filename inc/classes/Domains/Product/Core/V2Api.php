@@ -17,6 +17,7 @@ use J7\Powerhouse\Domains\Limit\Models\Limit;
 use J7\Powerhouse\Domains\Limit\Models\BoundItemsData;
 use J7\Powerhouse\Domains\Product\Utils\CRUD;
 use J7\Powerhouse\Domains\Product\Model\Product;
+use J7\Powerhouse\Domains\ProductAttribute\Utils\CRUD as AttributeCRUD;
 
 
 /**
@@ -59,6 +60,11 @@ final class V2Api extends ApiBase {
 		],
 		[
 			'endpoint'            => 'products/(?P<id>\d+)',
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
+		[
+			'endpoint'            => 'products/attributes/(?P<id>\d+)',
 			'method'              => 'post',
 			'permission_callback' => null,
 		],
@@ -458,6 +464,112 @@ final class V2Api extends ApiBase {
 			]
 			);
 	}
+
+
+	/**
+	 * 更新商品屬性
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 * @throws \Exception 當更新文章失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	public function post_products_attributes_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
+
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('product id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$product = \wc_get_product( (int) $id );
+		if (!$product) {
+			throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$body_params = $request->get_body_params();
+		// $body_params = WP::sanitize_text_field_deep( $body_params, false );
+
+		$new_attributes = $body_params['new_attributes'] ?? [];
+		/** @var array<array{id: int|null, name: string, options: array<string>, position: int, visible: bool, variation: bool}> $items */
+		$new_attributes = is_array($new_attributes) ? $new_attributes : [];
+
+		$attributes = [];
+
+		foreach ($new_attributes as $index => $new_attribute) {
+
+			@[
+			'id' => $attribute_id,
+			'name' => $name,
+			'options' => $options,
+			'taxonomy' => $taxonomy,
+			'is_taxonomy' => $is_taxonomy, // 創建為全局屬性
+			'position' => $position,
+			'visible' => $visible,
+			'variation' => $variation,
+			] = $new_attribute;
+
+			// ----- ▼ 如果是創建新的全局屬性，則需要先創建屬性，再將屬性 id 塞入 $attribute_id ----- //
+			if (\wc_string_to_bool($is_taxonomy)) {
+				$created_attribute_id = AttributeCRUD::create_product_attribute(
+					[
+						'name'         => $name,
+						'slug'         => $taxonomy,
+						'type'         => 'select',
+						'order_by'     => 'menu_order',
+						'has_archives' => \wc_string_to_bool($visible),
+					]
+					);
+				if (\is_wp_error($created_attribute_id)) {
+					throw new \Exception($created_attribute_id->get_error_message());
+				}
+				$attribute_id = $created_attribute_id;
+				$taxonomy     = "pa_{$taxonomy}"; // 複寫掉 taxonomy，如果不是 pa_ 開頭，會無法加入到商品屬性
+				// 手動添加terms
+				foreach ($options as $option) {
+					$insert_term = \wp_insert_term($option, $taxonomy);
+					if (\is_wp_error($insert_term)) {
+						throw new \Exception($insert_term->get_error_message());
+					}
+				}
+			}
+
+			$attribute = new \WC_Product_Attribute();
+			if ($attribute_id) {
+				$attribute->set_id($attribute_id);
+			}
+			$attribute->set_name(( $taxonomy ?: $name )); // 如果 taxonomy 有值，則使用 taxonomy，否則使用 name
+
+			$attribute->set_options($options);
+			$attribute->set_position($position);
+			$attribute->set_visible(\wc_string_to_bool($visible));
+			$attribute->set_variation(\wc_string_to_bool($variation));
+			$attributes[] = $attribute;
+		}
+
+		$product->set_attributes( $attributes );
+		$product->save();
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'update_attributes_success',
+				'message' => __('update product attributes success', 'powerhouse'),
+				'data'    => [
+					'id' => $product->get_id(),
+				],
+			]
+			);
+	}
+
 
 	/**
 	 * 批量刪除文章資料

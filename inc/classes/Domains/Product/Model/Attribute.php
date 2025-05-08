@@ -12,15 +12,17 @@ namespace J7\Powerhouse\Domains\Product\Model;
 final class Attribute extends DTO {
 
 	/** @var array<array{
+	 * id: string,
 	 * name: string,
-	 * variation: bool,
-	 * visible: bool,
+	 * taxonomy: string,
+	 * variation: 'yes' | 'no',
+	 * visible: 'yes' | 'no',
 	 * options: array<array{value: string, label: string}>,
 	 * position: int,
 	 * }> | array<string, string> $attributes
 	 *
-	 * 如果是可變商品就會拿到可選的規格 array
-	 * 如果是變體，會拿到 array<string, string>
+	 * 如果是商品(variable/simple product)存取此屬性就會拿到可選的規格 array
+	 * 如果用變體(variation)存取此屬性，會拿到 array<string, string>
 	 * */
 	public array $attributes;
 
@@ -41,12 +43,15 @@ final class Attribute extends DTO {
 			// 如果是 "可變商品" 會顯示選項
 			if ( $attribute instanceof \WC_Product_Attribute ) {
 
+				$id               = $attribute?->get_id();
 				$attributes_arr[] = [
+					'id'        => $id ? (string) $id : '',
 					'name'      => \wc_attribute_label( $attribute?->get_name() ),
-					'variation' => $attribute?->get_variation(), // 是否用於變體
-					'visible'   => $attribute?->get_visible(), // 是否可見
+					'taxonomy'  => $attribute->get_taxonomy(),
+					'variation' => \wc_bool_to_string( $attribute->get_variation() ), // 是否用於變體
+					'visible'   => \wc_bool_to_string( $attribute->get_visible() ), // 是否可見
 					'options'   => self::get_options( $attribute ),
-					'position'  => $attribute?->get_position(),
+					'position'  => $attribute->get_position(),
 				];
 			}
 
@@ -97,8 +102,10 @@ final class Attribute extends DTO {
 		// 如果是 taxonomy，則用 term 來組 id=>name
 		$terms = $attribute->get_terms();
 		foreach ( $terms as $term ) {
+			// 這邊沒打錯，因為 WC 後台創建是可以創建中文 slug 的，即使 db 是 encoded 的 slug
+			// 但如果直接拿 encoded 後的 slug 會與該屬性既有的 term mapping 不到，相當的神奇
 			$options[] = [
-				'value' => $term->term_id,
+				'value' => $term->name,
 				'label' => $term->name,
 			];
 		}
