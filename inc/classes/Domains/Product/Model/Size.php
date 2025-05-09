@@ -19,8 +19,8 @@ final class Size extends DTO {
 	/** @var string $weight 重量 */
 	public string $weight;
 
-	/** @var string $shipping_class_id 運送類別ID */
-	public string $shipping_class_id;
+	/** @var string|null $shipping_class_id 運送類別ID */
+	public string|null $shipping_class_id;
 
 	/** @var string $sku 商品編號 */
 	public string $sku;
@@ -39,7 +39,7 @@ final class Size extends DTO {
 			'width'             => $product->get_width(),
 			'height'            => $product->get_height(),
 			'weight'            => $product->get_weight(),
-			'shipping_class_id' => (string) $product->get_shipping_class_id(),
+			'shipping_class_id' => (string) $product->get_shipping_class_id() ?: null,
 			'sku'               => $product->get_sku(),
 			'_global_unique_id' => $product->get_meta( '_global_unique_id' ),
 		];
