@@ -69,6 +69,11 @@ final class V2Api extends ApiBase {
 			'permission_callback' => null,
 		],
 		[
+			'endpoint'            => 'products/link-variations/(?P<id>\d+)', // 產生變體
+			'method'              => 'post',
+			'permission_callback' => null,
+		],
+		[
 			'endpoint'            => 'products',
 			'method'              => 'delete',
 			'permission_callback' => null,
@@ -497,7 +502,8 @@ final class V2Api extends ApiBase {
 		}
 
 		$body_params = $request->get_body_params();
-		// $body_params = WP::sanitize_text_field_deep( $body_params, false );
+		// TODO 待確認 因為會把 中文的 url encode 過濾掉，就不 sanitize 了
+		$body_params = WP::sanitize_text_field_deep( $body_params, false );
 
 		$new_attributes = $body_params['new_attributes'] ?? [];
 		/** @var array<array{id: int|null, name: string, options: array<string>, position: int, visible: bool, variation: bool}> $items */
@@ -565,6 +571,97 @@ final class V2Api extends ApiBase {
 				'message' => __('update product attributes success', 'powerhouse'),
 				'data'    => [
 					'id' => $product->get_id(),
+				],
+			]
+			);
+	}
+
+
+	/**
+	 * 產生變體商品
+	 *
+	 * @see WC_AJAX::link_all_variations
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 * @throws \Exception 當更新文章失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	public function post_products_link_variations_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
+
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('product id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$product = \wc_get_product( (int) $id );
+		if (!$product) {
+			throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+		\wc_set_time_limit( 0 );
+
+		/** @var array<string,array<string>> $attributes 用於變體的屬性 */
+		$attributes = \wc_list_pluck( array_filter( $product->get_attributes(), 'wc_attributes_array_filter_variation' ), 'get_slugs' );
+
+		/** @var array<array<string, string>> $possible_attributes 所有可能的屬性 */
+		$possible_attributes = array_reverse( \wc_array_cartesian( $attributes ) );
+
+		/** @var array<\WC_Product_Variable> $existing_variations 現有的變體 */
+		$existing_variations = array_map( 'wc_get_product', $product->get_children() );
+
+		/** @var array<array<string, string>> $existing_attributes 所有現有的屬性 */
+		$existing_attributes = [];
+
+		$deleted_variation_ids = [];
+
+		foreach ( $existing_variations as $existing_variation ) {
+			/** @var array<string, string> $existing_attribute 當前變體的屬性 */
+			$existing_attribute = $existing_variation->get_attributes();
+
+			// 如果目前變體存在於 possible_attributes 中，就加入到 existing_attributes，不然就刪除變體商品
+			if (\in_array($existing_attribute, $possible_attributes)) {
+				$existing_attributes[] = $existing_attribute;
+			} else {
+				$deleted_variation_ids[] = $existing_variation->get_id();
+				$existing_variation->delete(true);
+			}
+		}
+
+		$created_variation_ids = [];
+
+		// TODO 可以分批
+
+		foreach ( $possible_attributes as $possible_attribute ) {
+			// Allow any order if key/values -- do not use strict mode.
+			if ( in_array( $possible_attribute, $existing_attributes ) ) { // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict
+				continue;
+			}
+			/** @var \WC_Product_Variation $variation */
+			$variation = \wc_get_product_object( 'variation' );
+			$variation->set_props( [] );
+			$variation->set_parent_id( $product->get_id() );
+			$variation->set_attributes( $possible_attribute );
+			$variation_id            = $variation->save();
+			$created_variation_ids[] = $variation_id;
+			\do_action( 'product_variation_linked', $variation_id );
+		}
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'update_attributes_success',
+				'message' => __('update product attributes success', 'powerhouse'),
+				'data'    => [
+					'created_variation_ids' => $created_variation_ids,
+					'deleted_variation_ids' => $deleted_variation_ids,
 				],
 			]
 			);
