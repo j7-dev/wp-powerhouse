@@ -26,6 +26,9 @@ final class Attribute extends DTO {
 	 * */
 	public array $attributes;
 
+	/** @var array<string, string> $default_attributes 預設屬性 */
+	public array $default_attributes;
+
 	/** @var string $attribute_summary 變體屬性的名稱 */
 	public string $attribute_summary = '';
 
@@ -37,6 +40,8 @@ final class Attribute extends DTO {
 	public static function instance( \WC_Product $product ): self {
 		// 組合商品屬性 $attributes_arr
 		$attributes = $product->get_attributes(); // get attributes object
+		/** @var array<string, string> $default_attributes */
+		$default_attributes = $product->get_default_attributes();
 
 		$attributes_arr = [];
 		foreach ( $attributes as $key => $attribute ) {
@@ -69,8 +74,9 @@ final class Attribute extends DTO {
 		}
 
 		$args = [
-			'attributes'        => $attributes_arr,
-			'attribute_summary' => $attributes_string,
+			'attributes'         => $attributes_arr,
+			'default_attributes' => $default_attributes,
+			'attribute_summary'  => $attributes_string,
 		];
 
 		$instance = new self( $args );
