@@ -40,69 +40,66 @@ final class V2Api extends ApiBase {
 	 */
 	protected $apis = [
 		[
-			'endpoint'            => 'products',
-			'method'              => 'get',
-			'permission_callback' => null,
+			'endpoint' => 'products',
+			'method'   => 'get',
 		],
 		[
 			'endpoint' => 'products/select',
 			'method'   => 'get',
 		],
 		[
-			'endpoint'            => 'products/(?P<id>\d+)',
-			'method'              => 'get',
-			'permission_callback' => null,
+			'endpoint' => 'products/(?P<id>\d+)',
+			'method'   => 'get',
 		],
 		[
-			'endpoint'            => 'products',
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products',
+			'method'   => 'post',
 		],
 		[
-			'endpoint'            => 'products/(?P<id>\d+)',
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products/(?P<id>\d+)',
+			'method'   => 'post',
 		],
 		[
-			'endpoint'            => 'products/attributes/(?P<id>\d+)',
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products/attributes/(?P<id>\d+)',
+			'method'   => 'post',
 		],
 		[
-			'endpoint'            => 'products/link-variations/(?P<id>\d+)', // 產生變體
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products/create-variations/(?P<id>\d+)', // 產生變體
+			'method'   => 'post',
 		],
 		[
-			'endpoint'            => 'products',
-			'method'              => 'delete',
-			'permission_callback' => null,
+			'endpoint' => 'products/update-variations/(?P<id>\d+)', // 更新變體
+			'method'   => 'post',
 		],
 		[
-			'endpoint'            => 'products/(?P<id>\d+)',
-			'method'              => 'delete',
-			'permission_callback' => null,
+			'endpoint' => 'products',
+			'method'   => 'delete',
 		],
 		[
-			'endpoint'            => 'products/options',
-			'method'              => 'get',
-			'permission_callback' => null,
+			'endpoint' => 'products/(?P<id>\d+)',
+			'method'   => 'delete',
 		],
 		[
-			'endpoint'            => 'products/bind-items', // 綁定觀看權限項目到商品上
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products/options',
+			'method'   => 'get',
 		],
 		[
-			'endpoint'            => 'products/unbind-items', // 解除綁定觀看權限項目到商品上
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products/bind-items', // 綁定觀看權限項目到商品上
+			'method'   => 'post',
 		],
 		[
-			'endpoint'            => 'products/update-bound-items', // 更新綁定觀看權限項目到商品上
-			'method'              => 'post',
-			'permission_callback' => null,
+			'endpoint' => 'products/unbind-items', // 解除綁定觀看權限項目到商品上
+			'method'   => 'post',
 		],
+		[
+			'endpoint' => 'products/update-bound-items', // 更新綁定觀看權限項目到商品上
+			'method'   => 'post',
+		],
+		[
+			'endpoint' => 'products/update-bound-items', // 更新綁定觀看權限項目到商品上
+			'method'   => 'post',
+		],
+
 		// TODO 商品排序
 
 		// [
@@ -212,12 +209,31 @@ final class V2Api extends ApiBase {
 			$default_args,
 		);
 
+		// 如果搜尋的是數字，就會查找 id
+		if (is_numeric($args['s'])) {
+			$args['p'] = $args['s'];
+			unset($args['s']);
+		}
+
+		// 將 post__in 提取出來
+		$post__in = $args['post__in'] ?? [];
+		unset($args['post__in']);
+
+		$post__in_results = new \WP_Query(
+			\wp_parse_args(
+			[
+				'post__in' => $post__in,
+			],
+			$default_args,
+		)
+			);
+
 		$results = new \WP_Query( $args );
 
 		$total       = $results->found_posts;
 		$total_pages = $results->max_num_pages;
 
-		$product_ids        = $results->posts;
+		$product_ids        = [ ...$post__in_results->posts, ...$results->posts ];
 		$products           = array_map(fn( $product_id ) => \wc_get_product( $product_id ), $product_ids);
 		$products           = array_filter($products);
 		$formatted_products = [];
@@ -586,7 +602,7 @@ final class V2Api extends ApiBase {
 	 * @throws \Exception 當更新文章失敗時拋出異常
 	 * @phpstan-ignore-next-line
 	 */
-	public function post_products_link_variations_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
+	public function post_products_create_variations_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
 
 		$id = $request['id'] ?? null;
 		if (!is_numeric($id)) {
@@ -627,8 +643,15 @@ final class V2Api extends ApiBase {
 			/** @var array<string, string> $existing_attribute 當前變體的屬性 */
 			$existing_attribute = $existing_variation->get_attributes();
 
+			// 如果目前變體已經重複存在於 $existing_attributes 裡面，則刪除變體
+			if (\in_array($existing_attribute, $existing_attributes, true)) {
+				$deleted_variation_ids[] = $existing_variation->get_id();
+				$existing_variation->delete(true);
+				continue;
+			}
+
 			// 如果目前變體存在於 possible_attributes 中，就加入到 existing_attributes，不然就刪除變體商品
-			if (\in_array($existing_attribute, $possible_attributes)) {
+			if (\in_array($existing_attribute, $possible_attributes, true)) {
 				$existing_attributes[] = $existing_attribute;
 			} else {
 				$deleted_variation_ids[] = $existing_variation->get_id();
@@ -667,6 +690,70 @@ final class V2Api extends ApiBase {
 			);
 	}
 
+	/**
+	 * 產生變體商品
+	 *
+	 * @see WC_AJAX::link_all_variations
+	 * @param \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 * @throws \Exception 當更新文章失敗時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	public function post_products_update_variations_with_id_callback( $request ): \WP_REST_Response|\WP_Error {
+
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				__('product id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$product = \wc_get_product( (int) $id );
+		if (!$product) {
+			throw new \Exception(
+				sprintf(
+				__('product not found #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$body_params        = $request->get_body_params();
+		$default_attributes = $body_params['default_attributes'] ?? [];
+
+		$product->set_default_attributes( $default_attributes );
+		$product->save();
+
+		$variations = $body_params['variations'] ?? [];
+
+		foreach ($variations as $variation_data) {
+			$variation_id = $variation_data['id'] ?? null;
+			unset($variation_data['id']);
+
+			$variation_product = \wc_get_product( (int) $variation_id );
+			if (!$variation_product) {
+				continue;
+			}
+
+			[
+				'data' => $data,
+				'meta_data' => $meta_data,
+			] = WP::separator( $variation_data, 'product' );
+
+			CRUD::update_product( $variation_product, $data, $meta_data );
+		}
+
+		return new \WP_REST_Response(
+			[
+				'code'    => 'update_variations_success',
+				'message' => \__('update product variations success', 'powerhouse'),
+				'data'    => [],
+			]
+			);
+	}
 
 	/**
 	 * 批量刪除文章資料
