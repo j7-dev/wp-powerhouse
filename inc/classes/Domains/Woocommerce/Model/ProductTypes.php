@@ -59,7 +59,6 @@ class ProductTypes extends DTO {
 		],
 	];
 
-
 	/** 取得 ProductTypes @return self */
 	public static function instance(): self {
 		$product_type_keys = array_keys( \wc_get_product_types() );
