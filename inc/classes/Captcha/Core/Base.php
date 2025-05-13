@@ -54,7 +54,7 @@ abstract class Base {
 	public function enqueue_block_ui(): void {
 		// 先確認是否已經註冊
 		if (!wp_script_is('jquery-blockui', 'registered')) {
-			$blockui_path = \untrailingslashit(\WP_PLUGIN_URL . '/woocommerce/assets/js/jquery-blockui/jquery.blockUI.min.js');
+			$blockui_path = \untrailingslashit(\site_url() . '/wp-content/plugins/woocommerce/assets/js/jquery-blockui/jquery.blockUI.min.js');
 			\wp_register_script('jquery-blockui', $blockui_path, [ 'jquery' ], '2.70', true);
 		}
 		\wp_enqueue_script('jquery-blockui');
