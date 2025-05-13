@@ -19,6 +19,9 @@ final class Detail extends DTO {
 	/** @var array<array{label: string, value: string}> $page_template_options 商品頁模板 */
 	public array $page_template_options;
 
+	/** @var string $_variation_description 變體的描述 */
+	public string $_variation_description = '';
+
 	/**
 	 * 取得實例
 	 *
@@ -48,10 +51,11 @@ final class Detail extends DTO {
 		}
 
 		$args = [
-			'description'           => $product->get_description(),
-			'short_description'     => $product->get_short_description(),
-			'page_template'         => \get_page_template_slug($product_id) ?: '',
-			'page_template_options' => $page_template_options,
+			'description'            => $product->get_description(),
+			'short_description'      => $product->get_short_description(),
+			'page_template'          => \get_page_template_slug($product_id) ?: '',
+			'page_template_options'  => $page_template_options,
+			'_variation_description' => $product->get_meta('_variation_description'),
 		];
 
 		$instance = new self($args);
