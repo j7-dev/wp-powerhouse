@@ -76,7 +76,9 @@ class Save {
 
 		// 最後再來處理剩餘的 meta_data
 		foreach ( $meta_data as $key => $value ) {
-			$product->update_meta_data( $key, $value ); // @phpstan-ignore-line
+			\update_post_meta( $product->get_id(), $key, $value );
+			// 如果要用 update_meta_data 需要知道 mid
+			// $product->update_meta_data( $key, $value ); // @phpstan-ignore-line
 		}
 
 		$product->save_meta_data();
