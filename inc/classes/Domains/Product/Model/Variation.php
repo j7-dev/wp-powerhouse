@@ -53,6 +53,15 @@ final class Variation extends DTO {
 	 * @param \WC_Product $product 商品
 	 */
 	public static function instance( \WC_Product $product, array $meta_keys = [] ): self {
+		$type = $product->get_type();
+		if ( 'grouped' === $type ) {
+			$instance = new self(
+				[
+					'children' => null,
+				]
+				);
+			return $instance;
+		}
 		// 將變體加入倒 children
 		$variation_ids = $product->get_children(); // get variations
 		$children      = null;
