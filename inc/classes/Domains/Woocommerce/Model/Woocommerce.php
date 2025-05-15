@@ -32,6 +32,18 @@ class Woocommerce extends DTO {
 	/** @var string $weight_unit 重量單位 */
 	public string $weight_unit;
 
+	/** @var array{
+	 * "product_base": string,
+	 * "category_base": string,
+	 * "tag_base": string,
+	 * "attribute_base": string,
+	 * "use_verbose_page_rules": bool,
+	 * "product_rewrite_slug": string,
+	 * "category_rewrite_slug": string,
+	 * "tag_rewrite_slug": string,
+	 * "attribute_rewrite_slug": string} $permalinks 永久連結 */
+	public array $permalinks;
+
 	/** 取得 ProductTypes @return self */
 	public static function instance(): self {
 		$countries = \WC()->countries->get_countries();
@@ -52,6 +64,7 @@ class Woocommerce extends DTO {
 				'notify_low_stock_amount' => (int) $wc_settings->notify_low_stock_amount,
 				'dimension_unit'          => $wc_settings->dimension_unit,
 				'weight_unit'             => $wc_settings->weight_unit,
+				'permalinks'              => \wc_get_permalink_structure(),
 			],
 			ProductTypes::instance()->to_array(),
 		);
