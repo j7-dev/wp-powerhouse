@@ -22,6 +22,12 @@ final class Detail extends DTO {
 	/** @var string $_variation_description 變體的描述 */
 	public string $_variation_description = '';
 
+	/** @var string $_product_url 外部商品 URL */
+	public string $_product_url = '';
+
+	/** @var string $_button_text 外部按鈕文字 */
+	public string $_button_text = '';
+
 	/**
 	 * 取得實例
 	 *
@@ -56,6 +62,8 @@ final class Detail extends DTO {
 			'page_template'          => \get_page_template_slug($product_id) ?: '',
 			'page_template_options'  => $page_template_options,
 			'_variation_description' => $product->get_meta('_variation_description'),
+			'_product_url'           => \get_post_meta($product_id, '_product_url', true),
+			'_button_text'           => \get_post_meta($product_id, '_button_text', true),
 		];
 
 		$instance = new self($args);
