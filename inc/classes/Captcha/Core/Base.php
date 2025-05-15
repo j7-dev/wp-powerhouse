@@ -268,9 +268,6 @@ abstract class Base {
 
 	/** AJAX 生成驗證碼 */
 	public function generate_captcha(): void {
-			if (!\wp_verify_nonce($_POST['nonce'] ?? '', $this->nonce_action)) { // phpcs:ignore
-			\wp_send_json_error('驗證 nonce 錯誤');
-		}
 
 		$this->init();
 

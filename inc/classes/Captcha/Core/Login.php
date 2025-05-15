@@ -67,9 +67,6 @@ final class Login extends Base {
 
 	/** AJAX 檢查要登入的用戶是否需要驗證碼 */
 	public function need_captcha(): void {
-		if (!\wp_verify_nonce($_POST['nonce'] ?? '', $this->nonce_action)) { // phpcs:ignore
-			\wp_send_json_error('驗證 nonce 錯誤');
-		}
 
 		$username = $_POST['username'] ?? ''; // phpcs:ignore
 
