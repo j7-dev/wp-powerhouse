@@ -46,7 +46,7 @@ abstract class Base {
 	 * @return void
 	 */
 	public static function render_admin_layout( array $args ): void {
-		Plugin::get('admin-layout', $args, true, true);
+		Plugin::load_template('admin-layout', $args, true, true);
 	}
 
 	/**
