@@ -249,12 +249,17 @@ abstract class Base {
 							}
 
 							set isLoading(isLoading){
-								this._isLoading = isLoading;
+								try {
+									this._isLoading = isLoading;
 								if(isLoading){
-									this.$blockEl?.block(this.defaultBlockUIProps);
+									this.$blockEl?.block?.(this.defaultBlockUIProps);
 								}else{
-									this.$blockEl?.unblock();
+										this.$blockEl?.unblock?.();
+									}
+								} catch (error) {
+									console.error(error);
 								}
+
 							}
 						}
 
