@@ -331,16 +331,23 @@ abstract class CRUD {
 	 * 取得扁平的子孫 post ids，不包含頂層 id
 	 * 階層子孫結構都打平
 	 *
-	 * @param int $post_id 文章 ID.
+	 * @param int                  $post_id 文章 ID.
+	 * @param array<string, mixed> $recursive_args 遞迴參數.
 	 * @return array<int>
 	 */
-	public static function get_flatten_post_ids( int $post_id ): array {
+	public static function get_flatten_post_ids( int $post_id, array $recursive_args = [] ): array {
 		$post = \get_post( $post_id );
 		if ( !$post ) {
 			return [];
 		}
 		/** @var \WP_Post $post */
-		$post_array = self::format_post_details( $post, false, 0, [], [] );
+		$post_array = self::format_post_details(
+			$post,
+			false,
+			0,
+			$recursive_args,
+			[]
+			);
 
 		if (!is_array($post_array['children'] ?? null)) {
 			return [];
@@ -352,7 +359,7 @@ abstract class CRUD {
 			if (is_array($child['children'] ?? null)) { // @phpstan-ignore-line
 				$flatten_post_ids = [
 					...$flatten_post_ids,
-					...self::get_flatten_post_ids( (int) $child['id'] ),
+					...self::get_flatten_post_ids( (int) $child['id'], $recursive_args ),
 				];
 			}
 		}
