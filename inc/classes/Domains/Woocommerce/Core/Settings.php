@@ -503,8 +503,8 @@ class Settings extends DTO {
 	/** @var array{skipped: bool} 入門設定檔 */
 	public array $onboarding_profile;
 
-	/** @var string 任務清單提示是否已顯示 */
-	public string $task_list_prompt_shown;
+	/** @var bool|string 任務清單提示是否已顯示 */
+	public bool|string $task_list_prompt_shown;
 
 	/** @var array{suggestions: array<int, array<string, mixed>>, updated: int} 市集建議 */
 	public array $marketplace_suggestions;
