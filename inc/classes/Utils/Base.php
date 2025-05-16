@@ -183,6 +183,11 @@ abstract class Base {
 		$object_taxonomies_array = [];
 
 		foreach ( $taxonomies as $taxonomy ) {
+			// 如果是商品屬性就不拿
+			if (\str_starts_with($taxonomy->name, 'pa_')) {
+				continue;
+			}
+
 			$object_taxonomies_array[] = [
 				'value'              => $taxonomy->name,
 				'label'              => $taxonomy->label,
