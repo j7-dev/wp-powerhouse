@@ -139,11 +139,17 @@ div[class^="ant-"] {
 			font-size: 0.65rem;
 		}
 		input,
+		.ant-input-number-group-addon,
 		.ant-input-group-addon,
 		.ant-select-selection-item,
 		.ant-select-selection-placeholder {
 			font-size: 0.75rem;
 			line-height: 1.5;
+		}
+		// Space.Compact
+		.ant-input-group,
+		& .ant-input {
+			height: 100%;
 		}
 		.ant-picker {
 			height: 22px;
@@ -154,6 +160,7 @@ div[class^="ant-"] {
 			left: 0rem;
 			label {
 				@apply text-gray-400;
+				position: relative;
 				height: fit-content;
 				font-weight: 300;
 				font-size: 0.75rem;
