@@ -10,9 +10,7 @@ use J7\Powerhouse\Domains\User\Utils\CRUD;
 use J7\Powerhouse\Domains\Order\Utils\Info;
 
 
-/**
- * Class User
- */
+/** Class User */
 final class User extends DTO {
 	/** @var string 用戶 ID */
 	public string $id = '';
