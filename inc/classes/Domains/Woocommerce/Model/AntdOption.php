@@ -7,7 +7,7 @@ namespace J7\Powerhouse\Domains\Product\Model;
 use J7\WpUtils\Classes\DTO;
 
 /** Antd 的 option DTO */
-class Option extends DTO {
+class AntdOption extends DTO {
 	/** @var string $value */
 	public string $value;
 	/** @var string $label */
