@@ -41,8 +41,8 @@ abstract class CRUD {
 	 * @return void
 	 */
 	public static function update_product( \WC_Product $product, array $data = [], array $meta_data = [] ): void {
-		Save::data($product, $data );
 		Save::meta_data($product, $meta_data );
+		Save::data($product, $data );
 	}
 
 	/**

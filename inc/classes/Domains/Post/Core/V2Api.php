@@ -103,6 +103,10 @@ final class V2Api extends ApiBase {
 		$default_args,
 		);
 
+		if ( $args['post_parent'] === 'unset' ) {
+			unset($args['post_parent']);
+		}
+
 		// 將 '[]' 轉為 [], 'true' 轉為 true, 'false' 轉為 false
 		$args = General::parse( $args );
 

@@ -71,26 +71,6 @@ final class Plugin {
 		require_once __DIR__ . '/inc/classes/Domains/Limit/Utils/CreateTable.php';
 		Domains\Limit\Utils\CreateTable::create_itemmeta_table();
 	}
-
-	/**
-	 * 從指定的模板路徑讀取模板文件並渲染數據
-	 *
-	 * @param string $name 指定路徑裡面的文件名
-	 * @param mixed  $args 要渲染到模板中的數據
-	 * @param bool   $output 是否輸出
-	 * @param bool   $load_once 是否只載入一次
-	 *
-	 * @return ?string
-	 * @throws \Exception 如果模板文件不存在.
-	 */
-	public static function load_template(
-		string $name,
-		mixed $args = null,
-		?bool $output = true,
-		?bool $load_once = false,
-	) {
-		return self::get( $name, $args, $output, $load_once );
-	}
 }
 
 Plugin::instance();

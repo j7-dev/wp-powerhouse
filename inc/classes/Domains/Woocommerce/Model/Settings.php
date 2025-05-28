@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Woocommerce\Core;
+namespace J7\Powerhouse\Domains\Woocommerce\Model;
 
 use J7\WpUtils\Classes\DTO;
 

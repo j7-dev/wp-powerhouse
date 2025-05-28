@@ -340,6 +340,7 @@ final class V2Api extends ApiBase {
 
 		$skip_keys = [
 			'description',
+			'short_description',
 			'slug',
 		];
 		/** @var array<string, mixed> $body_params 過濾字串，防止 XSS 攻擊 */

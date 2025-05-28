@@ -322,7 +322,7 @@ abstract class CRUD {
 
 		$args = [
 			'status'       => $statuses,
-			'date_created' => "{$start}...{$end}",
+			'date_modified' => "{$start}...{$end}",
 			'limit'        => -1,
 			'return'       => 'objects',
 		];

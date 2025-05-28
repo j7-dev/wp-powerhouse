@@ -25,12 +25,6 @@ class Save {
 
 		\do_action('powerhouse/product/before_save_data', $product, $data);
 
-		// foreach ( $data as $key => $value ) {
-		// $method_name = "set_{$key}";
-		// if (method_exists($product, $method_name)) {
-		// $product->$method_name( $value );
-		// }
-		// }
 		$product->set_props( $data );
 		$product->save();
 

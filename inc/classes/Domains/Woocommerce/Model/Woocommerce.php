@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Domains\Woocommerce\Model;
 
 use J7\WpUtils\Classes\DTO;
-use J7\Powerhouse\Domains\Woocommerce\Core\Settings;
 use J7\Powerhouse\Utils\Base as PowerhouseUtils;
 
 /** Get Woocommerce API DTO */
