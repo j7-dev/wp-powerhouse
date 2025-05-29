@@ -24,7 +24,8 @@ abstract class CRUD {
 				'name' => __('new product', 'powerhouse'),
 			]
 			);
-		self::update_product($product, $data, $meta_data);
+		Save::data($product, $data );
+		$product->save();
 		return $product->get_id();
 	}
 
@@ -41,8 +42,10 @@ abstract class CRUD {
 	 * @return void
 	 */
 	public static function update_product( \WC_Product $product, array $data = [], array $meta_data = [] ): void {
-		Save::meta_data($product, $meta_data );
 		Save::data($product, $data );
+		$product->save();
+		Save::meta_data($product, $meta_data );
+		\wc_delete_product_transients($product->get_id());
 	}
 
 	/**
