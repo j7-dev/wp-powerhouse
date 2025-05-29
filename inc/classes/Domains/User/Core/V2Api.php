@@ -105,7 +105,7 @@ final class V2Api extends ApiBase {
 
 		$formatted_users = [];
 		foreach ($users as $user) {
-			$formatted_users[] = User::instance( (int) $user->ID, $meta_keys )->to_array();
+			$formatted_users[] = User::instance( (int) $user->ID )->to_array('list', $meta_keys);
 		}
 		$formatted_users = array_filter( $formatted_users );
 

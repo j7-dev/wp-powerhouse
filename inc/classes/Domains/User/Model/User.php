@@ -8,7 +8,7 @@ use J7\WpUtils\Classes\DTO;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
 use J7\Powerhouse\Domains\User\Utils\CRUD;
 use J7\Powerhouse\Domains\Order\Utils\Info;
-
+use J7\Powerhouse\Plugin;
 
 /** Class User */
 final class User extends DTO {
@@ -142,11 +142,10 @@ final class User extends DTO {
 	/**
 	 * Format user details
 	 *
-	 * @param int           $user_id  User ID.
-	 * @param array<string> $meta_keys  要暴露的前端 meta key
+	 * @param int $user_id  User ID.
 	 * @return self
 	 */
-	public static function instance( int $user_id, array $meta_keys = [] ) {
+	public static function instance( int $user_id ) {
 		$user = \get_user_by( 'id', $user_id );
 		if ( !$user ) {
 			return new self( [], false );
@@ -192,27 +191,22 @@ final class User extends DTO {
 			'avg_order_value'       => $customer_history['avg_order_value'] ?? null,
 		];
 
-		$meta_keys_array = CRUD::get_meta_keys_array( $user, $meta_keys );
+		$strict = Plugin::$env === 'local';
 
-		return new self(
-			array_merge(
-				$user_record,
-				$meta_keys_array
-			),
-			false
-		);
+		return new self($user_record, $strict);
 	}
 
 
 	/**
 	 * 取得公開的屬性 array
 	 *
-	 * @param string $context 'list' | 'edit'
-	 *  - list: 列表用，較少資料
-	 *  - edit: 編輯用，較多資料
+	 * @param string        $context 'list' | 'edit'
+	 *         - list: 列表用，較少資料
+	 *         - edit: 編輯用，較多資料
+	 * @param array<string> $meta_keys 要暴露的前端 meta key
 	 * @return array<string,mixed>
 	 */
-	public function to_array( $context = 'list' ): array {
+	public function to_array( $context = 'list', array $meta_keys = [] ): array {
 		$reflection = new \ReflectionClass($this);
 		$props      = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
 		$user_id    = (int) $this->id;
@@ -221,8 +215,11 @@ final class User extends DTO {
 		foreach ($props as $prop) {
 			$user_record[ $prop->getName() ] = $prop->getValue($this);
 		}
-		if ( 'list' === $context ) {
-			return $user_record;
+
+		$meta_keys_array = [];
+		if ($meta_keys) {
+			$user            = \get_user_by( 'id', $user_id );
+			$meta_keys_array = CRUD::get_meta_keys_array( $user, $meta_keys );
 		}
 
 		if ( 'edit' === $context ) {
@@ -235,10 +232,14 @@ final class User extends DTO {
 			$user_record['other_meta_data'] = self::get_rest_meta_data();
 			$user_record['contact_remarks'] = CRUD::get_contact_remarks($user_id);
 
-			return array_merge( $user_record, $billing_shipping_data );
+			return array_merge( $user_record, $billing_shipping_data, $meta_keys_array );
 		}
 
-		return $user_record;
+		if ( 'list' === $context ) {
+			return array_merge( $user_record, $meta_keys_array );
+		}
+
+		return array_merge( $user_record, $meta_keys_array );
 	}
 
 	/**
