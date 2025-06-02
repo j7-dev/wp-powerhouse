@@ -113,7 +113,7 @@ final class V2Api extends ApiBase {
 
 	/**
 	 * 獲取選項
-	 *
+	 * @deprecated 好像沒用到
 	 * @param \WP_REST_Request $request REST請求對象。
 	 * @return \WP_REST_Response 返回包含選項資料的REST響應對象。
 	 * @phpstan-ignore-next-line

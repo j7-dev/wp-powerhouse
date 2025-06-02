@@ -24,6 +24,11 @@ final class V2Api extends ApiBase {
 	 */
 	protected $apis = [
 		[
+			'endpoint'            => 'upload/options',
+			'method'              => 'get',
+			'permission_callback' => null,
+		],
+		[
 			'endpoint'            => 'upload',
 			'method'              => 'post',
 			'permission_callback' => null,
@@ -42,6 +47,21 @@ final class V2Api extends ApiBase {
 	public function __construct() {
 		parent::__construct();
 		$this->allowed_mime_types = \apply_filters( 'powerhouse/upload/allowed_mime_types', $this->allowed_mime_types ); // @phpstan-ignore-line
+	}
+
+
+	/**
+	 * Get upload options callback
+	 *
+	 * @param  \WP_REST_Request $request Request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_upload_options_callback( $request ): \WP_REST_Response {
+		return new \WP_REST_Response(
+			[
+				'allowed_mime_types' => \get_allowed_mime_types(),
+			],
+		);
 	}
 
 	/**

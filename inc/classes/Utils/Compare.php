@@ -6,9 +6,7 @@ namespace J7\Powerhouse\Utils;
 
 use J7\Powerhouse\Utils\DateTimeHandler;
 
-/**
- * Compare Date Time
- */
+/** Compare Date Time */
 class Compare {
 
 	/** @var \DateTime  開始時間 start time*/

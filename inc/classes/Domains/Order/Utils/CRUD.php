@@ -89,12 +89,15 @@ abstract class CRUD {
 				'variation_id' => $variation_id,
 			] = $item->get_data();
 
-			$product_id    = $variation_id ?: $product_id;
-			$product       = \wc_get_product( $product_id );
+			$product_id = $variation_id ?: $product_id;
+			$product    = \wc_get_product( $product_id );
+			if ($product) {
+				$image = \wp_get_attachment_url( $product->get_image_id() );
+			}
 			$items_array[] = array_merge(
 				$item->get_data(),
 				[
-					'image' => \wp_get_attachment_url( $product->get_image_id() ),
+					'image' => $image,
 				]
 			);
 		}
@@ -321,10 +324,10 @@ abstract class CRUD {
 		$end   = $end_date->format('Y-m-d H:i:s');
 
 		$args = [
-			'status'       => $statuses,
+			'status'        => $statuses,
 			'date_modified' => "{$start}...{$end}",
-			'limit'        => -1,
-			'return'       => 'objects',
+			'limit'         => -1,
+			'return'        => 'objects',
 		];
 
 		// 使用 wc_get_orders - 此 API 完全支援 HPOS
