@@ -7,7 +7,7 @@ declare( strict_types=1 );
 
 namespace J7\Powerhouse\Api;
 
-use J7\Powerhouse\Domains\LC\V2Api as LC_V2_Api;
+use J7\Powerhouse\Domains\LC\Core\V2Api as LC_V2_Api;
 use J7\WpUtils\Classes\ApiBase;
 
 /**

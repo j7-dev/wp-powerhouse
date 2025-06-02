@@ -6,7 +6,7 @@ namespace J7\Powerhouse;
 
 use J7\WpUtils\Classes\General;
 use J7\Powerhouse\Utils\Base;
-use J7\Powerhouse\Domains\LC\Utils as LC_Utils;
+use J7\Powerhouse\Domains\LC\Utils\Base as LCUtils;
 use Kucrut\Vite;
 
 if ( class_exists( 'J7\Powerhouse\Bootstrap' ) ) {
@@ -18,9 +18,7 @@ final class Bootstrap {
 
 	const LC_MENU_SLUG = 'powerhouse-license-codes';
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		Admin\Entry::instance();
 		Admin\Account::instance();
@@ -87,8 +85,6 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function enqueue_frontend_assets(): void {
-		// 後台已經有 blocknote 的 css 了，前台按需載入
-		\wp_register_style( 'blocknote', Plugin::$url . '/js/dist/css/blocknote.min.css', [], Plugin::$version );
 		\wp_enqueue_style( Plugin::$snake . '_front', Plugin::$url . '/js/dist/css/front.min.css', [], Plugin::$version );
 	}
 
@@ -167,6 +163,6 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function check_lc_array(): void {
-		$lc_array = LC_Utils::get_lc_array();
+		$lc_array = LCUtils::get_lc_array();
 	}
 }

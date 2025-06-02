@@ -16,7 +16,6 @@ import {
 	dataProvider,
 	notificationProvider,
 	useBunny,
-	MediaLibraryIndicator,
 } from 'antd-toolkit/refine'
 import { useEnv } from 'antd-toolkit'
 import 'antd-toolkit/style.css'
@@ -79,7 +78,6 @@ function App() {
 									Title={({ collapsed }) => null}
 								>
 									<Outlet />
-									<MediaLibraryIndicator />
 								</ThemedLayoutV2>
 							</ConfigProvider>
 						}

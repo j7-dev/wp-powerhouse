@@ -1,7 +1,4 @@
 <?php
-/**
- * Base
- */
 
 declare ( strict_types=1 );
 
@@ -49,7 +46,7 @@ abstract class Base {
 	 * @return void
 	 */
 	public static function render_admin_layout( array $args ): void {
-		Plugin::get('admin-layout', $args, true, true);
+		Plugin::load_template('admin-layout', $args, true, true);
 	}
 
 	/**
@@ -64,6 +61,7 @@ abstract class Base {
 			'power-docs/plugin.php',
 			'power-partner/plugin.php',
 			'power-payment/plugin.php',
+			'power-shop/plugin.php',
 		];
 		$active_plugins = \get_option( 'active_plugins', [] );
 		$active_plugins = is_array($active_plugins) ? $active_plugins : [];
@@ -72,10 +70,10 @@ abstract class Base {
 		foreach ( $show_plugins as $plugin ) {
 			$plugin_slug    = str_replace('/plugin.php', '', $plugin);
 			$plugin_links[] = [
-				'label'    => self::get_plugin_name($plugin_slug),
-				'url'      => \admin_url("admin.php?page={$plugin_slug}"),
-				'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
-				'disabled' => !in_array($plugin, $active_plugins, true),
+				'label' => self::get_plugin_name($plugin_slug),
+				'url'   => \admin_url("admin.php?page={$plugin_slug}"),
+			'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
+			'disabled'  => !in_array($plugin, $active_plugins, true),
 			];
 		}
 
@@ -95,5 +93,172 @@ abstract class Base {
 		// 把每個片段第一個字大寫，並且用空白連接
 		$name = implode(' ', array_map(fn( $name ) => ucfirst($name), $names));
 		return $name;
+	}
+
+	/**
+	 * 通用批次處理高階函數
+	 *
+	 * @param array<int, mixed> $items 需要處理的項目陣列
+	 * @param callable          $callback 處理每個項目的回調函數，接收項目和索引參數，回傳布林值表示成功或失敗
+	 * @param array{
+	 *  batch_size: int,
+	 *  pause_ms: int,
+	 *  flush_cache: bool,
+	 * }    $options 設定選項
+	 * @return array 處理結果統計
+	 */
+	public static function batch_process( $items, $callback, $options = [] ) {
+		// 默认选项
+		$default_options = [
+			'batch_size'  => 10,  // 每批次處理的項目數量
+			'pause_ms'    => 750, // 每批次之間暫停的毫秒數
+			'flush_cache' => true, // 每批次後是否清除 WordPress 快取
+		];
+
+		// 合併選項
+		$options = \wp_parse_args( $options, $default_options );
+
+		// 初始化結果統計
+		$result = [
+			'total'        => count($items),
+			'success'      => 0,
+			'failed'       => 0,
+			'failed_items' => [],
+		];
+
+		// 分批處理
+		$batches = array_chunk($items, $options['batch_size']);
+
+		foreach ($batches as $batch_index => $batch) {
+			// 處理每一批
+			foreach ($batch as $index => $item) {
+				$success = call_user_func($callback, $item, $index);
+
+				if ($success) {
+					++$result['success'];
+				} else {
+					++$result['failed'];
+					$result['failed_items'][] = $item;
+				}
+			}
+
+			// 如果不是最後一批，執行批次間操作
+			if ($batch_index < count($batches) - 1) {
+				// 清除快取，釋放記憶體
+				if ($options['flush_cache']) {
+					\wp_cache_flush();
+				}
+
+				// 暫停指定時間
+				if ($options['pause_ms'] > 0) {
+					usleep($options['pause_ms'] * 1000); // 轉換為微秒
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get taxonomy options
+	 *
+	 * @param array{
+	 *  object_type: array<string>,
+	 *  public: bool,
+	 *  ...
+	 * } $args 參數
+	 * @see https://developer.wordpress.org/reference/functions/get_taxonomies/
+	 * @return array<array{value: string, label: string, hierarchical: bool}>
+	 */
+	public static function get_taxonomy_options( array $args = [
+		'object_type' => [ 'product' ],
+		'public'      => true,
+	] ): array {
+
+		$taxonomies = \get_taxonomies(
+		$args,
+		'objects'
+		);
+
+		$object_taxonomies_array = [];
+
+		foreach ( $taxonomies as $taxonomy ) {
+			// 如果是商品屬性就不拿
+			if (\str_starts_with($taxonomy->name, 'pa_')) {
+				continue;
+			}
+
+			$object_taxonomies_array[] = [
+				'value'              => $taxonomy->name,
+				'label'              => $taxonomy->label,
+				'hierarchical'       => $taxonomy->hierarchical, // 是否為階層式分類
+				'publicly_queryable' => $taxonomy->publicly_queryable, // 是否為公開分類
+			];
+		}
+		return $object_taxonomies_array;
+	}
+
+	/**
+	 * 將陣列轉換為 HTML 表格
+	 *
+	 * @param array<string, mixed> $arr 要轉換的陣列
+	 * @param array{
+	 *  title?: string,
+	 *  br?: bool, 是否使用 <br> 不使用 table
+	 * } $options 選項
+	 * @return string
+	 */
+	public static function array_to_html( array $arr, array $options = [] ): string {
+		@[
+		'title' => $title,
+		'br' => $br, // 是否使用 <br> 不使用 table
+		] = $options;
+
+		$html = '';
+
+		if ( $title ) {
+			$html .= "<h3>{$title}</h3>";
+		}
+
+		$html .= $br ? '' : '<table>';
+		foreach ( $arr as $key => $value ) {
+			try {
+				$value_stringify = match (gettype($value)) {
+					'array' => json_encode($value),
+					'object' => $value instanceof \stdClass ? json_encode($value) : $value::class,
+					'boolean' => $value ? 'true' : 'false',
+					'NULL' => 'null',
+					default => $value,
+				};
+			} catch (\Throwable $e) {
+				\J7\WpUtils\Classes\WC::log($e->getMessage(), 'array_to_html error');
+				$value_stringify = json_encode($value);
+			}
+
+			if ( $br ) {
+				$html .= "{$value_stringify}<br>";
+				continue;
+			}
+			$html .= '<tr>';
+			$html .= "<td>{$key}</td>";
+			$html .= "<td>{$value_stringify}</td>";
+			$html .= '</tr>';
+		}
+
+		$html .= $br ? '' : '</table>';
+
+		return $html;
+	}
+
+
+	/**
+	 * 格式化 SQL 語句
+	 * 移除 \n\r\t 斷行、tab 產生的文字
+	 *
+	 * @param string $sql SQL 語句
+	 * @return string
+	 */
+	public static function format_sql( string $sql ): string {
+		return \wp_unslash( preg_replace('/\s+/', ' ', trim($sql)) );
 	}
 }

@@ -114,6 +114,10 @@ div[class^="ant-"] {
 		// 因為 md 以上顯示 admin bar，所以 top 要設定為 8
 		@apply top-0 md:top-8 sticky z-10 bg-white;
 	}
+	.pc-nav {
+		// 因為 md 以上顯示 admin bar，所以 top 要設定為 8
+		@apply top-0 md:top-8 sticky z-10 bg-white;
+	}
 }
 
 .ant-layout-sider {
@@ -121,5 +125,75 @@ div[class^="ant-"] {
 	.ant-layout-sider-children > div {
 		/* sider 左上角 logo 區域 */
 		display: none !important;
+	}
+}
+
+// 超小 form item input 的 label 樣式
+.field-xs {
+	.ant-form-item {
+		margin-bottom: 0.5rem;
+		position: relative;
+
+		.ant-select-selection-item-content {
+			line-height: 0.875rem;
+			font-size: 0.65rem;
+		}
+		input,
+		.ant-input-number-group-addon,
+		.ant-input-group-addon,
+		.ant-select-selection-item,
+		.ant-select-selection-placeholder {
+			font-size: 0.75rem;
+			line-height: 1.5;
+		}
+		// Space.Compact
+		.ant-input-group,
+		& .ant-input {
+			height: 100%;
+		}
+		.ant-picker {
+			height: 22px;
+		}
+		.ant-form-item-label {
+			position: absolute;
+			top: -0.625rem;
+			left: 0rem;
+			label {
+				@apply text-gray-400;
+				position: relative;
+				height: fit-content;
+				font-weight: 300;
+				font-size: 0.75rem;
+				z-index: 1;
+				padding: 0 0.5rem;
+				&::after {
+					content: "";
+					height: 5px;
+					width: 100%;
+					position: absolute;
+					bottom: 0.4em;
+					left: 0;
+					width: 100%;
+					background-color: #fff;
+					z-index: -1;
+				}
+			}
+		}
+		.ant-switch {
+			margin-left: 0.5rem;
+		}
+
+		// 如果是 table
+		tr:hover {
+			.ant-form-item {
+				.ant-form-item-label {
+					label {
+						&::after {
+							background-color: #fafafa;
+						}
+					}
+				}
+			}
+		}
 	}
 }

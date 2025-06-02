@@ -100,7 +100,7 @@ final class OrderList {
 				$product_name = $product->get_name();
 				$product_id   = $product->get_id();
 				$quantity     = $item->get_quantity();
-				$product_link = \get_edit_post_link( $product_id ) ?? '';
+				$product_link = \get_edit_post_link( $product_id, '&' ) ?? '';
 				printf(
 				/*html*/'<a href="%1$s">%2$s</a> x %3$d<br />',
 				\esc_url( $product_link ),

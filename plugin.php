@@ -3,7 +3,7 @@
  * Plugin Name:       Powerhouse
  * Plugin URI:        https://github.com/j7-dev/powerhouse
  * Description:       方便開發 WordPress 的工具包，以及優化功能
- * Version:           3.2.21
+ * Version:           3.2.22
  * Requires at least: 5.7
  * Requires PHP:      8.0
  * Author:            J7
@@ -35,7 +35,7 @@ if ( \class_exists( 'J7\Powerhouse\Plugin' ) ) {
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/inc/classes/Domains/LC/Utils.php';
+require_once __DIR__ . '/inc/classes/Domains/LC/Utils/Base.php';
 
 /** Class Plugin */
 final class Plugin {
@@ -71,7 +71,6 @@ final class Plugin {
 		require_once __DIR__ . '/inc/classes/Domains/Limit/Utils/CreateTable.php';
 		Domains\Limit\Utils\CreateTable::create_itemmeta_table();
 	}
-
 
 	/**
 	 * 從指定的模板路徑讀取模板文件並渲染數據
@@ -154,6 +153,24 @@ final class Plugin {
 		}
 
 		return ' ';
+	}
+
+	/**
+	 * 印出 WC Logger
+	 *
+	 * @param string                  $message 訊息
+	 * @param string                  $level 等級
+	 * @param array<array-key, mixed> $context 上下文
+	 *
+	 * @return void
+	 */
+	public static function logger( string $message, string $level = 'debug', array $context = [] ) {
+		\J7\WpUtils\Classes\WC::logger(
+			$message,
+			$level,
+			$context,
+			'powerhouse'
+			);
 	}
 }
 
