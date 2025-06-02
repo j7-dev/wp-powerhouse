@@ -249,4 +249,16 @@ abstract class Base {
 
 		return $html;
 	}
+
+
+	/**
+	 * 格式化 SQL 語句
+	 * 移除 \n\r\t 斷行、tab 產生的文字
+	 *
+	 * @param string $sql SQL 語句
+	 * @return string
+	 */
+	public static function format_sql( string $sql ): string {
+		return \wp_unslash( preg_replace('/\s+/', ' ', trim($sql)) );
+	}
 }
