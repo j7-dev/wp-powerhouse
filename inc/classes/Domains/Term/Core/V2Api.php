@@ -12,7 +12,7 @@ use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\General;
 use J7\WpUtils\Classes\ApiBase;
 use J7\Powerhouse\Domains\Term\Utils\CRUD;
-
+use J7\Powerhouse\Plugin;
 use J7\Powerhouse\Domains\Term\Model\Term;
 
 /**
@@ -104,7 +104,13 @@ final class V2Api extends ApiBase {
 					// db 儲存 image id
 					$body_params[ $image_name ] = $upload_results[0]['id'];
 				} catch (\Throwable $th) {
-					\J7\WpUtils\Classes\WC::log( $th->getMessage(), 'upload_files error' );
+					Plugin::logger(
+						'handle_upload error',
+						'error',
+						[
+							'error_message' =>$th->getMessage(),
+						]
+						);
 				}
 			}
 		}
@@ -157,16 +163,16 @@ final class V2Api extends ApiBase {
 			WHERE tt.taxonomy = '%s'
 			AND tt.parent = %d
 			ORDER BY CAST(COALESCE(tm.meta_value, '0') AS SIGNED) ASC, tt.term_id DESC",
-			$args['taxonomy'],
-			$args['parent']
+			(string) $args['taxonomy'],
+			(int) $args['parent']
 		);
 		// phpcs:enable
 
 		if ($args['number'] > 0) {
 			$prepare .= $wpdb->prepare(
 				' LIMIT %d OFFSET %d',
-				$args['number'],
-				$args['offset']
+				(int) $args['number'],
+				(int) $args['offset']
 			);
 		}
 
@@ -190,7 +196,13 @@ final class V2Api extends ApiBase {
 				$terms[] = $term;
 			}
 			if (\is_wp_error($term)) {
-				\J7\WpUtils\Classes\WC::log( $term->get_error_message(), 'get_term error' );
+				Plugin::logger(
+					'get_terms_by_order error',
+					'error',
+					[
+						'error_message' => $term->get_error_message(),
+					]
+					);
 			}
 		}
 
@@ -237,11 +249,11 @@ final class V2Api extends ApiBase {
 		// 取得總數
 		$count_args           = $args;
 		$count_args['fields'] = 'count';
-		unset($count_args['parent']);
+		$count_args['parent'] = 0; // 只計算頂層，用頂層去做分頁
 		/** @var int $total */
 		$total = \get_terms($count_args);
 
-		$total_pages = $args['number'] > 0 ? \ceil($total / $args['number']) : 1;
+		$total_pages = $args['posts_per_page'] > 0 ? \ceil($total / $args['posts_per_page']) : 1;
 
 		$formatted_terms = [];
 		foreach ($terms as $term) {
@@ -255,7 +267,7 @@ final class V2Api extends ApiBase {
 		$response->header( 'X-WP-TotalPages', (string) $total_pages );
 		$current_page = $args['paged'];
 		$response->header( 'X-WP-CurrentPage', (string) $current_page );
-		$response->header( 'X-WP-PageSize', (string) $args['number'] );
+		$response->header( 'X-WP-PageSize', (string) $args['posts_per_page'] );
 
 		return $response;
 	}
