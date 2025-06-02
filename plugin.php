@@ -154,6 +154,24 @@ final class Plugin {
 
 		return ' ';
 	}
+
+	/**
+	 * 印出 WC Logger
+	 *
+	 * @param string                  $message 訊息
+	 * @param string                  $level 等級
+	 * @param array<array-key, mixed> $context 上下文
+	 *
+	 * @return void
+	 */
+	public static function logger( string $message, string $level = 'debug', array $context = [] ) {
+		\J7\WpUtils\Classes\WC::logger(
+			$message,
+			$level,
+			$context,
+			'powerhouse'
+			);
+	}
 }
 
 Plugin::instance();
