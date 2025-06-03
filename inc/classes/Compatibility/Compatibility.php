@@ -19,9 +19,7 @@ final class Compatibility {
 
 	const AS_COMPATIBILITY_ACTION = 'powerhouse_compatibility_action_scheduler';
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'redirect' ], 10 );
 		AutoUpdate::instance();

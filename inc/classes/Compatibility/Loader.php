@@ -34,13 +34,7 @@ final class Loader {
 
 		// 檢查 mu-plugins 目錄是否存在
 		if (!is_dir($mu_plugins_dir)) {
-			Plugin::logger(
-				'mu-plugins 目錄不存在，嘗試創建 mu-plugins',
-				'debug',
-				[
-					'mu_plugins_dir' => $mu_plugins_dir,
-				]
-				);
+			Plugin::logger( "mu-plugins 目錄不存在，嘗試創建 mu-plugins， 路徑: {$mu_plugins_dir}");
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			// 創建 mu-plugins 目錄
 			global $wp_filesystem;
@@ -52,7 +46,7 @@ final class Loader {
 				Plugin::logger( '無法創建 mu-plugins 目錄', 'error' );
 				return;
 			} else {
-				Plugin::logger( '成功創建 mu-plugins 目錄', 'debug' );
+				Plugin::logger( '成功創建 mu-plugins 目錄' );
 			}
 		}
 

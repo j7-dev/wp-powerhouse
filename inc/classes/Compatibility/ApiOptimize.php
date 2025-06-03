@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Compatibility;
 
+use J7\Powerhouse\Plugin;
+
 /**
  * Api Optimize
  * 將 self::FILE_NAME 檔案移動到 mu-plugins 目錄下
@@ -14,9 +16,7 @@ final class ApiOptimize {
 
 	const FILE_NAME = 'powerhouse-api-booster.php';
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
 		\add_action( Compatibility::AS_COMPATIBILITY_ACTION, [ __CLASS__, 'move_file' ]);
 	}
@@ -34,19 +34,19 @@ final class ApiOptimize {
 
 		// 檢查 mu-plugins 目錄是否存在
 		if (!is_dir($mu_plugins_dir)) {
-			\J7\WpUtils\Classes\WC::log($mu_plugins_dir, 'mu-plugins 目錄不存在，嘗試創建 mu-plugins');
+			Plugin::logger( "mu-plugins 目錄不存在，嘗試創建 mu-plugins， 路徑: {$mu_plugins_dir}");
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			// 創建 mu-plugins 目錄
 			global $wp_filesystem;
-			if (!WP_Filesystem()) {
-				\J7\WpUtils\Classes\WC::log($mu_plugins_dir, '無法初始化 WP_Filesystem');
+			if (!\WP_Filesystem()) {
+				Plugin::logger( '無法初始化 WP_Filesystem', 'error' );
 				return;
 			}
 			if (!$wp_filesystem->mkdir($mu_plugins_dir, 0755)) {
-				\J7\WpUtils\Classes\WC::log($mu_plugins_dir, '無法創建 mu-plugins 目錄');
+				Plugin::logger( '無法創建 mu-plugins 目錄', 'error' );
 				return;
 			} else {
-				\J7\WpUtils\Classes\WC::log($mu_plugins_dir, '成功創建 mu-plugins 目錄');
+				Plugin::logger( '成功創建 mu-plugins 目錄' );
 			}
 		}
 
@@ -58,8 +58,7 @@ final class ApiOptimize {
 		try {
 			// 檢查源文件是否存在
 			if (!file_exists($source_file)) {
-				\J7\WpUtils\Classes\WC::log($source_file, '源文件不存在');
-				return;
+				throw new \Exception( 'source_file 源文件不存在' );
 			}
 
 			// 如果目標檔案存在，先嘗試刪除
@@ -74,13 +73,13 @@ final class ApiOptimize {
 				throw new \Exception('檔案複製失敗');
 			}
 		} catch (\Exception $e) {
-			\J7\WpUtils\Classes\WC::log(
+			Plugin::logger(
+				'檔案操作失敗: ' . $e->getMessage(),
+				'error',
 				[
-					'message' => $e->getMessage(),
-					'source'  => $source_file,
-					'target'  => $target_file,
-				],
-				'檔案操作失敗'
+					'source' => $source_file,
+					'target' => $target_file,
+				]
 				);
 		}
 	}

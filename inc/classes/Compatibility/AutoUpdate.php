@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Compatibility;
 
+use J7\Powerhouse\Plugin;
 /**
  * 更新其他外掛時，自動更新 powerhouse
  */
@@ -67,7 +68,7 @@ final class AutoUpdate {
 		// 如果目前更新的外掛屬於 power- 系列
 		if ( in_array( $plugin, $this->power_plugins, true ) ) {
 			$action_id = \as_schedule_single_action(time() + 10, self::AUTO_UPDATE_HOOK);
-			\J7\WpUtils\Classes\WC::log($action_id, '排程自動更新 powerhouse action_id: ');
+			Plugin::logger( "排程自動更新 powerhouse action_id: #{$action_id}" );
 		}
 	}
 
@@ -102,13 +103,13 @@ final class AutoUpdate {
 					if (\is_wp_error($result)) {
 						throw new \Exception('啟用錯誤: ' . $result->get_error_message());
 					}
-					\J7\WpUtils\Classes\WC::log('自動更新 ' . $this->target_plugin . ' 成功');
+					Plugin::logger( "自動更新 {$this->target_plugin} 成功" );
 				}
 			} else {
 				throw new \Exception('沒有可用的更新或插件不存在');
 			}
 		} catch (\Throwable $th) {
-			\J7\WpUtils\Classes\WC::log($th->getMessage(), 'AutoUpdate::process_auto_update ');
+			Plugin::logger( '自動更新失敗: ' . $th->getMessage(), 'error' );
 		}
 	}
 
