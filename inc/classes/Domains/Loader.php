@@ -21,6 +21,7 @@ final class Loader {
 		Shortcode\Core\V2Api::instance();
 		Upload\Core\V2Api::instance();
 		LC\Core\V2Api::instance();
+		Plugin\Core\V2Api::instance();
 
 		if ( class_exists( '\WooCommerce' ) ) {
 			Woocommerce\Core\V2Api::instance();

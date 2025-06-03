@@ -34,7 +34,7 @@ final class Bootstrap {
 		Api\Base::instance();
 		Api\LC::instance();
 		Domains\Loader::instance();
-		Theme\FrontEnd::instance();
+		Theme\Core\FrontEnd::instance();
 		Captcha\Core\Login::instance();
 		Captcha\Core\Register::instance();
 

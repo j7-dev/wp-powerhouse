@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Captcha\Core;
 
-use J7\Powerhouse\Settings\DTO as SettingsDTO;
+use J7\Powerhouse\Settings\Model\Settings;
 
 /**
  * Class Register
@@ -19,8 +19,8 @@ final class Register extends Base {
 
 	/** Constructor */
 	public function __construct() {
-		$settings = SettingsDTO::instance();
-		if ($settings->enable_captcha_register !== 'yes') {
+		$settings = Settings::instance();
+		if (!\wc_string_to_bool($settings->enable_captcha_register)) {
 			return;
 		}
 

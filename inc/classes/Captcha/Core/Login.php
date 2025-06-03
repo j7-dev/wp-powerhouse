@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Captcha\Core;
 
-use J7\Powerhouse\Settings\DTO as SettingsDTO;
+use J7\Powerhouse\Settings\Model\Settings;
 
 /**
  * Class 登入驗證碼邏輯
@@ -19,14 +19,14 @@ final class Login extends Base {
 
 	/** Constructor */
 	public function __construct() {
-		$settings = SettingsDTO::instance();
+		$settings = Settings::instance();
 
 		$request_url = $_SERVER['REQUEST_URI'] ?? ''; // phpcs:ignore
 		if (\str_contains($request_url, 'power-partner-server/identity')) {
 			return;
 		}
 
-		if ($settings->enable_captcha_login !== 'yes') {
+		if (!\wc_string_to_bool($settings->enable_captcha_login)) {
 			return;
 		}
 		parent::__construct();
@@ -100,7 +100,7 @@ final class Login extends Base {
 	 * @return bool
 	 */
 	private function in_role_list( \WP_User $user ): bool {
-		$settings  = SettingsDTO::instance();
+		$settings  = Settings::instance();
 		$role_list = $settings->captcha_role_list;
 		// 符合直接回 true
 		foreach ($role_list as $role) {

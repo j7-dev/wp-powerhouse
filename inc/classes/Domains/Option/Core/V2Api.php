@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Option\Core;
 
-use J7\Powerhouse\Settings\DTO;
+use J7\Powerhouse\Settings\Model\Settings;
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\ApiBase;
 
@@ -38,7 +38,7 @@ final class V2Api extends ApiBase {
 
 	/** @var array<string, mixed> $fields 允許更新的欄位名稱 */
 	private $fields = [
-		DTO::SETTINGS_KEY => [],
+		Settings::SETTINGS_KEY => [],
 	];
 
 	/**
@@ -66,8 +66,8 @@ final class V2Api extends ApiBase {
 	 * @phpstan-ignore-next-line
 	 */
 	public function get_options_callback( \WP_REST_Request $request ): \WP_REST_Response {
-		$options                      = [];
-		$options[ DTO::SETTINGS_KEY ] = DTO::instance()->to_array();
+		$options                           = [];
+		$options[ Settings::SETTINGS_KEY ] = Settings::instance()->to_array();
 
 		return new \WP_REST_Response(
 			[
@@ -113,6 +113,7 @@ final class V2Api extends ApiBase {
 
 	/**
 	 * 獲取選項
+	 *
 	 * @deprecated 好像沒用到
 	 * @param \WP_REST_Request $request REST請求對象。
 	 * @return \WP_REST_Response 返回包含選項資料的REST響應對象。

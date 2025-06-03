@@ -1,30 +1,23 @@
 <?php
-/**
- * Account 相關
- */
 
 declare(strict_types=1);
 
 namespace J7\Powerhouse\Admin;
 
-use J7\Powerhouse\Settings\DTO;
+use J7\Powerhouse\Settings\Model\Settings;
 
 if ( class_exists( 'J7\Powerhouse\Admin\Account' ) ) {
 	return;
 }
-/**
- * Class Account
- */
+/**  Account 相關 */
 final class Account {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Constructor
-	 */
+	/** Constructor */
 	public function __construct() {
-		$last_name_optional = DTO::instance()->last_name_optional;
+		$last_name_optional = Settings::instance()->last_name_optional;
 
-		if ($last_name_optional !== 'yes') {
+		if (!\wc_string_to_bool($last_name_optional)) {
 			return;
 		}
 

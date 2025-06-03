@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Woocommerce\Core;
 
-use J7\Powerhouse\Settings\DTO;
-use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\ApiBase;
-use J7\Powerhouse\Utils\Base as PowerhouseUtils;
 use J7\Powerhouse\Domains\Woocommerce\Model;
 
 /**
