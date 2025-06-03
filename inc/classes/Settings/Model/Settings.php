@@ -6,11 +6,9 @@ namespace J7\Powerhouse\Settings\Model;
 
 use J7\WpUtils\Classes\DTO as BaseDTO;
 use J7\Powerhouse\Theme\Model\Theme;
+use J7\Powerhouse\Settings\Core\ApiBoosterRule;
 
-
-/**
- * Powerhouse Settings
- */
+/** Powerhouse Settings */
 class Settings extends BaseDTO {
 
 	const SETTINGS_KEY = 'powerhouse_settings';
@@ -42,8 +40,12 @@ class Settings extends BaseDTO {
 	/** @var string $enable_captcha_register 啟用註冊驗證碼 */
 	public string $enable_captcha_register = 'no';
 
-	/** @var string $enable_api_booster 啟用 API 加速器 */
-	public string $enable_api_booster = 'no';
+
+	/** @var array $api_booster_rules API 加速器規則 */
+	public array $api_booster_rules = [];
+
+	/** @var array $api_booster_rule_recipes API 加速器模板 */
+	public array $api_booster_rule_recipes = [];
 
 
 	// BunnyCDN 相關
@@ -58,7 +60,7 @@ class Settings extends BaseDTO {
 	public string $bunny_stream_api_key = '';
 
 	/** @var self 實例 */
-	private static $instance = null;
+	protected static $instance = null;
 
 	/**
 	 * Constructor.
@@ -79,14 +81,17 @@ class Settings extends BaseDTO {
 	public static function instance():self { // phpcs:ignore
 		if ( null === self::$instance ) {
 			$setting_array = \get_option(self::SETTINGS_KEY, []);
-			if (!\is_array($setting_array)) {
-				$setting_array = [];
-			}
+			$setting_array = is_array($setting_array) ? $setting_array : [];
 
 			/** @var array<string, mixed> $setting_array */
 			unset($setting_array['theme_css']); // theme_css 獨立初始化
 			return new self($setting_array);
 		}
 		return self::$instance;
+	}
+
+	/** 初始化後執行 */
+	protected function after_init(): void {
+		$this->api_booster_rule_recipes = ApiBoosterRule::instance()->get_recipes();
 	}
 }

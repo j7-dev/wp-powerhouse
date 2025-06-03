@@ -7,7 +7,7 @@ namespace J7\Powerhouse\Theme\Model;
 use J7\Powerhouse\Settings\Model\Settings as SettingsDTO;
 
 /** Theme */
-final class Theme {
+class Theme {
 
 	/** @var string primary 顏色 */
 	public string $p = '49.12% 0.3096 275.75';
@@ -107,7 +107,7 @@ final class Theme {
 	public string $color_scheme = 'light';
 
 	/** @var self 實例 */
-	private static $instance = null;
+	protected static $instance = null;
 
 	/**
 	 * Constructor.

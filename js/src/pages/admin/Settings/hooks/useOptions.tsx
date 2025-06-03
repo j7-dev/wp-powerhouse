@@ -19,13 +19,13 @@ const useOptions = ({ form }: { form: FormInstance }) => {
 		},
 	})
 
-	const { isFetching } = result
+	const { isSuccess } = result
 	useEffect(() => {
-		if (!isFetching) {
+		if (isSuccess) {
 			const values = result.data?.data?.data
 			form.setFieldsValue(values)
 		}
-	}, [isFetching])
+	}, [isSuccess])
 
 	return result
 }
