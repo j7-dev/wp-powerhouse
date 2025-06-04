@@ -41,8 +41,8 @@ final class Bootstrap {
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_menu' ], 10 );
 		\add_action( 'admin_menu', [ __CLASS__ , 'add_submenu' ], 100 );
 
-		\add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_frontend_assets' ] );
-		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_admin_assets' ] );
+		\add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_frontend_assets' ], -100 );
+		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_admin_assets' ], -100 );
 
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
 	}

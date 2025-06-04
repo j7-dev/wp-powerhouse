@@ -1,4 +1,7 @@
-@tailwind base;
+@layer tailwind {
+	// base 會預設給 html tag 加上顏色，導致背景色變化，加上 @layer 降低優先級
+	@tailwind base;
+}
 @tailwind components;
 @tailwind utilities;
 
