@@ -3974,10 +3974,10 @@ antd-style@^3.7.1:
     "@emotion/utils" "^1.2.1"
     use-merge-value "^1.2.0"
 
-antd-toolkit@^1.3.190:
-  version "1.3.190"
-  resolved "https://registry.yarnpkg.com/antd-toolkit/-/antd-toolkit-1.3.190.tgz#328ee3309e4e231bee829012edf2366842a048e1"
-  integrity sha512-3+rmFb131EWWHYrUlocr17kaUaEuGEhRUEcnUgdOAbf7zDL9OWpZ6AqueSI/3/t5/glAlXnhSmDERXCubsi0aw==
+antd-toolkit@^1.3.191:
+  version "1.3.191"
+  resolved "https://registry.yarnpkg.com/antd-toolkit/-/antd-toolkit-1.3.191.tgz#9da4f3792278b361b757c481794151977fee68ad"
+  integrity sha512-4RdSnajuNFXpGCAAusE++QOWA3ZUGXBelWYQovX4sxZlcbNT9infzgNGYu9vZeI3o+RXSsxr9/VXaQ7j2fLV2w==
   dependencies:
     "@blocknote/core" "0.30.0"
     "@blocknote/mantine" "0.30.0"
