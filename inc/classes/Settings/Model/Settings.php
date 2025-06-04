@@ -86,6 +86,9 @@ class Settings extends BaseDTO {
 
 			/** @var array<string, mixed> $setting_array */
 			unset($setting_array['theme_css']); // theme_css 獨立初始化
+
+			unset($setting_array['enable_api_booster']);
+
 			return new self($setting_array);
 		}
 		return self::$instance;

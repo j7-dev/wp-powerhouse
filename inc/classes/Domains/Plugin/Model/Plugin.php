@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Domains\Plugin\Model;
 
 use J7\WpUtils\Classes\DTO;
-use J7\Powerhouse\Plugin as PowerhousePlugin;
 
 /**
  * Plugin DTO
@@ -93,8 +92,7 @@ final class Plugin extends DTO {
 			'is_active'        => $plugin_data['is_active'],
 		];
 
-		$strict   = PowerhousePlugin::$env === 'local';
-		$instance = new self($args, $strict);
+		$instance = new self($args);
 		return $instance;
 	}
 }

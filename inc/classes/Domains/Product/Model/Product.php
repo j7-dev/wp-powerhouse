@@ -69,9 +69,7 @@ final class Product extends DTO {
 			'meta_keys'    => $meta_keys,
 		];
 
-		$strict = \wp_get_environment_type() === 'local';
-
-		$instance = new self($args, $strict);
+		$instance = new self($args);
 		return $instance;
 	}
 

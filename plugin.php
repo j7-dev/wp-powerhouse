@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Powerhouse
- * Plugin URI:        https://github.com/j7-dev/powerhouse
+ * Plugin URI:        https://www.powerhouse.cloud
  * Description:       方便開發 WordPress 的工具包，以及優化功能
  * Version:           3.3.0
  * Requires at least: 5.7
@@ -23,7 +23,7 @@
  * ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║██║  ██║╚██████╔╝╚██████╔╝███████║███████╗   *
  * ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝   *
  *                                                                                         *
- * *********************************** www.powerhouse.com **********************************
+ * ********************************** www.powerhouse.cloud *********************************
  */
 
 declare ( strict_types=1 );

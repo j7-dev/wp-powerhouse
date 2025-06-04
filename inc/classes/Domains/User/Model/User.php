@@ -8,7 +8,6 @@ use J7\WpUtils\Classes\DTO;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\Query as CustomersQuery;
 use J7\Powerhouse\Domains\User\Utils\CRUD;
 use J7\Powerhouse\Domains\Order\Utils\Info;
-use J7\Powerhouse\Plugin;
 
 /** Class User */
 final class User extends DTO {
@@ -191,9 +190,7 @@ final class User extends DTO {
 			'avg_order_value'       => $customer_history['avg_order_value'] ?? null,
 		];
 
-		$strict = Plugin::$env === 'local';
-
-		return new self($user_record, $strict);
+		return new self($user_record);
 	}
 
 

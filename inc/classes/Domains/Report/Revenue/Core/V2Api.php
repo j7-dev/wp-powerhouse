@@ -7,6 +7,7 @@ namespace J7\Powerhouse\Domains\Report\Revenue\Core;
 use J7\WpUtils\Classes\ApiBase;
 use Automattic\WooCommerce\Admin\API\Reports\Revenue\Query;
 use Automattic\WooCommerce\Admin\API\Reports\GenericQuery as ProductQuery;
+use J7\Powerhouse\Plugin;
 
 /**
  * Revenue Api
@@ -63,7 +64,7 @@ final class V2Api extends ApiBase {
 
 		\add_filter( 'woocommerce_admin_report_columns', [ $this, 'add_report_columns' ], 100, 3 );
 		\add_filter( 'woocommerce_rest_reports_column_types', [ $this, 'add_report_column_types' ], 100, 2 );
-		\add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_cache_in_local' ], 100, 2 );
+		\add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'should_use_cache' ], 100, 2 );
 	}
 
 	/**
@@ -315,8 +316,8 @@ final class V2Api extends ApiBase {
 	 * @param string $cache_key 快取鍵
 	 * @return bool
 	 */
-	public function disable_cache_in_local( $should_cache, $cache_key ) {
-		return 'local' !== \wp_get_environment_type();
+	public function should_use_cache( $should_cache, $cache_key ) {
+		return 'local' !== Plugin::$env;
 	}
 
 

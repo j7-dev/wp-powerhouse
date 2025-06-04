@@ -93,9 +93,7 @@ final class Term extends DTO {
 			'thumbnail_id'     => $thumbnail_url,
 		];
 
-		$strict = \wp_get_environment_type() === 'local';
-
-		$instance = new self($args, $strict);
+		$instance = new self($args);
 		return $instance;
 	}
 

@@ -38,9 +38,7 @@ final class ProductAttribute extends DTO {
 
 		$args = (array) $attribute;
 
-		$strict = \wp_get_environment_type() === 'local';
-
-		$instance = new self($args, $strict);
+		$instance = new self($args);
 		return $instance;
 	}
 
