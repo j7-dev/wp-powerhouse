@@ -11,6 +11,7 @@ use J7\Powerhouse\Settings\Core\ApiBoosterRule;
 /** Powerhouse Settings */
 class Settings extends BaseDTO {
 
+	// mu-plugins 裡面的 api booster 使用此 key ，請勿修改
 	const SETTINGS_KEY = 'powerhouse_settings';
 
 	/** @var string $theme 選擇主題 */

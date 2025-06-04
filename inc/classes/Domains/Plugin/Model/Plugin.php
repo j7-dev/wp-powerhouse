@@ -89,7 +89,7 @@ final class Plugin extends DTO {
 			'requires_plugins' => $plugin_data['RequiresPlugins'],
 			'title'            => $plugin_data['Title'],
 			'author_name'      => $plugin_data['AuthorName'],
-			'key'            => $plugin_data['key'],
+			'key'              => $plugin_data['key'],
 			'is_active'        => $plugin_data['is_active'],
 		];
 

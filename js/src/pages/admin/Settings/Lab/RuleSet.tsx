@@ -24,11 +24,10 @@ const RuleSet: React.FC<{ index: number }> = ({ index }) => {
 	const { data } = usePlugins()
 	const plugins = data?.data || []
 
-	const watchPlugins =
-		Form.useWatch(
-			['powerhouse_settings', 'api_booster_rules', index, 'plugins'],
-			form,
-		) || []
+	const watchPlugins = (Form.useWatch(
+		['powerhouse_settings', 'api_booster_rules', index, 'plugins'],
+		form,
+	) || []) as string[]
 
 	const onChange: TransferProps['onChange'] = (
 		nextTargetKeys,
@@ -92,11 +91,14 @@ const RuleSet: React.FC<{ index: number }> = ({ index }) => {
 					</Item>
 					<Item
 						name={getRulesName([index, 'rules'])}
-						label="填寫 url/api 規則"
+						label="填寫請求規則"
 						className="mb-0"
-						tooltip="不需要填網址，每行一個規則，例如：/wp-json/powerhouse/*"
+						tooltip="不需要填網址，每行一個規則，例如：/wp-json/v2/powerhouse/* ，* 代表任意字串"
 					>
-						<Input.TextArea rows={6} />
+						<Input.TextArea
+							rows={6}
+							placeholder="例如：/wp-json/v2/powerhouse/*"
+						/>
 					</Item>
 				</div>
 				<div className="">
@@ -110,7 +112,15 @@ const RuleSet: React.FC<{ index: number }> = ({ index }) => {
 							height: 229,
 						}}
 						className="w-full"
-						dataSource={plugins}
+						dataSource={plugins?.map((p) => {
+							if ('powerhouse/plugin.php' === p?.key) {
+								return {
+									...p,
+									disabled: true,
+								}
+							}
+							return p
+						})}
 						titles={['不載入', '載入']}
 						targetKeys={watchPlugins}
 						onChange={onChange}

@@ -1,52 +1,103 @@
 <?php
-/**
- * ApiBooster
- * 在特定的 API 路徑下，只載入必要的插件
- */
 
 namespace J7\Powerhouse\MU;
 
 /**
  * ApiBooster
+ * 在特定的請求路徑下，只載入必要的插件
  */
 final class ApiBooster {
 
-	/**
-	 * Namespaces 只有這幾個 namespace 的 API 請求，才會載入必要的插件
-	 *
-	 * @var array<string>
-	 */
-	protected static $namespaces = [
-		'/wp-json/power-', // power- 開頭 API
-		'/wp-json/v2/powerhouse',
-	];
+	/** @var array<array{name: string, enabled: yes|no, url_rules: array<string>, plugins: array<string>}> $rules 已啟用的規則 */
+	protected $api_booster_rules = [];
 
-	/**
-	 * Constructor.
-	 */
+	/** Constructor */
 	public function __construct() {
-		@[ // @phpstan-ignore-line
-			'enable_api_booster' => $enable_api_booster,
-		] = \get_option('powerhouse_settings');
-
-		if ('yes' !== $enable_api_booster ) {
+		// 獲取當前請求的 URI
+		$request_uri = (string) $_SERVER['REQUEST_URI'] ?? ''; // phpcs:ignore
+		// 如果包含 /wp-json/v2/powerhouse/plugins ，就跳過，因為設定項要拿到最精準的資料
+		if (strpos($request_uri, '/wp-json/v2/powerhouse/plugins') !== false) {
 			return;
 		}
 
-		\add_action('muplugins_loaded', [ __CLASS__, 'only_load_required_plugins' ], 100);
+		$this->api_booster_rules = $this->get_enabled_api_booster_rules();
+
+		\add_action('muplugins_loaded', [ $this, 'apply_rules' ], 100);
+	}
+
+	/**
+	 * 取得 api booster 規則
+	 *
+	 * @return array<array{name: string, enabled: yes|no, rules: string, plugins: array<string>}>
+	 */
+	protected function get_enabled_api_booster_rules(): array {
+		$powerhouse_settings = \get_option('powerhouse_settings', []);
+		$powerhouse_settings = is_array($powerhouse_settings) ? $powerhouse_settings : [];
+
+		$api_booster_rules = $powerhouse_settings['api_booster_rules'] ?? [];
+
+		$api_booster_rules = is_array($api_booster_rules) ? $api_booster_rules : [];
+
+		// 重新整理規則，剔除未啟用的規則，也把 url_rules 整理成 array
+		$enabled_api_booster_rules = [];
+		foreach ($api_booster_rules as $rule) {
+			@[
+				'enabled' => $enabled,
+				'rules'   => $url_rules_string,
+			] = $rule;
+
+			if ('yes' !== $enabled) {
+				continue;
+			}
+
+			$url_rules = explode("\n", $url_rules_string);
+			$url_rules = array_map(fn ( $url_rule ) => trim($url_rule), $url_rules); // 移除空白
+			$url_rules = array_filter($url_rules); // 移除 falsy value
+
+			if (!$url_rules) {
+				continue;
+			}
+
+			unset($rule['rules']);
+			$rule['url_rules']           = $url_rules;
+			$enabled_api_booster_rules[] = $rule;
+		}
+
+		return $enabled_api_booster_rules;
+	}
+
+	/**
+	 * 應用 API 規則
+	 *
+	 * @return void
+	 */
+	public function apply_rules(): void {
+		foreach ($this->api_booster_rules as $index => $api_booster_rule) {
+			$this->only_load_required_plugins($api_booster_rule, (int) $index);
+		}
 	}
 
 	/**
 	 * Only Load Required Plugins
 	 * 只載入必要的插件
 	 *
+	 * @param array{name: string, enabled: yes|no, url_rules: array<string>, plugins: array<string>} $api_booster_rule  API 規則
+	 * @param int                                                                                    $index 規則的索引
 	 * @return void
 	 */
-	public static function only_load_required_plugins(): void {
-		// 檢查 API 請求是否包含 "/{$namespace}" 字串
+	public function only_load_required_plugins( array $api_booster_rule, int $index ): void {
+		@[
+			'url_rules' => $url_rules,
+			'plugins'   => $plugins,
+		] = $api_booster_rule;
+
+		$url_rules = is_array($url_rules) ? $url_rules : [];
+		$plugins   = is_array($plugins) ? $plugins : [];
+
+		// ----- ▼ 檢查 API 請求是否包含 "/{$url_rule}" 字串 ----- //
 		$some_strpos = false;
-		foreach (self::$namespaces as $namespace) {
-			if (strpos((string) $_SERVER['REQUEST_URI'],  $namespace) !== false) { // phpcs:ignore
+		foreach ($url_rules as $url_rule) {
+			if ($this->match_url_pattern($url_rule)) {
 				$some_strpos = true;
 				break;
 			}
@@ -55,29 +106,17 @@ final class ApiBooster {
 			return;
 		}
 
-		// 基本插件
-		$base_plugins = [
-			'powerhouse/plugin.php',
-			'woocommerce/woocommerce.php',
-			'woocommerce-subscriptions/woocommerce-subscriptions.php',
-		];
+		// 修改 option 的 value ，當要 get_option('active_plugins') 時，覆寫
+		\add_filter('option_active_plugins', fn () => $plugins, 100 + $index );
+	}
 
-		// 檢查是否所有必要的插件都已經載入
-		// 取得所有已啟用的插件
-		$active_plugins = \get_option('active_plugins', []);
-		$active_plugins = is_array($active_plugins) ? $active_plugins : [];
-
-		$required_plugins = [];
-		/** @var string[] $active_plugins */
-		foreach ($active_plugins as $active_plugin) {
-			// 如果以 power- 開頭，或者在 base_plugins 中，則加入 required_plugins
-			if (( strpos($active_plugin, 'power-') === 0 ) || in_array($active_plugin, $base_plugins, true)) {
-				$required_plugins[] = $active_plugin;
-			}
-		}
-
-		\add_filter('option_active_plugins', fn () => $required_plugins, 100 );
-
+	/**
+	 * Remove Unnecessary Hooks
+	 * 移除不必要的 WordPress 功能
+	 *
+	 * @return void
+	 */
+	protected function remove_unnecessary_hooks(): void {
 		// 移除不必要的 WordPress 功能
 		$hooks_to_remove = [
 			'widgets_init',
@@ -95,9 +134,35 @@ final class ApiBooster {
 				function () use ( $hook ) {
 					\remove_all_actions($hook);
 				},
-				-999999
+			-999999
 				);
 		}
+	}
+
+
+	/**
+	 * 檢查當前請求 URI 是否符合指定的規則模式
+	 *
+	 * @param string $pattern 規則字串，* 代表任意數量的 [0-9a-zA-Z/] 字符
+	 * @return bool 是否匹配
+	 */
+	protected function match_url_pattern( string $pattern ): bool {
+		// 獲取當前請求的 URI
+		$request_uri = (string) $_SERVER['REQUEST_URI'] ?? ''; // phpcs:ignore
+
+		// 移除查詢參數部分（? 後面的內容）
+		$request_uri = parse_url($request_uri, PHP_URL_PATH);
+
+		// 將規則中的 * 轉換為正則表達式
+		// * 代表任意數量的 [0-9a-zA-Z] 字符
+		$regex_pattern = preg_quote($pattern, '/');
+		$regex_pattern = str_replace('\*', '[0-9a-zA-Z\/]*', $regex_pattern);
+
+		// 添加開始和結束錨點，確保完全匹配
+		$regex_pattern = '/^' . $regex_pattern . '$/';
+
+		// 執行匹配
+		return preg_match($regex_pattern, $request_uri) === 1;
 	}
 }
 

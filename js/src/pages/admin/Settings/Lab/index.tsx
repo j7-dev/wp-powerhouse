@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Heading } from 'antd-toolkit'
-import { Button, Form, Tag } from 'antd'
+import { Button, Form, Tag, Alert } from 'antd'
 import { PlusOutlined, TagsOutlined } from '@ant-design/icons'
 import useOptions from '@/pages/admin/Settings/hooks/useOptions'
 import { getSettingsName } from '@/pages/admin/Settings/utils'
@@ -62,17 +62,47 @@ const index = () => {
 			<div className="flex flex-col xl:flex-row gap-8">
 				<div className="w-full max-w-[400px]">
 					<Heading className="mt-8">性能提升</Heading>
-					<p>啟用後台 API 加速器，約提速 60% ~ 100%</p>
+					<p>針對不同請求規則只載入必要的外掛，約提速 60% ~ 100%</p>
 					<p className="text-gray-400">
 						如果啟用後發生錯誤，請與管理員聯繫，並先暫時停用此功能
 					</p>
+
+					<Alert
+						className="mb-8"
+						message="注意事項"
+						type="warning"
+						showIcon
+						description={
+							<ul>
+								<li className="text-red-500">
+									此為進階功能，如果不明白如何使用請勿操作
+								</li>
+								<li>如果啟用後發生錯誤，請與管理員聯繫，並先暫時停用此功能</li>
+								<li>
+									針對你設定的請求規則，該請求當下只會載入你指定要載入的外掛，即使該外掛【未啟用】依然也會載入
+								</li>
+								<li>
+									請求規則請填寫完整，無需填寫網址，例如：/wp-json/v2/powerhouse/*
+									，* 代表任意字串
+								</li>
+								<li>
+									請求規則填寫原則以{' '}
+									<span className="text-red-500">簡單、完整、明確指定</span>
+									就好 ，
+									<span className="text-red-500">
+										避免重複的請求規則，將導致衝突，產生不預期的行為
+									</span>
+								</li>
+							</ul>
+						}
+					/>
 
 					<p>
 						<TagsOutlined /> 以下是一些預先建立好的範本
 					</p>
 					{recipes.map((recipe) => (
 						<Tag
-							className="cursor-pointer"
+							className="cursor-pointer mb-2"
 							key={recipe?.key}
 							onClick={handleAddRule(recipe)}
 						>
