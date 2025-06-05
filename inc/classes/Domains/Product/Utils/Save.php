@@ -40,19 +40,21 @@ class Save {
 	 */
 	public static function meta_data( \WC_Product &$product, array $meta_data = [] ): void {
 		// ----- ▼ 前端送 type 進來後，變更商品類型 ----- //
-		$old_type = $product->get_type();
-		$new_type = (string) $meta_data['type'] ?? '';
-		if ($old_type !== $new_type) {
-			\wp_remove_object_terms($product->get_id(), $old_type, 'product_type');
-			\wp_set_object_terms($product->get_id(), $new_type, 'product_type');
-		}
+		if (isset($meta_data['type'])) {
+			$old_type = $product->get_type();
+			$new_type = (string) $meta_data['type'] ?? '';
+			if ($old_type !== $new_type) {
+				\wp_remove_object_terms($product->get_id(), $old_type, 'product_type');
+				\wp_set_object_terms($product->get_id(), $new_type, 'product_type');
+			}
 
-		// type 會被儲存為商品的類型，不需要再額外存進 meta data
-		$is_subscription = strpos( $new_type, 'subscription') !== false; // 判斷是否為訂閱商品
-		unset($meta_data['type']);
+			// type 會被儲存為商品的類型，不需要再額外存進 meta data
+			$is_subscription = strpos( $new_type, 'subscription') !== false; // 判斷是否為訂閱商品
+			unset($meta_data['type']);
 
-		if ($is_subscription && !class_exists('WC_Subscription')) {
-			throw new \Exception(__('WC_Subscription class does not exist, please make sure WooCommerce Subscription is installed', 'powerhouse'));
+			if ($is_subscription && !class_exists('WC_Subscription')) {
+				throw new \Exception(__('WC_Subscription class does not exist, please make sure WooCommerce Subscription is installed', 'powerhouse'));
+			}
 		}
 
 		unset( $meta_data['images'] ); // 圖片只做顯示用，不用存
