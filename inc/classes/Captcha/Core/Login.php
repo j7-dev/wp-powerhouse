@@ -26,7 +26,7 @@ final class Login extends Base {
 			return;
 		}
 
-		if (!\wc_string_to_bool($settings->enable_captcha_login)) {
+		if ($settings->enable_captcha_login !== 'yes') {
 			return;
 		}
 		parent::__construct();

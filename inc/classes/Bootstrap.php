@@ -21,12 +21,13 @@ final class Bootstrap {
 	/** Constructor */
 	public function __construct() {
 		Admin\Entry::instance();
-		Admin\Account::instance();
+
 
 		if ( class_exists( '\WooCommerce' ) ) {
 			Compatibility\Compatibility::instance();
 			Admin\Debug::instance();
 			Admin\OrderList::instance();
+			Admin\Account::instance();
 			// Admin\OrderDetail::instance();
 			Admin\DelayEmail::instance();
 		}

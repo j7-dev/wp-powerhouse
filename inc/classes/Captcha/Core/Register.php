@@ -20,7 +20,7 @@ final class Register extends Base {
 	/** Constructor */
 	public function __construct() {
 		$settings = Settings::instance();
-		if (!\wc_string_to_bool($settings->enable_captcha_register)) {
+		if ($settings->enable_captcha_register !== 'yes') {
 			return;
 		}
 
