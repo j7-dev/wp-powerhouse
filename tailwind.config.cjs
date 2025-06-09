@@ -88,7 +88,7 @@ module.exports = {
 			})
 		},
 	],
-	safelist: ['opacity-50', 'border-0', 'w-full', 'aspect-video', 'rounded-xl', 'h-6', 'w-6'],
+	safelist: ['opacity-50', 'border-0', 'w-full', 'aspect-video', 'rounded-xl', 'h-6', 'w-6', 'w-36'],
 	blocklist: [
 		'hidden',
 		'columns-1',
