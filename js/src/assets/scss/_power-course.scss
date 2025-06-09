@@ -114,7 +114,7 @@ h6 {
 			}
 			ins {
 				order: 1;
-				@apply text-error text-base md:text-2xl font-semibold;
+				@apply text-error text-base md:text-xl font-semibold;
 			}
 		}
 	}
@@ -184,7 +184,7 @@ h6 {
 			@apply items-start md:items-end flex flex-col md:flex-row gap-x-2 justify-start;
 			ins {
 				order: 1;
-				@apply text-red-400 text-base md:text-2xl font-semibold;
+				@apply text-red-400 text-base md:text-xl font-semibold;
 			}
 			del {
 				order: 2;
