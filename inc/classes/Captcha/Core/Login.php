@@ -49,6 +49,10 @@ final class Login extends Base {
 	 * @return null|\WP_User|\WP_Error
 	 */
 	public function authenticate( null|\WP_User|\WP_Error $user, string $username, string $password ) {
+		// 如果是來自結帳頁面，則跳過驗證碼檢查
+		if ( function_exists( '\is_checkout' ) && \is_checkout() ) {
+			return $user;
+		}
 		if (!( $user instanceof \WP_User )) {
 			return $user;
 		}
