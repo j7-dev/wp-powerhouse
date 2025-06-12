@@ -94,6 +94,23 @@ class Settings extends BaseDTO {
 		return self::$instance;
 	}
 
+	/**
+	 * 部分更新
+	 * 保留原本 array 上的值，只對新的 key-value 更新
+	 *
+	 * @param array<string, mixed> $values 更新值
+	 */
+	public function partial_update( array $values ): void {
+		$from_setting_array = $this->to_array();
+		$to_setting_array   = \wp_parse_args($values, $from_setting_array);
+		foreach ($to_setting_array as $key => $value) {
+			if (!property_exists($this, $key)) {
+				unset($to_setting_array[ $key ]);
+			}
+		}
+		\update_option(self::SETTINGS_KEY, $to_setting_array);
+	}
+
 	/** 初始化後執行 */
 	protected function after_init(): void {
 		$this->api_booster_rule_recipes = ApiBoosterRule::instance()->get_recipes();

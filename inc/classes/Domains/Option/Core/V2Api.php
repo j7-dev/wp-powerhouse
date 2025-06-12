@@ -95,6 +95,10 @@ final class V2Api extends ApiBase {
 		$allowed_fields = array_keys( $this->fields );
 
 		foreach ( $body_params as $key => $value ) {
+			if (Settings::SETTINGS_KEY === $key) {
+				Settings::instance()->partial_update($value);
+				continue;
+			}
 			if ( in_array( $key, $allowed_fields, true ) ) {
 				\update_option( $key, $value );
 			}
