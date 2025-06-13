@@ -164,6 +164,7 @@ abstract class Base {
 											action: 'need_captcha',
 											nonce: this.ajaxNonce,
 											username: $username.val(),
+											pathname: window.location.pathname,
 										},
 										success: (response) => {
 											// 如果不需要驗證就表單提交
