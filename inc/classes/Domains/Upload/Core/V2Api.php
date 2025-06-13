@@ -81,6 +81,7 @@ final class V2Api extends ApiBase {
 		$file_params = $request->get_file_params();
 		$body_params = $request->get_body_params();
 		$upload_only = $body_params['upload_only'] ?? '0';
+
 		if ( @$file_params['files']['tmp_name'] ) {
 
 			if ( ! function_exists( 'media_handle_upload' ) ) {
@@ -90,9 +91,25 @@ final class V2Api extends ApiBase {
 			}
 
 			if (\is_array($file_params['files']['tmp_name'])) {
-				return $this->handle_multiple_upload( $file_params['files'], $upload_only);
+				$upload_results = $this->handle_multiple_upload( $file_params['files'], $upload_only);
+				// 返回上傳成功的訊息
+				return new \WP_REST_Response(
+				[
+					'code'    => 'upload_success',
+					'message' => __('upload file success', 'powerhouse'),
+					'data'    => $upload_results,
+				],
+				);
 			}
-			return $this->handle_single_upload( $file_params['files'], $upload_only);
+			$upload_result = $this->handle_single_upload( $file_params['files'], $upload_only);
+			// 返回上傳成功的訊息
+			return new \WP_REST_Response(
+			[
+				'code'    => 'upload_success',
+				'message' => __('upload file success', 'powerhouse'),
+				'data'    => $upload_result,
+			],
+			);
 
 		}
 
@@ -105,17 +122,17 @@ final class V2Api extends ApiBase {
 	 * @param array{name:string,type:string,tmp_name:string,error:int,size:int} $file 檔案資訊
 	 * @param string|null                                                       $upload_only 是否只上傳，不新增到媒體庫 '0' or '1'
 	 *
-	 * @return \WP_REST_Response
+	 * @return array
 	 * @throws \Exception 不允許的 MIME 類型
 	 */
-	private function handle_single_upload( array $file, ?string $upload_only = '0' ): \WP_REST_Response {
+	private function handle_single_upload( array $file, ?string $upload_only = '0' ): array {
 
 		$_FILES['0'] = $file;
 
 		if ( (bool) $this->allowed_mime_types && !in_array($file['type'], $this->allowed_mime_types)) {
 			throw new \Exception(
 				sprintf(
-				__('not allowed mime type, only allow: %s', 'powerhouse'),
+				\__('not allowed mime type, only allow: %s', 'powerhouse'),
 				implode(', ', $this->allowed_mime_types)
 			)
 				);
@@ -123,17 +140,19 @@ final class V2Api extends ApiBase {
 
 		// 根據 MIME 類型的開頭判斷文件類型
 		$file_type = match (true) {
-			str_starts_with($file['type'], 'image/') => 'image',
-			str_starts_with($file['type'], 'video/') => 'video',
-			str_starts_with($file['type'], 'audio/') => 'audio',
+			\str_starts_with($file['type'], 'image/') => 'image',
+			\str_starts_with($file['type'], 'video/') => 'video',
+			\str_starts_with($file['type'], 'audio/') => 'audio',
 			default => 'other',
 		};
 
 		if ('image' === $file_type) {
-			return $this->handle_single_upload_image($file, $upload_only);
+			$upload_result = $this->handle_single_upload_image($file, $upload_only);
+			return $upload_result;
 		}
 
-		return $this->handle_single_upload_other($file, $upload_only);
+		$upload_result = $this->handle_single_upload_other($file, $upload_only);
+		return $upload_result;
 	}
 
 
@@ -143,9 +162,10 @@ final class V2Api extends ApiBase {
 	 * @param array{name:string,type:string,tmp_name:string,error:int,size:int} $file 檔案資訊
 	 * @param string|null                                                       $upload_only 是否只上傳，不新增到媒體庫 '0' or '1'
 	 *
-	 * @return \WP_REST_Response
+	 * @return array
+	 * @throws \Exception 取得圖片尺寸失敗 | 上傳失敗
 	 */
-	private function handle_single_upload_image( array $file, ?string $upload_only = '0' ): \WP_REST_Response {
+	private function handle_single_upload_image( array $file, ?string $upload_only = '0' ): array {
 
 		$_FILES['0'] = $file;
 
@@ -153,18 +173,12 @@ final class V2Api extends ApiBase {
 		$image_info = getimagesize($file['tmp_name']);
 
 		if ($image_info === false) {
-			return new \WP_REST_Response(
-				[
-					'code'    => 'upload_error',
-					'message' => __('get image size failed', 'powerhouse'),
-					'data'    => $file,
-				],
-				400
-			);
+			throw new \Exception(__('get image size failed', 'powerhouse'));
 		}
 		$width  = $image_info[0];
 		$height = $image_info[1];
 
+		$upload_result = [];
 		if ( $upload_only ) {
 			// 直接上傳到 wp-content/uploads 不會新增到媒體庫
 			$upload_overrides = [ 'test_form' => false ];
@@ -178,14 +192,7 @@ final class V2Api extends ApiBase {
 			$upload_result['width']  = $width;
 			$upload_result['height'] = $height;
 			if ( isset( $upload_result['error'] ) ) {
-				return new \WP_REST_Response(
-					[
-						'code'    => 'upload_error',
-						'message' => $upload_result['error'],
-						'data'    => $upload_result,
-					],
-					400
-				);
+				throw new \Exception($upload_result['error']);
 			}
 		} else {
 			// 將檔案上傳到媒體庫
@@ -195,15 +202,7 @@ final class V2Api extends ApiBase {
 			);
 
 			if ( \is_wp_error( $attachment_id ) ) {
-				// 處理錯誤
-				return new \WP_REST_Response(
-					[
-						'code'    => 'upload_error',
-						'message' => $attachment_id->get_error_message(),
-						'data'    => $file,
-					],
-					400
-				);
+				throw new \Exception($attachment_id->get_error_message());
 			}
 
 			$upload_result = [
@@ -217,14 +216,7 @@ final class V2Api extends ApiBase {
 			];
 		}
 
-		// 返回上傳成功的訊息
-		return new \WP_REST_Response(
-			[
-				'code'    => 'upload_success',
-				'message' => __('upload file success', 'powerhouse'),
-				'data'    => $upload_result,
-			],
-		);
+		return $upload_result;
 	}
 
 	/**
@@ -233,12 +225,14 @@ final class V2Api extends ApiBase {
 	 * @param array{name:string,type:string,tmp_name:string,error:int,size:int} $file 檔案資訊
 	 * @param string|null                                                       $upload_only 是否只上傳，不新增到媒體庫 '0' or '1'
 	 *
-	 * @return \WP_REST_Response
+	 * @return array
+	 * @throws \Exception 上傳失敗 | 不允許的 MIME 類型
 	 */
-	private function handle_single_upload_other( array $file, ?string $upload_only = '0' ): \WP_REST_Response {
+	private function handle_single_upload_other( array $file, ?string $upload_only = '0' ): array {
 
 		$_FILES['0'] = $file;
 
+		$upload_result = [];
 		if ( $upload_only ) {
 			// 直接上傳到 wp-content/uploads 不會新增到媒體庫
 			$upload_overrides = [ 'test_form' => false ];
@@ -251,14 +245,7 @@ final class V2Api extends ApiBase {
 			$upload_result['name'] = $file['name'];
 			$upload_result['size'] = $file['size'];
 			if ( isset( $upload_result['error'] ) ) {
-				return new \WP_REST_Response(
-					[
-						'code'    => 'upload_error',
-						'message' => $upload_result['error'],
-						'data'    => $upload_result,
-					],
-					400
-				);
+				throw new \Exception($upload_result['error']);
 			}
 		} else {
 			// 將檔案上傳到媒體庫
@@ -268,15 +255,7 @@ final class V2Api extends ApiBase {
 			);
 
 			if ( \is_wp_error( $attachment_id ) ) {
-				// 處理錯誤
-				return new \WP_REST_Response(
-					[
-						'code'    => 'upload_error',
-						'message' => $attachment_id->get_error_message(),
-						'data'    => $file,
-					],
-					400
-				);
+				throw new \Exception($attachment_id->get_error_message());
 			}
 
 			$upload_result = [
@@ -288,14 +267,7 @@ final class V2Api extends ApiBase {
 			];
 		}
 
-		// 返回上傳成功的訊息
-		return new \WP_REST_Response(
-			[
-				'code'    => 'upload_success',
-				'message' => __('upload file success', 'powerhouse'),
-				'data'    => $upload_result,
-			],
-		);
+		return $upload_result;
 	}
 
 	/**
@@ -304,13 +276,11 @@ final class V2Api extends ApiBase {
 	 * @param array{name:string[],type:string[],tmp_name:string[],error:int[],size:int[]} $files 檔案資訊
 	 * @param string|null                                                                 $upload_only 是否只上傳，不新增到媒體庫 '0' or '1'
 	 *
-	 * @return \WP_REST_Response
-	 * @throws \Exception 不允許的 MIME 類型
+	 * @return array
+	 * @throws \Exception 不允許的 MIME 類型 | 上傳失敗
 	 */
-	private function handle_multiple_upload( array $files, ?string $upload_only = '0' ): \WP_REST_Response {
-		$upload_results   = [];
-		$upload_overrides = [ 'test_form' => false ];
-		$_FILES           = [];
+	private function handle_multiple_upload( array $files, ?string $upload_only = '0' ): array {
+		$upload_results = [];
 
 		// 遍歷每個上傳的檔案
 		foreach ( $files['tmp_name'] as $key => $tmp_name ) {
@@ -323,95 +293,10 @@ final class V2Api extends ApiBase {
 					'size'     =>$files['size'][ $key ],
 				];
 
-				if ( (bool) $this->allowed_mime_types && !in_array($files['type'][ $key ], $this->allowed_mime_types)) {
-					throw new \Exception(
-						sprintf(
-						__('not allowed mime type, only allow: %s', 'powerhouse'),
-						implode(', ', $this->allowed_mime_types)
-					)
-					);
-				}
-
-				// 獲取圖片尺寸
-				$image_info = getimagesize($file['tmp_name']);
-
-				if ($image_info === false) {
-					return new \WP_REST_Response(
-						[
-							'code'    => 'upload_error',
-							'message' => __('get image size failed', 'powerhouse'),
-							'data'    => $file,
-						],
-						400
-					);
-				}
-				$width  = $image_info[0];
-				$height = $image_info[1];
-
-				$_FILES[ $key ] = $file;
-
-				if ( $upload_only ) {
-					// 直接上傳到 wp-content/uploads 不會新增到媒體庫
-					$upload_result = \wp_handle_upload( $file, $upload_overrides );
-					unset( $upload_result['file'] );
-					$upload_result['id'] = null;
-					/** @var array{name: string, type: string, tmp_name: string, size: int, error: int} $file */
-					$upload_result['type']   = $file['type'];
-					$upload_result['name']   = $file['name'];
-					$upload_result['size']   = $file['size'];
-					$upload_result['width']  = $width;
-					$upload_result['height'] = $height;
-					if ( isset( $upload_result['error'] ) ) {
-						return new \WP_REST_Response(
-							[
-								'code'    => 'upload_error',
-								'message' => $upload_result['error'],
-								'data'    => $upload_result,
-							],
-							400
-						);
-					}
-				} else {
-					// 將檔案上傳到媒體庫
-					$attachment_id = \media_handle_upload(
-						file_id: $key,
-						post_id: 0
-					);
-
-					if ( \is_wp_error( $attachment_id ) ) {
-						// 處理錯誤
-						return new \WP_REST_Response(
-							[
-								'code'    => 'upload_error',
-								'message' => $attachment_id->get_error_message(),
-								'data'    => $file,
-							],
-							400
-						);
-					}
-
-					$upload_result = [
-						'id'     => (string) $attachment_id,
-						'url'    => \wp_get_attachment_url( $attachment_id ),
-						'type'   => $file['type'],
-						'name'   => $file['name'],
-						'size'   => $file['size'],
-						'width'  => $width,
-						'height' => $height,
-					];
-				}
-
-				$upload_results[] = $upload_result;
+				$upload_results[] = $this->handle_single_upload( $file, $upload_only );
 			}
 		}
 
-		// 返回上傳成功的訊息
-		return new \WP_REST_Response(
-			[
-				'code'    => 'upload_success',
-				'message' => __('upload file success', 'powerhouse'),
-				'data'    => $upload_results,
-			],
-		);
+		return $upload_results;
 	}
 }
