@@ -49,6 +49,11 @@ final class Login extends Base {
 	 * @return null|\WP_User|\WP_Error
 	 */
 	public function authenticate( null|\WP_User|\WP_Error $user, string $username, string $password ) {
+		// 如果是來自結帳頁面，則跳過驗證碼檢查
+		if ('checkout' === \str_replace('/', '', $_SERVER['REQUEST_URI'] ?? '')) { // phpcs:ignore
+			return $user;
+		}
+
 		if (!( $user instanceof \WP_User )) {
 			return $user;
 		}
@@ -69,6 +74,18 @@ final class Login extends Base {
 	public function need_captcha(): void {
 
 		$username = $_POST['username'] ?? ''; // phpcs:ignore
+		$pathname = $_POST['pathname'] ?? ''; // phpcs:ignore
+
+		if (\str_contains($pathname, 'checkout')) {
+			// 如果是來自結帳頁面，則跳過驗證碼檢查
+			\wp_send_json(
+				[
+					'success' => true,
+					'data'    => false,
+				]
+				);
+			exit;
+		}
 
 		if (!$username) {
 			\wp_send_json_error([ '缺少用戶名稱' ]);
