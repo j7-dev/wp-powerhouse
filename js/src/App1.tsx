@@ -21,7 +21,7 @@ import { useEnv } from 'antd-toolkit'
 import 'antd-toolkit/style.css'
 
 // 如果 是 vite dev 才 import scss
-// 現在執行 yarn watch-css:admin 就有 css
+// 現在執行 pnpm watch-css:admin 就有 css
 // if (import.meta.env.DEV) {
 // 	import('@/assets/scss/admin.scss')
 // 	import('@/assets/scss/front.scss')
