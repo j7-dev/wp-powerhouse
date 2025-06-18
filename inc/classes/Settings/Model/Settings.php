@@ -33,7 +33,7 @@ class Settings extends BaseDTO {
 	public string $last_name_optional = 'yes';
 
 	/** @var string $enable_captcha_login 啟用登入驗證碼 */
-	public string $enable_captcha_login = 'yes';
+	public string $enable_captcha_login = 'no';
 
 	/** @var array<string> $captcha_role_list 驗證碼角色列表 */
 	public array $captcha_role_list = [ 'administrator' ];
