@@ -22,7 +22,6 @@ final class Bootstrap {
 	public function __construct() {
 		Admin\Entry::instance();
 
-
 		if ( class_exists( '\WooCommerce' ) ) {
 			Compatibility\Compatibility::instance();
 			Admin\Debug::instance();
@@ -46,6 +45,8 @@ final class Bootstrap {
 		\add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_admin_assets' ], -100 );
 
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'check_lc_array' ], 999 );
+
+		\add_filter('script_loader_src', [ __CLASS__, 'modify_script_src' ], 10, 2);
 	}
 
 
@@ -165,5 +166,27 @@ final class Bootstrap {
 	 */
 	public static function check_lc_array(): void {
 		$lc_array = LCUtils::get_lc_array();
+	}
+
+	/**
+	 * 修改 script 的 src
+	 * 因為 local build 後，會載入路徑而不是 url
+	 *
+	 * @param string $src script 的 src
+	 * @param string $handle script 的 handle
+	 * @return string
+	 */
+	public static function modify_script_src( $src, $handle ) {
+
+		if (Plugin::$env !== 'local') {
+			return $src;
+		}
+
+		if ($handle !== Plugin::$kebab) {
+			return $src;
+		}
+
+		$src = str_replace('C:/Users/User/DEV/turborepo/powerrepo/apps', 'plugins', $src);
+		return $src;
 	}
 }
