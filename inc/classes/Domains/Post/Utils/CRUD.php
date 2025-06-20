@@ -208,27 +208,97 @@ abstract class CRUD {
 	 * @param array{from_tree: array<array{id: string}>, to_tree: array<array{id: string}>} $params Parameters.
 	 *
 	 * @return true|\WP_Error
+	 * @throws \Exception 排序失敗
 	 */
 	public static function sort_posts( array $params ): bool|\WP_Error {
 		$from_tree = $params['from_tree'] ?? []; // @phpstan-ignore-line
 		$to_tree   = $params['to_tree'] ?? []; // @phpstan-ignore-line
 
+		// 使用 wpdb 一次更新
+		global $wpdb;
+
+		// 批量更新的大小
+		$batch_size = 50; // 每次處理50筆資料
+
+		// 分批處理資料
+		$batches = array_chunk($to_tree, $batch_size);
+
+		// 開始事務處理
+		$wpdb->query('START TRANSACTION');
+
+		try {
+			// 準備兩個不同的更新集合：一個用於只更新 menu_order，另一個用於同時更新 menu_order 和 post_parent
+			foreach ($batches as $batch) {
+				// 構建 CASE WHEN 語句
+				$ids              = [];
+				$menu_order_cases = [];
+				$parent_cases     = [];
+
+				foreach ($batch as $item) {
+					$id         = intval($item['id']);
+					$ids[]      = $id;
+					$menu_order = intval($item['menu_order']);
+					$parent_id  = $item['parent_id'];
+
+					// 為每個ID準備menu_order的CASE語句
+					$menu_order_cases[] = $wpdb->prepare('WHEN ID = %d THEN %d', $id, $menu_order);
+
+					// 則準備post_parent的CASE語句
+					$parent_cases[] = $wpdb->prepare('WHEN ID = %d THEN %d', $id, $parent_id);
+				}
+
+				// 如果沒有要處理的ID，則跳過
+				if (!$ids) {
+					continue;
+				}
+
+				// 構建ID列表
+				$id_list = implode(',', $ids);
+
+				// 構建批量更新SQL
+				$sql  = "UPDATE {$wpdb->posts} SET menu_order = CASE ";
+				$sql .= implode(' ', $menu_order_cases);
+				$sql .= ' ELSE menu_order END ';
+
+				// 如果有post_parent需要更新，加入post_parent的更新語句
+				if ($parent_cases) {
+					$sql .= ', post_parent = CASE ';
+					$sql .= implode(' ', $parent_cases);
+					$sql .= ' ELSE post_parent END ';
+				}
+
+				// 加入WHERE條件，限制只更新需要的記錄
+				$sql .= " WHERE ID IN ($id_list)";
+
+				// 執行批量更新 wp_posts
+				$result = $wpdb->query($sql);  // phpcs:ignore
+
+				if ($result === false) {
+					throw new \Exception('批量更新失敗: ' . $wpdb->last_error);
+				}
+			}
+
+			// 提交事務
+			$wpdb->query('COMMIT');
+
+			// 清除文章內容快取
+			\wp_cache_flush_group('posts');
+
+			// 清除文章的中繼資料快取
+			\wp_cache_flush_group('post_meta');
+
+		} catch (\Exception $e) {
+			// 回滾事務
+			$wpdb->query('ROLLBACK');
+			throw new \Exception('排序失敗: ' . $e->getMessage());
+		}
+
 		$delete_ids = [];
 		foreach ($from_tree as $from_node) {
 			$from_id = $from_node['id'];
 			$to_node = array_filter($to_tree, fn ( $node ) => $node['id'] === $from_id);
-			if (empty($to_node)) {
+			if (!$to_node) {
 				$delete_ids[] = $from_id;
-			}
-		}
-		foreach ($to_tree as $node) {
-			$to_id = $node['id'];
-			$args  = self::converter($node);
-
-			$insert_result = self::update_post($to_id, $args);
-
-			if (\is_wp_error($insert_result)) {
-				return $insert_result;
 			}
 		}
 
