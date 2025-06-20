@@ -221,6 +221,7 @@ final class V2Api extends ApiBase {
 
 		$skip_keys = [
 			'post_content',
+			'post_excerpt',
 		];
 		/** @var array<string, mixed> $body_params 過濾字串，防止 XSS 攻擊 */
 		$body_params = WP::sanitize_text_field_deep($body_params, true, $skip_keys);
