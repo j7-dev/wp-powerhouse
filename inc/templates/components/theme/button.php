@@ -4,7 +4,7 @@ $theme = $args['theme'] ?? 'light';
 
 printf(
 /*html*/'
-<button class="outline-base-content text-start outline-offset-4 bg-transparent" data-act-class="[&_svg]:visible" data-set-theme="%1$s" type="button">
+<button class="outline-base-content text-start outline-offset-4 bg-transparent !p-0 !m-0" data-act-class="[&_svg]:visible" data-set-theme="%1$s" type="button">
 	<span class="bg-base-100 rounded-btn text-base-content tw-block w-full cursor-pointer font-sans" data-theme="%1$s">
 		<span class="grid grid-cols-5 grid-rows-3">
 			<span class="col-span-5 row-span-3 row-start-1 flex items-center gap-2 px-4 py-3">
