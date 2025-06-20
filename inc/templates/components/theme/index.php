@@ -68,6 +68,7 @@ $themes = [
 
 				constructor() {
 					this.$dropdown = $('#pc-theme-changer');
+					this.theme = localStorage.getItem('theme') || 'custom';
 					this.attachEvent();
 				}
 
@@ -81,6 +82,10 @@ $themes = [
 					$('html').attr('data-theme', this._theme);
 					// 儲存到 localStorage
 					localStorage.setItem('theme', this._theme);
+
+					// 當前主題的 svg 勾勾要移除 invisible class
+					this.$dropdown.find(`button[data-set-theme]`).find('svg.check-icon').addClass('invisible');
+					this.$dropdown.find(`button[data-set-theme="${value}"]`).find('svg.check-icon').removeClass('invisible');
 				}
 
 				get theme() {
