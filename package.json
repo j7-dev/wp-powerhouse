@@ -5,8 +5,7 @@
 	"scripts": {
 		"bootstrap": "composer install --no-interaction",
 		"dev": "vite",
-		"prebuild": "echo 'todo: remove console'",
-		"build": "vite build && node release/mv-manifest.cjs",
+		"build": "vite build",
 		"build-css:admin": "sass ./js/src/assets/scss/admin.scss ./js/src/assets/css/admin.css && npx tailwindcss -i ./js/src/assets/css/admin.css -o ./js/dist/css/admin.min.css --minify",
 		"watch-css:admin": "sass ./js/src/assets/scss/admin.scss ./js/src/assets/css/admin.css && npx tailwindcss -i ./js/src/assets/css/admin.css -o ./js/dist/css/admin.min.css --watch --minify",
 		"build-css:front": "sass ./js/src/assets/scss/front.scss ./js/src/assets/css/front.css && npx tailwindcss -c ./tailwind.config.front.cjs -i ./js/src/assets/css/front.css -o ./js/dist/css/front.min.css --minify",
