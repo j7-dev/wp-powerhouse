@@ -36,7 +36,7 @@ const index = () => {
 			<div className="flex flex-col md:flex-row gap-4">
 				<div className="w-full max-w-[400px] px-3 h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden">
 					<Custom />
-					<Heading className="mt-8">選擇主題</Heading>
+					<Heading className="mt-8">或選擇主題</Heading>
 					<Switch
 						formItemProps={{
 							label: '在前台顯示主題切換按鈕',

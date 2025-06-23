@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import {
 	Transfer,
 	TransferProps,
@@ -6,6 +6,7 @@ import {
 	Input,
 	FormItemProps,
 	Button,
+	Tooltip,
 	Popconfirm,
 } from 'antd'
 import { getSettingsName } from '@/pages/admin/Settings/utils'
@@ -91,13 +92,13 @@ const RuleSet: React.FC<{ index: number }> = ({ index }) => {
 					</Item>
 					<Item
 						name={getRulesName([index, 'rules'])}
-						label="填寫請求規則"
+						label="填寫請求 url 規則"
 						className="mb-0"
-						tooltip="不需要填網址，每行一個規則，例如：/wp-json/v2/powerhouse/* ，* 代表任意字串"
+						tooltip="只有當請求滿足 url 規則時，才會載入您指定的外掛"
 					>
 						<Input.TextArea
 							rows={6}
-							placeholder="例如：/wp-json/v2/powerhouse/*"
+							placeholder="不需要填網址，每行一個規則，例如：/wp-json/v2/powerhouse/* ，* 代表任意字串 例如：/wp-json/v2/powerhouse/*"
 						/>
 					</Item>
 				</div>
@@ -121,7 +122,18 @@ const RuleSet: React.FC<{ index: number }> = ({ index }) => {
 							}
 							return p
 						})}
-						titles={['不載入', '載入']}
+						titles={[
+							<Tooltip title="這邊的外掛 ( 不論是否啟用 ) ，在符合 url 規則時，將不會載入">
+								<span className="bg-red-100 text-red-500 text-xs px-2 py-1 rounded-xl cursor-pointer">
+									不載入
+								</span>
+							</Tooltip>,
+							<Tooltip title="這邊的外掛 ( 不論是否啟用 ) ，在符合 url 規則時，將會載入">
+								<span className="bg-green-100 text-green-500 text-xs px-2 py-1 rounded-xl cursor-pointer">
+									載入
+								</span>
+							</Tooltip>,
+						]}
 						targetKeys={watchPlugins}
 						onChange={onChange}
 						render={(item) => item.title}
