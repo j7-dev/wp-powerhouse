@@ -10,16 +10,16 @@ use J7\Powerhouse\Settings\Model\Settings as SettingsDTO;
 class Theme {
 
 	/** @var string primary 顏色 */
-	public string $p = '49.12% 0.3096 275.75';
+	public string $p = '59.865739207996604% 0.21935054351796926 259.03952196623266';
 
 	/** @var string primary content 內容顏色 */
-	public string $pc = '89.824% 0.06192 275.75';
+	public string $pc = '99.99999934735459% 0 0';
 
 	/** @var string secondary 顏色 */
-	public string $s = '69.71% 0.329 342.55';
+	public string $s = '73.61955000221813% 0.14254171057918505 233.93314768063215';
 
 	/** @var string secondary content 內容顏色 */
-	public string $sc = '98.71% 0.0106 342.55';
+	public string $sc = '99.99999934735459% 0 0';
 
 	/** @var string accent 顏色 */
 	public string $a = '76.76% 0.184 183.61';
