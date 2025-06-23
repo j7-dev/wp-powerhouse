@@ -14,6 +14,9 @@ export default defineConfig({
 		cors: {
 			origin: '*',
 		},
+		fs: {
+			allow: ['./', '../../packages'],
+		},
 	},
 	build: {
 		emptyOutDir: true,
