@@ -8,8 +8,8 @@
 	p {
 		margin-block-start: 0rem;
 		margin-block-end: 0rem;
-		min-height: 1.5em;
-		line-height: 1.5;
+		min-height: 1.75em;
+		line-height: 1.75;
 		width: 100%;
 	}
 	code {
@@ -136,9 +136,8 @@
 		--bn-colors-highlights-pink-text: #ad1a72;
 		--bn-colors-highlights-pink-background: #f4dfeb;
 
-		--bn-font-family: "Inter", "SF Pro Display", -apple-system,
-			BlinkMacSystemFont, "Open Sans", "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-			"Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+		--bn-font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Open Sans", "Segoe UI", "Roboto",
+			"Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 		--bn-border-radius: 6px;
 
 		/* Derived values */
