@@ -42,7 +42,7 @@ echo '<div class="grid grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4 mb-12">';
 foreach ($children_posts as $child_post) {
 	printf(
 	/*html*/'
-	<a href="%1$s" class="group w-full rounded-box border border-solid border-base-content/30 p-4">
+	<a href="%1$s" class="group w-full rounded-box border border-solid border-base-content/30 px-4 py-2 md:py-4">
 		<p class="m-0 text-sm md:text-base text-base-content group-hover:text-primary">%2$s</p>
 	</a>
 	',
