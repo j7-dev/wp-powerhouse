@@ -43,6 +43,9 @@ class Woocommerce extends DTO {
 	 * "attribute_rewrite_slug": string} $permalinks 永久連結 */
 	public array $permalinks;
 
+	/** @var bool $manage_stock 管理庫存 */
+	public bool $manage_stock;
+
 	/** 取得 ProductTypes @return self */
 	public static function instance(): self {
 		$countries = \WC()->countries->get_countries();
@@ -64,6 +67,7 @@ class Woocommerce extends DTO {
 				'dimension_unit'          => $wc_settings->dimension_unit,
 				'weight_unit'             => $wc_settings->weight_unit,
 				'permalinks'              => \wc_get_permalink_structure(),
+				'manage_stock'            => Settings::instance()->manage_stock,
 			],
 			ProductTypes::instance()->to_array(),
 		);
