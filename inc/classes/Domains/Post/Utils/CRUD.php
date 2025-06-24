@@ -144,6 +144,7 @@ abstract class CRUD {
 	 * @return array<string, mixed>
 	 */
 	public static function get_meta_keys_array( \WP_Post $post, array $meta_keys = [] ): array {
+		// ENHANCE 目前 $meta_keys_array 為 string[] 可能可以改成 key-value 結構 array<string, mixed> 由前端直接傳入預設值
 		$meta_keys_array = [];
 		foreach ($meta_keys as $meta_key) {
 			$meta_keys_array[ $meta_key ] = \get_post_meta( $post->ID, $meta_key, true );
