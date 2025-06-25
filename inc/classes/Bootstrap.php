@@ -88,6 +88,16 @@ final class Bootstrap {
 	 */
 	public static function enqueue_frontend_assets(): void {
 		\wp_enqueue_style( Plugin::$snake . '_front', Plugin::$url . '/js/dist/css/front.min.css', [], Plugin::$version );
+		\wp_enqueue_script(
+			Plugin::$snake . '_frontend_js',
+			Plugin::$url . '/inc/assets/js/frontend.js',
+			[ 'jquery' ],
+			Plugin::$version,
+			[
+				'in-footer' => true,
+				'strategy'  => 'async',
+			]
+			);
 	}
 
 	/**

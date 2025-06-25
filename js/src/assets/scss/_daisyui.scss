@@ -1,4 +1,13 @@
-.pc-btn {
-	padding-top: 0rem;
-	padding-bottom: 0rem;
+#tw {
+	.pc-btn {
+		padding-top: 0rem;
+		padding-bottom: 0rem;
+	}
+
+	// 讓 pc-btn-disabled 顯示滑鼠禁用樣式，阻止點擊由 JS 去做
+	.pc-btn-disabled {
+		position: relative;
+		cursor: not-allowed;
+		pointer-events: auto;
+	}
 }
