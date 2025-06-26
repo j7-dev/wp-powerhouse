@@ -9,7 +9,7 @@ namespace J7\Powerhouse\Utils;
  * 使用方式
  * 1. 繼承此類
  * 2. 定義 $rows 資料源
- * 3. 定義 $filename, $columns, $render_columns
+ * 3. 定義 $filename, $columns
  * 4. 呼叫 export()
  * */
 abstract class ExportCSV {
@@ -20,11 +20,8 @@ abstract class ExportCSV {
 	/** @var array<object> 資料 */
 	protected array $rows;
 
-	/** @var array<string> 欄位名稱，預設會從 $row 身上拿屬性 */
+	/** @var array<string, string> 欄位名稱，預設會從 $row 身上拿屬性 */
 	protected array $columns = [];
-
-	/** @var array<callable> 欄位值的 callback */
-	protected array $render_columns = [];
 
 	/**
 	 * 匯出 CSV
@@ -46,17 +43,20 @@ abstract class ExportCSV {
 			fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
 			// CSV 標頭
-			$fputcsv = fputcsv($output, $this->columns);
+			$fputcsv = fputcsv($output, array_values($this->columns));
 			if ($fputcsv === false) {
 				throw new \Exception('無法寫入 CSV 標頭');
 			}
 
-			foreach ($this->rows as $row) {
-				fputcsv(
-				$output,
-				self::get_field_value($row)
-				);
-			}
+			Base::batch_process(
+				$this->rows,
+				function ( $row ) use ( &$output ) {
+					fputcsv(
+						$output,
+						self::get_field_value($row)
+					);
+				}
+			);
 
 			fclose($output);
 			exit;
@@ -67,7 +67,6 @@ abstract class ExportCSV {
 
 	/**
 	 * 取得欄位值
-	 * 如果 render_columns 有填入 callback 則會使用 callback 的結果
 	 * 否則使用 row 的值
 	 *
 	 * @param object $row 文章
@@ -75,13 +74,9 @@ abstract class ExportCSV {
 	 */
 	protected function get_field_value( $row ) {
 		$values = [];
-		foreach ($this->columns as $index => $column) {
-			if (is_callable(@$this->render_columns[ $index ])) {
-				$values[] = $this->render_columns[ $index ]($row);
-				continue;
-			}
-			if (property_exists($row, $column)) {
-				$values[] = $row->$column;
+		foreach ($this->columns as $property => $column_label) {
+			if (property_exists($row, $property)) {
+				$values[] = $row->$property;
 				continue;
 			}
 
