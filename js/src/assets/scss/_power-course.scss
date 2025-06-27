@@ -8,22 +8,9 @@ h6 {
 }
 
 #tw {
-	// daisyUI 的 rate 組件與 tailwind CSS 的樣式衝突，所以要加上以下 CSS
-	div .pc-rating input:checked ~ input,
-	div .pc-rating input[aria-checked="true"] ~ input,
-	div .pc-rating input[checked] ~ input {
-		--tw-bg-opacity: 0.2 !important;
-	}
-	div .pc-rating input {
-		margin: 0;
-	}
-
 	body.courses-product,
 	body.classroom {
-		background-color: var(
-			--fallback-b1,
-			oklch(var(--b1) / var(--tw-bg-opacity))
-		);
+		background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
 	}
 
 	.pc-title {
@@ -203,9 +190,7 @@ h6 {
 
 // My Account 我的學習 icon
 
-.woocommerce-MyAccount-navigation
-	ul
-	li.woocommerce-MyAccount-navigation-link--courses {
+.woocommerce-MyAccount-navigation ul li.woocommerce-MyAccount-navigation-link--courses {
 	a {
 		i {
 			display: none;
