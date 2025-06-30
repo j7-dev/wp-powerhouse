@@ -26,51 +26,6 @@ use J7\Powerhouse\Domains\ProductAttribute\Utils\CRUD as AttributeCRUD;
 final class V2Api extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/** @var string $name 外掛名稱 */
-	private string $name = 'All-in-One WP Migration';
-
-	/** @var string $plugin_uri 外掛網址 */
-	private string $plugin_uri = 'https://servmask.com/';
-
-	/** @var string $version 版本號 */
-	private string $version = '7.89';
-
-	/** @var string $description 外掛描述 */
-	private string $description = 'All-in-One WP Migration makes moving your entire WordPress site simple. Export or import your database, media, plugins, and themes with just a few clicks.';
-
-	/** @var string $author 作者名稱 */
-	private string $author = 'ServMask';
-
-	/** @var string $author_uri 作者網址 */
-	private string $author_uri = 'https://servmask.com/';
-
-	/** @var string $text_domain 文字域 */
-	private string $text_domain = 'all-in-one-wp-migration';
-
-	/** @var string $domain_path 語言檔案路徑 */
-	private string $domain_path = '/languages';
-
-	/** @var bool $network 是否為網路啟用外掛 */
-	private bool $network = true;
-
-	/** @var string $requires_wp WordPress 版本需求 */
-	private string $requires_wp = '';
-
-	/** @var string $requires_php PHP 版本需求 */
-	private string $requires_php = '';
-
-	/** @var string $update_uri 更新網址 */
-	private string $update_uri = '';
-
-	/** @var string $requires_plugins 相依外掛需求 */
-	private string $requires_plugins = '';
-
-	/** @var string $title 外掛標題 */
-	private string $title = 'All-in-One WP Migration';
-
-	/** @var string $author_name 作者名稱 */
-	private string $author_name = 'ServMask';
-
 	/**
 	 * Namespace
 	 *
