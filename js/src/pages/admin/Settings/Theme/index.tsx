@@ -28,11 +28,7 @@ const index = () => {
 	const themeStyle = getStyle(mergedTheme)
 	return (
 		<>
-			<Item
-				name={['powerhouse_settings', 'theme']}
-				hidden
-				initialValue={'power'}
-			/>
+			<Item name={['powerhouse_settings', 'theme']} hidden />
 			<div className="flex flex-col md:flex-row gap-4">
 				<div className="w-full max-w-[400px] px-3 h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden">
 					<Custom />

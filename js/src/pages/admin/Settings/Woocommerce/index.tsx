@@ -23,7 +23,6 @@ const index = () => {
 								查看信件寄送的狀況
 							</>
 						),
-						initialValue: 'yes',
 					}}
 				/>
 
@@ -34,7 +33,6 @@ const index = () => {
 						name: ['powerhouse_settings', 'last_name_optional'],
 						label: '使姓氏欄位為非必填',
 						tooltip: '啟用後，不再強制要求用戶必須填寫姓氏',
-						initialValue: 'yes',
 					}}
 				/>
 			</div>

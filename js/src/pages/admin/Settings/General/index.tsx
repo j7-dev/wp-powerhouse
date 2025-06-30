@@ -23,7 +23,6 @@ const index = () => {
 						name: ['powerhouse_settings', 'enable_captcha_login'],
 						label: '啟用登入驗證碼 (推薦啟用)',
 						tooltip: '啟用後，可以提高帳號安全性',
-						initialValue: 'yes',
 					}}
 				/>
 
@@ -41,7 +40,6 @@ const index = () => {
 						name: ['powerhouse_settings', 'enable_captcha_register'],
 						label: '啟用註冊驗證碼 (推薦啟用)',
 						tooltip: '啟用後，可以防止機器人註冊',
-						initialValue: 'yes',
 					}}
 				/>
 			</div>

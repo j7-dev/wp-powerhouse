@@ -50,7 +50,6 @@ const Custom = () => {
 						noStyle
 						key={key}
 						name={['powerhouse_settings', 'theme_css', key]}
-						initialValue={defaultValue}
 						getValueProps={(value) => {
 							return {
 								value: value ? oklchToHex(value) : '',
@@ -77,7 +76,6 @@ const Custom = () => {
 					<Item
 						key={key}
 						name={['powerhouse_settings', 'theme_css', key]}
-						initialValue={defaultValue}
 						className="mb-0"
 						getValueProps={(value) => ({ value: parseFloat(value) || 0 })}
 						normalize={(value) => `${value}${unit}`}
@@ -98,7 +96,6 @@ const Custom = () => {
 
 			<Item
 				name={['powerhouse_settings', 'theme_css', 'color-scheme']}
-				initialValue="light"
 				hidden
 			/>
 		</>
