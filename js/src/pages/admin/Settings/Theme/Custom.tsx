@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Form, ColorPicker, InputNumber } from 'antd'
 import { COLOR_MAPPER, THEME_MAPPER, NUMBER_MAPPER } from './constants'
 import { oklchToHex, hexToOklch } from './utils'
@@ -7,33 +7,25 @@ import { Heading, Switch } from 'antd-toolkit'
 const { Item } = Form
 
 const Custom = () => {
-	const [isCustom, setIsCustom] = useState(false)
 	const form = Form.useFormInstance()
+
 	const watchTheme = Form.useWatch(['powerhouse_settings', 'theme'], form)
 
 	useEffect(() => {
 		if (!watchTheme) {
 			return
 		}
-		if ('custom' !== watchTheme) {
-			setIsCustom(false)
-			const theme = THEME_MAPPER.find(
-				({ theme: singleTheme }) => singleTheme === watchTheme,
-			)
-			if (!theme) return
-
-			// const formattedTheme = formatTheme(theme)
-			form.setFieldValue(['powerhouse_settings', 'theme_css'], theme)
-		} else {
-			setIsCustom(true)
+		if ('custom' === watchTheme) {
+			return
 		}
+		const theme = THEME_MAPPER.find(
+			({ theme: singleTheme }) => singleTheme === watchTheme,
+		)
+		if (!theme) return
+
+		// const formattedTheme = formatTheme(theme)
+		form.setFieldValue(['powerhouse_settings', 'theme_css'], theme)
 	}, [watchTheme])
-
-	useEffect(() => {
-		if (isCustom) {
-			form.setFieldValue(['powerhouse_settings', 'theme'], 'custom')
-		}
-	}, [isCustom])
 
 	return (
 		<>
@@ -64,7 +56,7 @@ const Custom = () => {
 							size="small"
 							showText={() => label}
 							onChange={(value) => {
-								setIsCustom(true)
+								form.setFieldValue(['powerhouse_settings', 'theme'], 'custom')
 							}}
 						/>
 					</Item>
@@ -87,7 +79,7 @@ const Custom = () => {
 							addonBefore={<div className="w-28 text-left">{label}</div>}
 							addonAfter={<div className="w-6 text-center">{unit}</div>}
 							onChange={(value) => {
-								setIsCustom(true)
+								form.setFieldValue(['powerhouse_settings', 'theme'], 'custom')
 							}}
 						/>
 					</Item>
