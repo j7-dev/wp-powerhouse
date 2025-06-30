@@ -84,11 +84,23 @@ module.exports = {
 					'@screen xl': {
 						maxWidth: '1280px',
 					},
-				}
+				},
 			})
 		},
 	],
-	safelist: ['opacity-50', 'border-0', 'w-full', 'aspect-video', 'rounded-xl', 'h-6', 'w-6', 'w-36'],
+	safelist: [
+		'opacity-50',
+		'border-0',
+		'w-full',
+		'aspect-video',
+		'rounded-xl',
+		'h-6',
+		'w-6',
+		'w-36',
+		'w-12',
+		'h-12',
+		'bg-white/70',
+	],
 	blocklist: [
 		'hidden',
 		'columns-1',
@@ -98,7 +110,7 @@ module.exports = {
 		'inline',
 		'blur',
 		'size-full',
-		'container'
+		'container',
 	],
 	daisyui: {
 		themes: [
