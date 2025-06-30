@@ -122,6 +122,15 @@ h6 {
 	--audio-border: none;
 	--video-border-radius: 0px;
 	--video-border: none;
+
+	// 影片撥放結束後，隱藏回放按鈕
+	.pc-vidstack.has-next-post {
+		div[data-media-player][data-ended] {
+			.vds-play-button {
+				display: none !important;
+			}
+		}
+	}
 }
 
 // 不知道為什麼背景有填色
@@ -297,5 +306,11 @@ div#tab-content-description {
 	}
 	100% {
 		transform: translateX(175%);
+	}
+}
+
+@keyframes circle-progress {
+	to {
+		stroke-dashoffset: 0;
 	}
 }
