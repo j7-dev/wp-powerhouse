@@ -35,7 +35,7 @@ echo '<div class="flex gap-x-2 md:gap-x-4">';
 if ($prev_post) {
 	printf(
 	/*html*/'
-	<a href="%1$s" class="%2$s" style="text-decoration: none;">
+	<a href="%1$s" class="pc-prev-post %2$s" style="text-decoration: none;">
 		<svg class="size-4 md:size-6 stroke-base-content group-hover:stroke-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g><g> <path d="M4 12H20M4 12L8 8M4 12L8 16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
 		<div class="flex-1 pt-4 md:pt-6">
 			<p class="m-0 text-sm md:text-base text-base-content group-hover:text-primary">%3$s</p>
@@ -52,7 +52,7 @@ if ($prev_post) {
 if ($next_post) {
 	printf(
 	/*html*/'
-	<a href="%1$s" class="%2$s" style="text-decoration: none;">
+	<a href="%1$s" class="pc-next-post %2$s" style="text-decoration: none;">
 		<div class="text-right flex-1 pt-4 md:pt-6">
 			<p class="m-0 text-sm md:text-base text-base-content group-hover:text-primary">%3$s</p>
 		</div>
