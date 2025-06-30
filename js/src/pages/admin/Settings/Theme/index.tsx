@@ -219,7 +219,7 @@ const index = () => {
 										</p>
 									</div>
 									<div className="pc-card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-										<form className="pc-card-body">
+										<div className="pc-card-body">
 											<div className="pc-form-control">
 												<label className="pc-label">
 													<span className="pc-label-text">Email</span>
@@ -252,7 +252,7 @@ const index = () => {
 													Login
 												</button>
 											</div>
-										</form>
+										</div>
 									</div>
 								</div>
 							</div>
