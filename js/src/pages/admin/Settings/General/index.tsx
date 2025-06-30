@@ -16,6 +16,17 @@ const index = () => {
 	return (
 		<div className="flex flex-col md:flex-row gap-8">
 			<div className="w-full max-w-[400px]">
+				<Heading>Email 設定</Heading>
+
+				<Switch
+					formItemProps={{
+						name: ['powerhouse_settings', 'enable_manual_send_email'],
+						label: '允許用戶手動發信',
+						tooltip:
+							'啟用後，可以允許用戶手動發信，目前僅在 Power Course 有手動發信功能',
+					}}
+				/>
+
 				<Heading className="mt-16">登入安全</Heading>
 
 				<Switch

@@ -14,6 +14,30 @@ class Settings extends BaseDTO {
 	// mu-plugins 裡面的 api booster 使用此 key ，請勿修改
 	const SETTINGS_KEY = 'powerhouse_settings';
 
+	// ----- ▼ 一般設定 ----- //
+
+	/** @var string $enable_manual_send_email 允許用戶手動發信 */
+	public string $enable_manual_send_email = 'no';
+
+	/** @var string $enable_captcha_login 啟用登入驗證碼 */
+	public string $enable_captcha_login = 'no';
+
+	/** @var array<string> $captcha_role_list 驗證碼角色列表 */
+	public array $captcha_role_list = [ 'administrator' ];
+
+	/** @var string $enable_captcha_register 啟用註冊驗證碼 */
+	public string $enable_captcha_register = 'no';
+
+	// ----- ▼ Woocommerce 相關 ----- //
+
+	/** @var string $delay_email 延遲寄信 */
+	public string $delay_email = 'yes';
+
+	/** @var string $last_name_optional 姓氏可選 */
+	public string $last_name_optional = 'yes';
+
+	// ----- ▼ 主題顏色 ----- //
+
 	/** @var string $theme 選擇主題 */
 	public string $theme = 'custom';
 
@@ -26,21 +50,8 @@ class Settings extends BaseDTO {
 	/** @var array<string, string> $theme_css 當選擇 custom 主題時，使用自訂的 css */
 	public array $theme_css = [];
 
-	/** @var string $delay_email 延遲寄信 */
-	public string $delay_email = 'yes';
 
-	/** @var string $last_name_optional 姓氏可選 */
-	public string $last_name_optional = 'yes';
-
-	/** @var string $enable_captcha_login 啟用登入驗證碼 */
-	public string $enable_captcha_login = 'no';
-
-	/** @var array<string> $captcha_role_list 驗證碼角色列表 */
-	public array $captcha_role_list = [ 'administrator' ];
-
-	/** @var string $enable_captcha_register 啟用註冊驗證碼 */
-	public string $enable_captcha_register = 'no';
-
+	// ----- ▼ 實驗性功能 ----- //
 
 	/** @var array $api_booster_rules API 加速器規則 */
 	public array $api_booster_rules = [];
@@ -48,8 +59,7 @@ class Settings extends BaseDTO {
 	/** @var array $api_booster_rule_recipes API 加速器模板 */
 	public array $api_booster_rule_recipes = [];
 
-
-	// BunnyCDN 相關
+	// ----- ▼ BunnyCDN 相關 ----- //
 
 	/** @var string $bunny_library_id BunnyCDN 圖庫 ID */
 	public string $bunny_library_id = '';
