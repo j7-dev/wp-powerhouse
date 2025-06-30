@@ -73,7 +73,7 @@ const index = () => {
 						type="warning"
 						showIcon
 						description={
-							<ul>
+							<ul className="pl-6">
 								<li className="text-red-500">
 									此為進階功能，如果不明白如何使用請勿操作
 								</li>
