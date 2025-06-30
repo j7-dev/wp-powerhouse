@@ -57,7 +57,7 @@ final class Bootstrap {
 		\add_menu_page(
 		__( 'Powerhouse', 'powerhouse' ),
 		__( 'Powerhouse', 'powerhouse' ),
-		'manage_woocommerce',
+		'manage_options',
 		'powerhouse',
 		'__return_true',
 		'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA4NzMuMDAwMDAwIDk2NS4wMDAwMDAiCiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsOTY1LjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSIKZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSJub25lIj4KPHBhdGggZD0iTTcwMTAgOTYyNCBjLTU3IC0xNSAtNjYxNyAtMjgzNiAtNjcwNCAtMjg4MiAtNjggLTM3IC0xNjIgLTEyNSAtMjA4Ci0xOTYgLTIxIC0zMyAtNTEgLTk2IC02NiAtMTQwIGwtMjcgLTgxIDAgLTI4NTUgMCAtMjg1NSAyOCAtODIgYzY5IC0yMDMgMjM5Ci0zNTYgNDQ1IC0zOTggNjQgLTE0IDIxNyAtMTUgMTEzMCAtMTMgbDEwNTcgMyA3NSAyNyBjMTQ4IDU0IDI3MSAxNjEgMzM1IDI5Mwo3MCAxNDEgNjUgMCA2NSAxOTgzIDAgMTU5NCAyIDE4MDEgMTYgMTg2OSAzMCAxNDUgMTEzIDI3NiAyMjggMzU4IDU0IDM4IDQ5OAoyMjkgMjQ1NiAxMDU1IDE0MzEgNjA0IDI0MTMgMTAyNCAyNDQ2IDEwNDYgMTEyIDc1IDIwNCAyMDkgMjQwIDM1NCAyMCA4MSAxNQoyNDEgLTExIDMxNSAtMzAgODcgLTgzNSAxODg4IC04NjggMTk0NCAtNjggMTE0IC0yMTQgMjE5IC0zNTQgMjU1IC03NSAyMAotMjEwIDIwIC0yODMgMHoiLz4KPHBhdGggZD0iTTU1MzEgMzI0OSBjLTQ0IC0xOCAtODEgLTUxIC0xMDEgLTg5IC0yMCAtMzkgLTIwIC02NCAtMjAgLTE0NzAgMAotMTQwNiAwIC0xNDMxIDIwIC0xNDcwIDIxIC00MiA1NyAtNzEgMTA5IC04OCA0OSAtMTcgMjgyNCAtMTcgMjg3MiAwIDUyIDE4Cjg3IDQ4IDEwOSA5MyAyMCA0MSAyMCA2MiAyMCAxNDY5IDAgMTQxMiAwIDE0MjcgLTIwIDE0NjYgLTExIDIyIC0zOSA1MiAtNjIKNjcgbC00MiAyOCAtMTQzMCAyIGMtODg2IDEgLTE0NDAgLTIgLTE0NTUgLTh6Ii8+CjwvZz4KPC9zdmc+Cg==',
@@ -71,14 +71,14 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function add_submenu(): void {
-		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_woocommerce', 'powerhouse' );
+		\add_submenu_page( 'powerhouse', __( '設定', 'powerhouse' ), __( '設定', 'powerhouse' ), 'manage_options', 'powerhouse' );
 
 		// 如果沒有註冊產品資訊，就不用顯示授權碼
 		$product_infos = \apply_filters( 'powerhouse_product_infos', [] );
 		if (!$product_infos) {
 			return;
 		}
-		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_woocommerce', 'admin.php?page=powerhouse#license-code' );
+		\add_submenu_page( 'powerhouse', __( '授權碼', 'powerhouse' ), __( '授權碼', 'powerhouse' ), 'manage_options', 'admin.php?page=powerhouse#license-code' );
 	}
 
 	/**

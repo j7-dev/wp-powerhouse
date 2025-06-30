@@ -55,14 +55,19 @@ abstract class Base {
 	 * @return array<array{label: string, url: string, current: bool, disabled: bool}>
 	 */
 	public static function get_plugin_links(): array {
-		$show_plugins   = [
-			'powerhouse/plugin.php',
+		$show_plugins = [
 			'power-course/plugin.php',
 			'power-docs/plugin.php',
 			'power-partner/plugin.php',
 			'power-payment/plugin.php',
 			'power-shop/plugin.php',
 		];
+		if (\current_user_can('manage_options')) {
+			$show_plugins = [
+				'powerhouse/plugin.php',
+				...$show_plugins,
+			];
+		}
 		$active_plugins = \get_option( 'active_plugins', [] );
 		$active_plugins = is_array($active_plugins) ? $active_plugins : [];
 
@@ -70,10 +75,10 @@ abstract class Base {
 		foreach ( $show_plugins as $plugin ) {
 			$plugin_slug    = str_replace('/plugin.php', '', $plugin);
 			$plugin_links[] = [
-				'label' => self::get_plugin_name($plugin_slug),
-				'url'   => \admin_url("admin.php?page={$plugin_slug}"),
-			'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
-			'disabled'  => !in_array($plugin, $active_plugins, true),
+				'label'    => self::get_plugin_name($plugin_slug),
+				'url'      => \admin_url("admin.php?page={$plugin_slug}"),
+				'current'  => \is_admin() && @$_GET['page'] === $plugin_slug, // phpcs:ignore
+				'disabled' => !in_array($plugin, $active_plugins, true),
 			];
 		}
 
