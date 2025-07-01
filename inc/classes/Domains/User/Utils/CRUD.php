@@ -10,6 +10,7 @@ namespace J7\Powerhouse\Domains\User\Utils;
 use J7\WpUtils\Classes\WP;
 use J7\WpUtils\Classes\WC;
 use J7\Powerhouse\Domains\Comment\Model\Comment;
+use J7\Powerhouse\Domains\Post\Service\MetaQueryBuilder;
 
 
 /**
@@ -79,10 +80,6 @@ abstract class CRUD {
 
 		$data['meta_input'] = $meta_data;
 
-		// TEST 印出 WC Logger 記得移除 ---- //
-		\J7\WpUtils\Classes\WC::log( $data, 'update_user' );
-		// ---------- END TEST ---------- //
-
 		/** @var array{ID?: int, user_pass?: string, user_login?: string, user_nicename?: string, user_url?: string, user_email?: string, display_name?: string, nickname?: string, ...}|object $data */
 		return \wp_update_user($data);
 	}
@@ -116,9 +113,17 @@ abstract class CRUD {
 	 * @return array{data: array<string, mixed>, meta_data: array<string, mixed>}
 	 */
 	public static function query_separator( array $args ): array {
-		$args['number']      = $args['posts_per_page'] ?? 20; // @phpstan-ignore-line
-		$args['count_total'] = true; // @phpstan-ignore-line
+		$args['number'] = $args['posts_per_page'] ?? 20; // @phpstan-ignore-line
 		unset( $args['posts_per_page'] );
+
+		$default_args = [
+			'search_columns' => [ 'ID', 'user_login', 'user_email', 'user_nicename', 'display_name' ],
+			'orderby'        => 'ID',
+			'order'          => 'DESC',
+			'count_total'    => true,
+		];
+
+		$args = \wp_parse_args( $args, $default_args );
 
 		// 將資料拆成 data 與 meta_data
 		$data      = [];
@@ -181,39 +186,21 @@ abstract class CRUD {
 			$data['meta_query'] = [
 				'relation' => 'AND',
 			];
-		}
-
-		foreach ( $meta_data as $key => $value ) {
-			if ('billing_phone' === $key) {
+			foreach ( $meta_data as $key => $value ) {
 				$data['meta_query'][] = [
-					'key'     => $key,
-					'value'   => $value,
-					'compare' => 'LIKE',
+					'key'   => $key,
+					'value' => $value,
 				];
-
-				continue;
 			}
 
-			if ('user_birthday' === $key) {
-				$data['meta_query'][] = [
-					'key'     => 'user_birthday',
-					'value'   => "-{$value}-",
-					'compare' => 'LIKE',
-				];
-				continue;
-			}
-			$data['meta_query'][] = [
-				'key'   => $key,
-				'value' => $value,
-			];
+			$builder = new MetaQueryBuilder( $data['meta_query'] );
+			/** @var MetaQueryBuilder $builder */
+			$builder = \apply_filters( 'powerhouse/user/prepare_query_args/meta_query_builder', $builder );
+
+			$data['meta_query'] = $builder->get_meta_query();
 		}
 
-		$default_args = [
-			'orderby' => 'ID',
-			'order'   => 'DESC',
-		];
-
-		return \wp_parse_args( $data, $default_args );
+		return $data;
 	}
 
 	/**

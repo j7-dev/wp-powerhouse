@@ -74,6 +74,12 @@ final class V2Api extends ApiBase {
 		],
 	];
 
+	/** Constructor */
+	public function __construct() {
+		parent::__construct();
+		ExtendQuery::instance();
+	}
+
 
 	/**
 	 * Get users callback
