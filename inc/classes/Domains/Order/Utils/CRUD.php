@@ -117,7 +117,9 @@ abstract class CRUD {
 			'status'                => $order->get_status(),
 			'formatted_order_total' => $order->get_formatted_order_total(),
 			'payment_method_title'  => $order->get_payment_method_title(),
-			'payment_complete'      => $order->payment_complete(),
+			'payment_complete'      => $order->is_paid(), // deprecated
+			'is_paid'               => $order->is_paid(),
+
 			'date_paid'             => $order->get_date_paid()?->date( 'Y-m-d H:i' ),
 			'created_via'           => $order->get_created_via(),
 			'edit_url'              => $order->get_edit_order_url(),
