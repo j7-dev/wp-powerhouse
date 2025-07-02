@@ -370,9 +370,7 @@ abstract class CRUD {
 
 		// 查詢時間區間內的新註冊用戶數量
 		$sql = $wpdb->prepare(
-		"SELECT COUNT(ID)
-        FROM {$wpdb->users}
-        WHERE user_registered BETWEEN %s AND %s",
+		"SELECT COUNT(ID) FROM {$wpdb->users} WHERE user_registered BETWEEN %s AND %s",
 		$start,
 		$end
 		);

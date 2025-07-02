@@ -156,13 +156,7 @@ final class V2Api extends ApiBase {
 		 */
 		// phpcs:disable
 		$prepare = $wpdb->prepare(
-			"SELECT tt.*, COALESCE(tm.meta_value, '0') AS `order`
-			FROM {$wpdb->term_taxonomy} tt
-			LEFT JOIN {$wpdb->termmeta} tm
-			ON tt.term_id = tm.term_id AND tm.meta_key = 'order'
-			WHERE tt.taxonomy = '%s'
-			AND tt.parent = %d
-			ORDER BY CAST(COALESCE(tm.meta_value, '0') AS SIGNED) ASC, tt.term_id DESC",
+			"SELECT tt.*, COALESCE(tm.meta_value, '0') AS `order` FROM {$wpdb->term_taxonomy} tt LEFT JOIN {$wpdb->termmeta} tm ON tt.term_id = tm.term_id AND tm.meta_key = 'order' WHERE tt.taxonomy = '%s' AND tt.parent = %d ORDER BY CAST(COALESCE(tm.meta_value, '0') AS SIGNED) ASC, tt.term_id DESC",
 			(string) $args['taxonomy'],
 			(int) $args['parent']
 		);

@@ -75,14 +75,7 @@ class GrantedItems {
 		$item_ids = $wpdb->get_col(
 			\wp_unslash(// phpcs:ignore
 			$wpdb->prepare(
-			"SELECT post_id
-			FROM  %1\$s pm
-			LEFT JOIN %2\$s p
-			ON pm.post_id = p.ID
-			WHERE pm.user_id = %3\$d
-			AND pm.meta_key = '%4\$s'
-			%5\$s
-			",
+			"SELECT post_id FROM  %1\$s pm LEFT JOIN %2\$s p ON pm.post_id = p.ID WHERE pm.user_id = %3\$d AND pm.meta_key = '%4\$s' %5\$s",
 			$table_name,
 			$wp_posts_table,
 			$this->user_id,
