@@ -101,7 +101,7 @@ class Theme {
 	public string $tab_radius = '0.5rem';
 
 	/** @var string theme 主題 */
-	public string $theme = 'custom';
+	public string $theme = 'power';
 
 	/** @var string color_scheme 顏色方案 */
 	public string $color_scheme = 'light';
@@ -139,7 +139,7 @@ class Theme {
 			] = $setting_array;
 
 			$theme_css                 = is_array($theme_css) ? $theme_css : []; // @phpstan-ignore-line
-			$theme_css['theme']        = $theme ?? 'custom';
+			$theme_css['theme']        = $theme ?? 'power';
 			$theme_css['color_scheme'] = $theme_css['color-scheme'] ?? 'light';
 			unset($theme_css['color-scheme']);
 

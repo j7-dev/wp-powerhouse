@@ -39,7 +39,7 @@ class Settings extends BaseDTO {
 	// ----- ▼ 主題顏色 ----- //
 
 	/** @var string $theme 選擇主題 */
-	public string $theme = 'custom';
+	public string $theme = 'power';
 
 	/** @var string $enable_theme_changer 啟用主題切換器 */
 	public string $enable_theme_changer = 'no';

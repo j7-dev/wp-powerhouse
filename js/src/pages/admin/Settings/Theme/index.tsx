@@ -12,7 +12,7 @@ const { Item } = Form
 const index = () => {
 	const form = Form.useFormInstance()
 	const watchTheme =
-		Form.useWatch(['powerhouse_settings', 'theme'], form) || 'light'
+		Form.useWatch(['powerhouse_settings', 'theme'], form) || 'power'
 
 	// 自訂的
 	const watchCustomThemeOKLCH =
