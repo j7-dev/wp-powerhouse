@@ -228,7 +228,6 @@ const index = () => {
 													type="email"
 													placeholder="email"
 													className="pc-input pc-input-bordered"
-													required
 												/>
 											</div>
 											<div className="pc-form-control">
@@ -239,7 +238,6 @@ const index = () => {
 													type="password"
 													placeholder="password"
 													className="pc-input pc-input-bordered"
-													required
 												/>
 												<label className="pc-label">
 													<span className="pc-label-text-alt pc-link pc-link-hover">
