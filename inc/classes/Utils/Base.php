@@ -113,7 +113,7 @@ abstract class Base {
 	 * @return array 處理結果統計
 	 * @throws \Throwable 如果處理過程中發生錯誤，則拋出 \Throwable 異常
 	 */
-	public static function batch_process( $items, $callback, $options = [] ) {
+	public static function batch_process( array $items, callable $callback, array $options = [] ): array {
 		$default_options = [
 			'batch_size'   => 100,  // 每批次處理的項目數量
 			'pause_ms'     => 750, // 每批次之間暫停的毫秒數
