@@ -12,10 +12,10 @@ use J7\WpUtils\Classes\DTO;
  * @see https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/Enums/ProductType.php
  * */
 class ProductTypes extends DTO {
-	/** @var array<array[value => string, label => string, color => string]> $product_types */
+	/** @var array<array{value: string, label: string, color: string}> $product_types */
 	public array $product_types;
 
-	/** @var array<array[value => string, label => string, color => string]> $product_types */
+	/** @var array<array{value: string, label: string, color: string}> $product_types */
 	protected static array $product_types_mapper = [
 		'simple' => [
 			'value' => 'simple',

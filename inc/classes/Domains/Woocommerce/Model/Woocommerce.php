@@ -19,9 +19,6 @@ class Woocommerce extends DTO {
 	/** @var array<array{value: string, label: string, hierarchical: bool, publicly_queryable: bool}> $product_taxonomies 商品分類 */
 	public array $product_taxonomies;
 
-	/** @var array<array{value: string, label: string, color: string}> $product_types 商品類型 */
-	public array $product_types;
-
 	/** @var int $notify_low_stock_amount 低庫存通知數量 */
 	public int $notify_low_stock_amount;
 
@@ -45,6 +42,18 @@ class Woocommerce extends DTO {
 
 	/** @var bool $manage_stock 管理庫存 */
 	public bool $manage_stock;
+
+	/** @var array<array{value: string, label: string, color: string}> $product_types 商品類型 */
+	public array $product_types;
+
+	/** @var array<array{value: string, label: string, color: string}> $order_statuses 訂單狀態 */
+	public array $order_statuses;
+
+	/** @var array<array{value: string, label: string, color: string}> $post_statuses 文章狀態 */
+	public array $post_statuses;
+
+	/** @var array<array{value: string, label: string, color: string}> $product_stock_statuses 商品庫存狀態 */
+	public array $product_stock_statuses;
 
 	/** 取得 ProductTypes @return self */
 	public static function instance(): self {
@@ -70,6 +79,9 @@ class Woocommerce extends DTO {
 				'manage_stock'            => Settings::instance()->manage_stock,
 			],
 			ProductTypes::instance()->to_array(),
+			OrderStatuses::instance()->to_array(),
+			PostStatuses::instance()->to_array(),
+			ProductStockStatuses::instance()->to_array(),
 		);
 
 		return new self($args);
