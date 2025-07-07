@@ -68,6 +68,7 @@ final class Compatibility {
 
 		// ❗不要刪除此行，註記已經執行過相容設定
 		\flush_rewrite_rules();
+		\wp_cache_flush();
 		\update_option('powerhouse_compatibility_action_scheduled', Plugin::$version);
 	}
 
@@ -77,7 +78,7 @@ final class Compatibility {
 	 */
 	public static function redirect(): void {
 
-		if (!is_admin()) {
+		if (!\is_admin()) {
 			return;
 		}
 
