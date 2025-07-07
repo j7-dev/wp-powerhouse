@@ -95,7 +95,7 @@ abstract class CRUD {
 			'short_description' => $post->post_excerpt,
 		] : [];
 
-		$children        = self::get_recursive_array($post, $recursive_args, (int) $depth, $meta_keys);
+		$children        = self::get_recursive_array($post, $recursive_args, (int) $depth, $meta_keys, $with_description);
 		$meta_keys_array = self::get_meta_keys_array($post, $meta_keys);
 
 		$base_array = [
@@ -164,7 +164,7 @@ abstract class CRUD {
 	 * @param array<string>             $meta_keys 要暴露出來的 meta keys.
 	 * @return array{children: array<mixed>}|array{}
 	 */
-	public static function get_recursive_array( \WP_Post $post, array $recursive_args = null, int $depth = 0, array $meta_keys = [] ): array {
+	public static function get_recursive_array( \WP_Post $post, array $recursive_args = null, int $depth = 0, array $meta_keys = [], bool $with_description = false ): array {
 		if (null ===$recursive_args) {
 			return [];
 		}
@@ -190,7 +190,7 @@ abstract class CRUD {
 		foreach ($children as $child) {
 			$children_to_array[] = self::format_post_details(
 				$child,
-				false,
+				$with_description,
 				$depth + 1,
 				$recursive_args,
 				$meta_keys
