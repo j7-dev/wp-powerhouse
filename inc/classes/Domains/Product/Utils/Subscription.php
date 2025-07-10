@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace J7\Powerhouse\Domains\Product\Utils;
 
-/**
- * Class Subscription
- * 訂閱相關 Helper
- */
+use J7\Powerhouse\Domains\Product\Service\PeriodLabel;
+
+/** Subscription  訂閱相關 Helper */
 abstract class Subscription {
 
 	/**
@@ -60,8 +59,8 @@ abstract class Subscription {
 
 		// 持續 4 個月文字
 		if ($subscription_length) {
-			$subscription_period_label = self::get_subscription_period_label( $subscription_period );
-			$product_meta_data[]       = "扣款持續 {$subscription_length} {$subscription_period_label}";
+			$subscription_period_label = ( new PeriodLabel( (string) $subscription_period ) )->period_label;
+			$product_meta_data[]       = "扣款持續 {$subscription_length}{$subscription_period_label}";
 		}
 
 		if ($subscription_sign_up_fee) {
@@ -70,8 +69,8 @@ abstract class Subscription {
 		}
 
 		if ($subscription_trial_length) {
-			$subscription_trial_period_label = self::get_subscription_period_label( $subscription_trial_period );
-			$product_meta_data[]             = "包含 {$subscription_trial_length} {$subscription_trial_period_label}免費試用";
+			$subscription_trial_period_label = ( new PeriodLabel( (string) $subscription_trial_period ) )->period_label;
+			$product_meta_data[]             = "包含 {$subscription_trial_length}{$subscription_trial_period_label} 免費試用";
 		}
 
 		return $product_meta_data;
@@ -95,10 +94,8 @@ abstract class Subscription {
 			'_subscription_period_interval' => $subscription_period_interval,
 		] = self::get_subscription_meta_data( $product );
 
-		$subscription_period_label = self::get_subscription_period_label( $subscription_period );
-
 		// 組合成  /月 /2月 的文字
-		$period_label = '/' . ( $subscription_period_interval > 1 ? "{$subscription_period_interval} {$subscription_period_label}" : "{$subscription_period_label}" );
+		$period_label = ( new PeriodLabel( (string) $subscription_period, (int) $subscription_period_interval ) )->get_label('/');
 		$period_label = sprintf( /*html*/'<span class="text-sm">%1$s</span>', $period_label);
 
 		// 同 WC_Product_Simple::get_price_html()
@@ -155,24 +152,6 @@ abstract class Subscription {
 		 */
 		return $values;
 	}
-
-	/**
-	 * 取得訂閱商品的 period label
-	 *
-	 * @param string $subscription_period 訂閱商品的 period
-	 *
-	 * @return string
-	 */
-	public static function get_subscription_period_label( string $subscription_period ): string {
-		return match ($subscription_period) {
-			'day' => '天',
-			'week' => '週',
-			'month' => '月',
-			'year' => '年',
-			default => '',
-		};
-	}
-
 
 	/**
 	 * 覆寫 wc_format_sale_price
