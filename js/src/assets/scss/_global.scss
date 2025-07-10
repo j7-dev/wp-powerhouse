@@ -5,6 +5,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html#tw {
+	// Ajax login plugin 的 css 會將 html overflow 設為 auto !important，會導致子節點 sticky 失效
+	overflow: visible !important;
+}
+
 body {
 	margin: 0 !important;
 }
