@@ -57,6 +57,7 @@ final class PeriodLabel {
 		if ('day' === $this->period) {
 			return match ($this->period_interval) {
 				7 => "{$addon_before}週{$addon_after}",
+				14 => "{$addon_before}雙週{$addon_after}",
 				default => "{$addon_before}{$this->period_label}{$addon_after}"
 			};
 		}
@@ -72,6 +73,7 @@ final class PeriodLabel {
 			return match ($this->period_interval) {
 				3 => "{$addon_before}季{$addon_after}",
 				6 => "{$addon_before}半年{$addon_after}",
+				9 => "{$addon_before}3季{$addon_after}",
 				12 => "{$addon_before}年{$addon_after}",
 				default => "{$addon_before}個{$this->period_label}{$addon_after}"
 			};
