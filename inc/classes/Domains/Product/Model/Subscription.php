@@ -82,6 +82,7 @@ final class Subscription extends DTO {
 	 * 驗證欄位數據
 	 *
 	 * @return void
+	 * @throws \InvalidArgumentException 如果驗證失敗
 	 */
 	protected function validate(): void {
 		$this->validate_period($this->subscription_period);

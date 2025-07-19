@@ -219,6 +219,7 @@ abstract class Base {
 	/**
 	 * 將陣列轉換為 HTML 表格
 	 *
+	 * @deprecated 使用 \J7\WpUtils\Classes\WP::array_to_html 取代
 	 * @param array<string, mixed> $arr 要轉換的陣列
 	 * @param array{
 	 *  title?: string,
@@ -249,7 +250,13 @@ abstract class Base {
 					default => $value,
 				};
 			} catch (\Throwable $e) {
-				\J7\WpUtils\Classes\WC::log($e->getMessage(), 'array_to_html error');
+				\J7\WpUtils\Classes\WC::logger(
+					$e->getMessage(),
+					'error',
+					[
+						'arr' => $arr,
+					]
+					);
 				$value_stringify = json_encode($value);
 			}
 
