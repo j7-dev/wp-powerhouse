@@ -22,6 +22,7 @@ final class Loader {
 		Upload\Core\V2Api::instance();
 		LC\Core\V2Api::instance();
 		Plugin\Core\V2Api::instance();
+		Register\Core\Filter::instance();
 
 		if ( class_exists( '\WooCommerce' ) ) {
 			Woocommerce\Core\V2Api::instance();

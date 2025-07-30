@@ -1,17 +1,28 @@
 import { memo } from 'react'
-import { Checkbox, Form } from 'antd'
+import { Button, Checkbox, Form, Input } from 'antd'
+import { MinusCircleOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import { Heading, Switch } from 'antd-toolkit'
+import { stringToBool } from 'antd-toolkit/wp'
+
 import { useUserOptions } from '@/hooks'
 import useFormInstance from 'antd/es/form/hooks/useFormInstance'
 
-const { Item } = Form
+const { Item, List } = Form
 
 const index = () => {
 	const { roles } = useUserOptions()
 	const form = useFormInstance()
-	const watchEnableCaptchaLogin =
-		Form.useWatch(['powerhouse_settings', 'enable_captcha_login'], form) ===
-		'yes'
+	const watchEnableCaptchaLogin = stringToBool(
+		Form.useWatch(['powerhouse_settings', 'enable_captcha_login'], form),
+	)
+
+	const watchEnableEmailDomainCheckRegister = stringToBool(
+		Form.useWatch(
+			['powerhouse_settings', 'enable_email_domain_check_register'],
+			form,
+		),
+	)
 
 	return (
 		<div className="flex flex-col md:flex-row gap-8">
@@ -53,6 +64,59 @@ const index = () => {
 						tooltip: '啟用後，可以防止機器人註冊',
 					}}
 				/>
+
+				<Switch
+					formItemProps={{
+						name: ['powerhouse_settings', 'enable_email_domain_check_register'],
+						label: '註冊前驗證用戶的 Email 網域是否設置郵件伺服器',
+						tooltip:
+							'啟用後，可以防止機器人使用假 Email 註冊，例如隨便填寫一個 test@test123.com 的假用戶註冊將被擋下',
+					}}
+				/>
+
+				{watchEnableEmailDomainCheckRegister && (
+					<>
+						<p className="mb-1">驗證白名單</p>
+						<p className="text-gray-400 text-xs">
+							白名單中的網域被視為可以註冊，不會進行驗證
+						</p>
+
+						<List
+							name={['powerhouse_settings', 'email_domain_check_white_list']}
+						>
+							{(fields, { add, remove }) => (
+								<>
+									{fields.map(({ key, name, ...restField }) => {
+										return (
+											<div className="flex items-center gap-2 mb-1">
+												<Item
+													noStyle
+													{...restField}
+													name={[name]}
+													rules={[{ required: true, message: '請輸入網域' }]}
+												>
+													<Input placeholder="網域" size="small" />
+												</Item>
+												<MinusCircleOutlined onClick={() => remove(name)} />
+											</div>
+										)
+									})}
+									<Item noStyle>
+										<Button
+											size="small"
+											type="dashed"
+											onClick={() => add()}
+											block
+											icon={<PlusOutlined />}
+										>
+											新增
+										</Button>
+									</Item>
+								</>
+							)}
+						</List>
+					</>
+				)}
 			</div>
 			<div className="flex-1 h-auto md:h-[calc(100%-5.375rem)] md:overflow-y-auto"></div>
 		</div>

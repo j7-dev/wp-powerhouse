@@ -28,6 +28,18 @@ class Settings extends BaseDTO {
 	/** @var string $enable_captcha_register 啟用註冊驗證碼 */
 	public string $enable_captcha_register = 'no';
 
+	/** @var string $enable_email_domain_check_register 註冊前驗證用戶的 Email 網域是否設置郵件伺服器 */
+	public string $enable_email_domain_check_register = 'yes';
+
+	/** @var array<string> $email_domain_check_white_list Email 網域驗證的白名單，名單內就不檢查 */
+	public array $email_domain_check_white_list = [
+		'gmail.com',
+		'yahoo.com',
+		'hotmail.com',
+		'outlook.com',
+		'icloud.com',
+	];
+
 	// ----- ▼ Woocommerce 相關 ----- //
 
 	/** @var string $delay_email 延遲寄信 */
