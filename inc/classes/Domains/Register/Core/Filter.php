@@ -26,8 +26,8 @@ final class Filter {
 		/** @category [前台] WooCommerce My Account 註冊 */
 		\add_filter('woocommerce_registration_errors', [ $this, 'validate_email_domain' ], 10, 3);
 
-		/** @category [前台] 後台建立用戶時的驗證 */
-		\add_action('user_profile_update_errors', [ $this, 'check_admin_email_domain' ], 10, 3);
+		/** @category [前台] 後台建立用戶時的驗證，後台創建用戶先不阻擋 */
+		// \add_action('user_profile_update_errors', [ $this, 'check_admin_email_domain' ], 10, 3);
 	}
 
 	/**
