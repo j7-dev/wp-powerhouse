@@ -43,8 +43,8 @@ const index = () => {
 				<Switch
 					formItemProps={{
 						name: ['powerhouse_settings', 'enable_captcha_login'],
-						label: '啟用登入驗證碼 (推薦啟用)',
-						tooltip: '啟用後，可以提高帳號安全性',
+						label: '啟用登入驗證碼',
+						tooltip: '啟用後，可以提高帳號安全性，防止機器人破解暴力破解帳密',
 					}}
 				/>
 
@@ -60,15 +60,16 @@ const index = () => {
 				<Switch
 					formItemProps={{
 						name: ['powerhouse_settings', 'enable_captcha_register'],
-						label: '啟用註冊驗證碼 (推薦啟用)',
-						tooltip: '啟用後，可以防止機器人註冊',
+						label: '啟用註冊驗證碼',
+						tooltip:
+							'啟用後，可以防止機器人註冊，防止機器人註冊，但可能與其他社群登入外掛衝突',
 					}}
 				/>
 
 				<Switch
 					formItemProps={{
 						name: ['powerhouse_settings', 'enable_email_domain_check_register'],
-						label: '註冊前驗證用戶的 Email 網域是否設置郵件伺服器',
+						label: '註冊前驗證用戶的 Email (👍推薦啟用)',
 						tooltip:
 							'啟用後，可以防止機器人使用假 Email 註冊，例如隨便填寫一個 test@test123.com 的假用戶註冊將被擋下',
 					}}
@@ -78,7 +79,7 @@ const index = () => {
 					<>
 						<p className="mb-1">驗證白名單</p>
 						<p className="text-gray-400 text-xs">
-							白名單中的網域被視為可以註冊，不會進行驗證
+							白名單中的網域被視為可以註冊，不會進行驗證，已知的合法網域不需要檢查，可以加快註冊流程
 						</p>
 
 						<List
