@@ -20,7 +20,7 @@ namespace J7\Powerhouse\Domains\AsSchedulerHandler\Shared;
  */
 abstract class Base {
 
-	/** @var string 排程的 hook */
+	/** @var string 排程的 hook {plugin_name}/{version}/{domains}/{action} */
 	protected static string $hook;
 
 	/** @var array 排程的參數 */
@@ -37,7 +37,13 @@ abstract class Base {
 	/** 取得排程的參數，執行時會傳入 action_callback @return array<string, string> */
 	abstract protected function get_args(): array;
 
-
+	/**
+	 * 取得排程的 callback
+	 *
+	 * @param array<string, string> $args 排程的參數
+	 * @return void
+	 */
+	abstract public static function action_callback( $args ): void;
 
 	/**
 	 * 取得下一個排程的 action_id
@@ -115,15 +121,15 @@ abstract class Base {
 	/**
 	 * 取消排程
 	 *
-	 * @return bool|null 是否成功取消排程
+	 * @return int|null 取消的排程 action_id
 	 */
-	public function unschedule(): bool|null {
+	public function unschedule(): int|null {
 		$action_id = $this->get_next_action_id();
 		if ( ! $action_id ) {
 			return null;
 		}
 		\ActionScheduler_Store::instance()->delete_action( (string) $action_id);
-		return true;
+		return $action_id;
 	}
 
 	/**
@@ -145,12 +151,4 @@ abstract class Base {
 	public static function register(): void {
 		\add_action( static::$hook, [ static::class, 'action_callback' ] );
 	}
-
-	/**
-	 * 取得排程的 callback
-	 *
-	 * @param array<string, string> $args 排程的參數
-	 * @return void
-	 */
-	abstract public static function action_callback( $args ): void;
 }
