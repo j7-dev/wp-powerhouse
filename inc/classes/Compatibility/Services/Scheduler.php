@@ -2,7 +2,7 @@
 
 declare (strict_types = 1);
 
-namespace J7\Powerhouse\Compatibility;
+namespace J7\Powerhouse\Compatibility\Services;
 
 use J7\Powerhouse\Plugin;
 use J7\Powerhouse\Domains\Limit\Utils\CreateTable;
@@ -10,11 +10,12 @@ use J7\Powerhouse\Domains\Limit\Utils\CreateTable;
 require_once __DIR__ . '/deprecated.php';
 
 /**
+ * Scheduler 排程執行動作
  * Compatibility 不同版本間的相容性設定
  *
  * @since v2.0.17
  */
-final class Compatibility {
+final class Scheduler {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	const AS_COMPATIBILITY_ACTION = 'powerhouse_compatibility_action_scheduler';

@@ -1,13 +1,10 @@
 <?php
-/**
- * Powerhouse Loader
- * 提前載入 Powerhouse 的 vendor，確保 Powerhouse 是最先載入的
- */
 
 namespace J7\Powerhouse\MU;
 
 /**
- * Loader
+ * Powerhouse Loader
+ * 提前載入 Powerhouse 的 vendor，確保 Powerhouse 是最先載入的
  */
 final class Loader {
 

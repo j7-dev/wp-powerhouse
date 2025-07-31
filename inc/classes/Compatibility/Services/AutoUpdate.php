@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Compatibility;
+namespace J7\Powerhouse\Compatibility\Services;
 
 use J7\Powerhouse\Plugin;
+
 /**
  * 更新其他外掛時，自動更新 powerhouse
  */
