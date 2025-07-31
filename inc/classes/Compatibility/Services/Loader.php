@@ -15,5 +15,5 @@ final class Loader extends MuPluginsLoader {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
 	/** @var string $file_name 要移動的檔案名稱 */
-	protected string $file_name = '../mu-plugins/powerhouse-loader.php';
+	protected string $file_name = 'powerhouse-loader.php';
 }
