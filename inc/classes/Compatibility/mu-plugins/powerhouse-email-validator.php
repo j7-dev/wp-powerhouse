@@ -17,7 +17,7 @@ final class EmailValidator {
 	private array $whitelist_domains = [];
 
 	/** Constructor */
-	private function __construct() {
+	public function __construct() {
 		$this->init();
 
 		if ($this->settings->register) {
@@ -46,7 +46,13 @@ final class EmailValidator {
 			'wp_mail'  => ( $settings['enable_email_domain_check_wp_mail'] ?? 'yes' ) === 'yes',
 		];
 
-		$whitelist_domains       = $settings['email_domain_check_white_list'] ?? [];
+		$whitelist_domains       = $settings['email_domain_check_white_list'] ?? [
+			'gmail.com',
+			'yahoo.com',
+			'hotmail.com',
+			'outlook.com',
+			'icloud.com',
+		];
 		$whitelist_domains       = is_array($whitelist_domains) ? $whitelist_domains : [];
 		$whitelist_domains       = \array_map( 'strtolower', $whitelist_domains );
 		$this->whitelist_domains = $whitelist_domains;
@@ -99,6 +105,7 @@ final class EmailValidator {
 	 *     headers: string|string[] 額外的郵件標頭
 	 *     attachments: string|string[] 要附加的檔案路徑
 	 * }     $atts
+	 * @return null|bool 短路返回值
 	 */
 	public function pre_wp_mail_validate( $return, $atts ) {
 		try {
