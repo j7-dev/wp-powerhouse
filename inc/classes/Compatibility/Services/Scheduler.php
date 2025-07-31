@@ -31,8 +31,9 @@ final class Scheduler {
 			return;
 		}
 
+		EmailValidator::instance();
 		Loader::instance();
-		ApiOptimize::instance();
+		ApiBooster::instance();
 
 		// 排程只執行一次的兼容設定
 		\add_action( 'init', [ __CLASS__, 'compatibility_action_scheduler' ] );
