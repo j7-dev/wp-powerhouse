@@ -3,7 +3,7 @@
  * Plugin Name:       Powerhouse
  * Plugin URI:        https://www.powerhouse.cloud
  * Description:       方便開發 WordPress 的工具包，以及優化功能
- * Version:           3.3.19
+ * Version:           3.3.20
  * Requires at least: 5.7
  * Requires PHP:      8.0
  * Author:            J7
