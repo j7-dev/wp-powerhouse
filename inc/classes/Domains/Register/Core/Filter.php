@@ -17,7 +17,7 @@ final class Filter {
 	private function __construct() {
 		$settings = Settings::instance();
 		if ($settings->enable_email_domain_check_register !== 'yes') {
-		return;
+			return;
 		}
 
 		/** @category [前台]  WordPress 標準註冊（如 wp-login.php?action=register） */
