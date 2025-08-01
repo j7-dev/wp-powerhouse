@@ -7,6 +7,9 @@ namespace J7\Powerhouse\Domains\Product\Model;
 /** 商品詳細資料 DTO */
 final class Detail extends DTO {
 
+	/** @var string $editor 編輯器類型 */
+	public string $editor = 'power-editor';
+
 	/** @var string $description 商品描述 */
 	public string $description;
 
@@ -57,6 +60,7 @@ final class Detail extends DTO {
 		}
 
 		$args = [
+			'editor'                 => \get_post_meta($product_id, 'editor', true),
 			'description'            => $product->get_description(),
 			'short_description'      => $product->get_short_description(),
 			'page_template'          => \get_page_template_slug($product_id) ?: '',
