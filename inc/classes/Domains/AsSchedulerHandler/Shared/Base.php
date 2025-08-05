@@ -14,9 +14,11 @@ namespace J7\Powerhouse\Domains\AsSchedulerHandler\Shared;
  * 傳入資源
  * 1. 繼承
  * 2. 實作 get_args()
- * 3. new Base( $item, $hook )
+ * 3. new Base( $item )
  * 4. 使用 get_next_action_id() 取得 action_id
  * 5. 使用 unschedule() 取消排程
+ *
+ * after_schedule_single 等方法，可以在排程後執行，例如寫入 log
  */
 abstract class Base {
 
@@ -78,7 +80,15 @@ abstract class Base {
 	 * @return int|null 排程的 action_id
 	 */
 	public function schedule_single( int $timestamp, string $group = '', string $unique = '', int $priority = 10 ): int|null {
-		return \as_schedule_single_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+
+		$action_id = \as_schedule_single_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}( $action_id, $timestamp, $group );
+		}
+
+		return $action_id;
 	}
 
 	/**
@@ -91,7 +101,14 @@ abstract class Base {
 	 * @param int    $priority  排程的優先級
 	 */
 	public function schedule_recurring( int $timestamp, int $interval, string $group = '', string $unique = '', int $priority = 10 ): int|null {
-		return \as_schedule_recurring_action( $timestamp, $interval, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+		$action_id = \as_schedule_recurring_action( $timestamp, $interval, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}( $action_id, $timestamp, $interval, $group );
+		}
+
+		return $action_id;
 	}
 
 	/**
@@ -103,7 +120,14 @@ abstract class Base {
 	 * @param int    $priority  排程的優先級
 	 */
 	public function schedule_async( int $timestamp, string $group = '', string $unique = '', int $priority = 10 ): int|null {
-		return \as_schedule_single_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority );
+		$action_id = \as_schedule_single_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}( $action_id, $timestamp, $group );
+		}
+
+		return $action_id;
 	}
 
 	/**
@@ -115,7 +139,14 @@ abstract class Base {
 	 * @param int    $priority  排程的優先級
 	 */
 	public function schedule_cron( string $timestamp, string $group = '', string $unique = '', int $priority = 10 ): int|null {
-		return \as_schedule_cron_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+		$action_id = \as_schedule_cron_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}( $action_id, $timestamp, $group );
+		}
+
+		return $action_id;
 	}
 
 	/**
@@ -129,6 +160,12 @@ abstract class Base {
 			return null;
 		}
 		\ActionScheduler_Store::instance()->delete_action( (string) $action_id);
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}($action_id);
+		}
+
 		return $action_id;
 	}
 
@@ -136,10 +173,15 @@ abstract class Base {
 	 * 取消所有排程
 	 *
 	 * @param string $group 排程的群組
-	 * @return int|null 取消的排程數量
+	 * @return void
 	 */
-	public function unschedule_all( $group = '' ): int|null {
-		return \as_unschedule_all_actions( static::$hook, [ $this->args ], $group ) ?: null;
+	public function unschedule_all( $group = '' ): void {
+		\as_unschedule_all_actions( static::$hook, [ $this->args ], $group );
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}($group);
+		}
 	}
 
 	/**

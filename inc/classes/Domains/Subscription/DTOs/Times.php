@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace J7\Powerhouse\Domains\Subscription\DTOs;
 
 use J7\WpUtils\Classes\DTO;
+use J7\Powerhouse\Domains\Subscription\Shared\Enums\Action;
 
 /**
 	 * Class Times
@@ -39,11 +40,11 @@ final class Times extends DTO {
 	public static function instance( \WC_Subscription $subscription ): self {
 
 		$args = [
-			'trial_end'               => $subscription->get_time( 'trial_end' ),
-			'next_payment'            => $subscription->get_time( 'next_payment' ),
-			'last_order_date_created' => $subscription->get_time( 'last_order_date_created' ),
-			'end'                     => $subscription->get_time( 'end' ),
-			'end_of_prepaid_term'     => $subscription->get_time( 'end_of_prepaid_term' ),
+			'trial_end'               => $subscription->get_time( Action::TRIAL_END->value ),
+			'next_payment'            => $subscription->get_time( Action::NEXT_PAYMENT->value ),
+			'last_order_date_created' => $subscription->get_time('last_order_date_created' ),
+			'end'                     => $subscription->get_time( Action::END->value ),
+			'end_of_prepaid_term'     => $subscription->get_time( Action::END_OF_PREPAID_TERM->value ),
 		];
 
 		return new self( $args );
