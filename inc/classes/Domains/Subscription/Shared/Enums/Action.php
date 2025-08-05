@@ -45,14 +45,6 @@ enum Action: string {
 	 * @return string
 	 */
 	public function get_action_hook(): string {
-		return match ($this) {
-			self::DATE_CREATED => 'wcs_create_subscription',
-			self::TRIAL_END => 'woocommerce_scheduled_subscription_trial_end',
-			self::NEXT_PAYMENT => 'woocommerce_scheduled_subscription_payment',
-			self::PAYMENT_RETRY => 'woocommerce_scheduled_subscription_payment_retry',
-			self::END => 'woocommerce_scheduled_subscription_expiration',
-			self::END_OF_PREPAID_TERM => 'woocommerce_scheduled_subscription_end_of_prepaid_term',
-			default => "powerhouse_subscription_at_{$this->value}",
-		};
+		return "powerhouse_subscription_at_{$this->value}";
 	}
 }

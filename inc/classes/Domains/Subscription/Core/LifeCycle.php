@@ -10,6 +10,7 @@ use J7\Powerhouse\Domains\Subscription\Shared\Enums\Status;
 /**
 	* 註冊訂閱生命週期
 	* 生命週期列表可以看 Action::get_action_hook()
+	* 生命週期參數固定2個，第一個是訂閱，第二個是參數
  *  */
 final class LifeCycle {
 	use \J7\WpUtils\Traits\SingletonTrait;
@@ -30,6 +31,63 @@ final class LifeCycle {
 		\add_action( 'woocommerce_subscription_pre_update_status', [ $this, 'subscription_success' ], 10, 3 );
 
 		\add_filter( 'wcs_renewal_order_created', [ $this, 'renewal_order_created' ], 10, 2 );
+
+		// 讓 hook 統一接受 2 個參數
+		\add_action(
+			'wcs_create_subscription',
+			function ( $subscription ) {
+				\do_action( Action::DATE_CREATED->get_action_hook(), $subscription, [] );
+			},
+			10,
+			1
+			);
+
+		foreach ([
+			Action::TRIAL_END,
+			Action::NEXT_PAYMENT,
+			Action::END,
+			Action::END_OF_PREPAID_TERM,
+		] as $action) {
+			\add_action(
+					"woocommerce_scheduled_subscription_{$action->value}",
+					function ( $subscription_id ) use ( $action ) {
+						$subscription = \wcs_get_subscription( $subscription_id );
+						if ( ! ( $subscription instanceof \WC_Subscription ) ) {
+							return;
+						}
+						\do_action( $action->get_action_hook(), $subscription, [] );
+					},
+					10,
+					1
+					);
+		}
+
+		\add_action(
+			'woocommerce_scheduled_subscription_' . Action::PAYMENT_RETRY->value,
+			function ( $order_id ) {
+
+				$order = \wc_get_order( $order_id );
+				if ( ! ( $order instanceof \WC_Order ) ) {
+					return;
+				}
+
+				$subscriptions = \wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+				\ksort( $subscriptions );
+				$subscription = end( $subscriptions );
+				if ( ! ( $subscription instanceof \WC_Subscription ) ) {
+					return;
+				}
+				\do_action(
+						Action::PAYMENT_RETRY->get_action_hook(),
+					$subscription,
+					[
+						'order' => $order,
+					] // phpcs:ignore
+					);
+			},
+			10,
+			1
+			);
 	}
 
 	/**
@@ -58,7 +116,7 @@ final class LifeCycle {
 		}
 
 		// 執行生命週期
-		\do_action( Action::INITIAL_PAYMENT_COMPLETE->get_action_hook(), $subscription );
+		\do_action( Action::INITIAL_PAYMENT_COMPLETE->get_action_hook(), $subscription, [] );
 	}
 
 	/**
@@ -87,7 +145,14 @@ final class LifeCycle {
 			return;
 		}
 
-		\do_action( Action::SUBSCRIPTION_FAILED->get_action_hook(), $subscription );
+		\do_action(
+		Action::SUBSCRIPTION_FAILED->get_action_hook(),
+		$subscription,
+		[
+			'from_status' => $from_status,
+			'to_status'   => $to_status,
+		]
+		);
 	}
 
 
@@ -117,7 +182,14 @@ final class LifeCycle {
 			return;
 		}
 
-		\do_action( Action::SUBSCRIPTION_SUCCESS->get_action_hook(), $subscription );
+		\do_action(
+		Action::SUBSCRIPTION_SUCCESS->get_action_hook(),
+		$subscription,
+		[
+			'from_status' => $from_status,
+			'to_status'   => $to_status,
+		]
+		);
 	}
 
 
@@ -129,7 +201,13 @@ final class LifeCycle {
 	 * @return \WC_Order
 	 */
 	public function renewal_order_created( \WC_Order $renewal_order, int|\WC_Subscription $subscription ): \WC_Order {
-		\do_action( Action::RENEWAL_ORDER_CREATED->get_action_hook(), $renewal_order, $subscription );
+		\do_action(
+		Action::RENEWAL_ORDER_CREATED->get_action_hook(),
+		$subscription,
+		[
+			'renewal_order' => $renewal_order,
+		]
+		);
 		return $renewal_order;
 	}
 }
