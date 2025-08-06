@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Domains\Subscription\DTOs;
+namespace J7\Powerhouse\Domains\Subscription\Core;
 
 use J7\Powerhouse\Domains\Subscription\Shared\Enums\Action;
 use J7\Powerhouse\Domains\Subscription\Shared\Enums\Status;
@@ -17,10 +17,6 @@ final class LifeCycle {
 
 	/** Constructor */
 	public function __construct() {
-		if (!class_exists('\WC_Subscriptions')) {
-			return;
-		}
-
 		/** @category 訂閱首次付款成功後 */
 		\add_action( 'woocommerce_subscription_payment_complete', [ $this, Action::INITIAL_PAYMENT_COMPLETE->value ], 10, 1 );
 
