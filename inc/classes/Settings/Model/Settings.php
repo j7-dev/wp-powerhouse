@@ -31,6 +31,9 @@ class Settings extends BaseDTO {
 	/** @var string $enable_email_domain_check_register 註冊前驗證用戶的 Email 網域是否設置郵件伺服器 */
 	public string $enable_email_domain_check_register = 'yes';
 
+	/** @var string $enable_email_domain_check_wp_mail 發信前驗證用戶的 Email 網域是否設置郵件伺服器 */
+	public string $enable_email_domain_check_wp_mail = 'yes';
+
 	/** @var array<string> $email_domain_check_white_list Email 網域驗證的白名單，名單內就不檢查 */
 	public array $email_domain_check_white_list = [
 		'gmail.com',

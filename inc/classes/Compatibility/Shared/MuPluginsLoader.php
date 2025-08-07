@@ -2,23 +2,27 @@
 
 declare(strict_types=1);
 
-namespace J7\Powerhouse\Compatibility;
+namespace J7\Powerhouse\Compatibility\Shared;
 
+use J7\Powerhouse\Compatibility\Services\Scheduler;
 use J7\Powerhouse\Plugin;
 
 /**
- * Powerhouse Loader
- * 將 self::FILE_NAME 檔案移動到 mu-plugins 目錄下
- * 提前載入 Powerhouse 的 vendor，確保 Powerhouse 是最先載入的
+ * MuPluginsLoader
+ * 將 $file_name 檔案移動到 mu-plugins 目錄下
  */
-final class Loader {
-	use \J7\WpUtils\Traits\SingletonTrait;
+abstract class MuPluginsLoader {
 
-	const FILE_NAME = 'powerhouse-loader.php';
+	/** @var string $file_name 要移動的檔案名稱 */
+	protected string $file_name;
+
+	/** @var string $file_dir 指向 inc\classes\Compatibility\mu-plugins */
+	protected string $file_dir;
 
 	/** Constructor */
 	public function __construct() {
-		\add_action( Compatibility::AS_COMPATIBILITY_ACTION, [ __CLASS__, 'move_file' ]);
+		$this->file_dir = \wp_normalize_path(__DIR__ . '/../mu-plugins');
+		\add_action( Scheduler::AS_COMPATIBILITY_ACTION, [ $this, 'move_file' ]);
 	}
 
 	/**
@@ -28,14 +32,14 @@ final class Loader {
 	 * @return void
 	 * @throws \Exception 如果檔案操作失敗
 	 */
-	public static function move_file(): void {
+	public function move_file(): void {
 		// 取得 mu-plugins 目錄路徑
-		$mu_plugins_dir = WPMU_PLUGIN_DIR;
+		$mu_plugins_dir = \wp_normalize_path(WPMU_PLUGIN_DIR);
 
 		// 檢查 mu-plugins 目錄是否存在
 		if (!is_dir($mu_plugins_dir)) {
 			Plugin::logger( "mu-plugins 目錄不存在，嘗試創建 mu-plugins， 路徑: {$mu_plugins_dir}");
-			require_once ABSPATH . 'wp-admin/includes/file.php';
+			require_once \wp_normalize_path(ABSPATH . 'wp-admin/includes/file.php');
 			// 創建 mu-plugins 目錄
 			global $wp_filesystem;
 			if (!\WP_Filesystem()) {
@@ -51,26 +55,26 @@ final class Loader {
 		}
 
 		// 源文件路徑
-		$source_file = __DIR__ . '/' . self::FILE_NAME;
+		$source_file = \wp_normalize_path("{$this->file_dir}/{$this->file_name}");
 		// 目標文件路徑
-		$target_file = $mu_plugins_dir . '/' . self::FILE_NAME;
+		$target_file = \wp_normalize_path("{$mu_plugins_dir}/{$this->file_name}");
 
 		try {
 			// 檢查源文件是否存在
 			if (!file_exists($source_file)) {
-				throw new \Exception( 'source_file 源文件不存在' );
+				throw new \Exception( "source_file 源文件不存在：{$source_file}" );
 			}
 
 			// 如果目標檔案存在，先嘗試刪除
 			if (file_exists($target_file)) {
 				if (!unlink($target_file)) {
-					throw new \Exception('無法刪除現有檔案');
+					throw new \Exception("無法刪除現有檔案：{$target_file}");
 				}
 			}
 
 			// 複製新檔案
 			if (!copy($source_file, $target_file)) {
-				throw new \Exception('檔案複製失敗');
+				throw new \Exception("檔案複製失敗：{$target_file}");
 			}
 
 			Plugin::logger(

@@ -23,7 +23,7 @@ final class Bootstrap {
 		Admin\Entry::instance();
 
 		if ( class_exists( '\WooCommerce' ) ) {
-			Compatibility\Compatibility::instance();
+			Compatibility\Services\Scheduler::instance();
 			Admin\Debug::instance();
 			Admin\OrderList::instance();
 			Admin\Account::instance();

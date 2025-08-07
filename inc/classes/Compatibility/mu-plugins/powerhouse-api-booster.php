@@ -1,18 +1,47 @@
 <?php
 
+/**
+ * Plugin Name:       API Booster | Powerhouse
+ * Plugin URI:        https://www.powerhouse.cloud
+ * Description:       API 加速器，根據 API 請求路徑載入必要的插件，減少不必要的資源載入。
+ * Version:           1.0.0
+ * Requires at least: 5.7
+ * Requires PHP:      7.4
+ * Author:            J7
+ * Author URI:        https://github.com/j7-dev
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       powerhouse
+ * Domain Path:       /languages
+ * Tags: vite, WordPress plugin
+ *
+ * *******************************************************************************************
+ *                                                                                           *
+ *   ██████╗  ██████╗ ██╗    ██╗███████╗██████╗ ██╗  ██╗ ██████╗ ██╗   ██╗███████╗███████╗   *
+ *   ██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔══██╗██║  ██║██╔═══██╗██║   ██║██╔════╝██╔════╝   *
+ *   ██████╔╝██║   ██║██║ █╗ ██║█████╗  ██████╔╝███████║██║   ██║██║   ██║███████╗█████╗     *
+ *   ██╔═══╝ ██║   ██║██║███╗██║██╔══╝  ██╔══██╗██╔══██║██║   ██║██║   ██║╚════██║██╔══╝     *
+ *   ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║██║  ██║╚██████╔╝╚██████╔╝███████║███████╗   *
+ *   ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝   *
+ *                                                                                           *
+ * *********************************** www.powerhouse.cloud **********************************
+ */
+
 namespace J7\Powerhouse\MU;
 
 /**
  * ApiBooster
  * 在特定的請求路徑下，只載入必要的插件
  */
-final class ApiBooster {
+final class ApiBooster
+{
 
 	/** @var array<array{name: string, enabled: yes|no, url_rules: array<string>, plugins: array<string>}> $rules 已啟用的規則 */
 	protected $api_booster_rules = [];
 
 	/** Constructor */
-	public function __construct() {
+	public function __construct()
+	{
 		// 獲取當前請求的 URI
 		$request_uri = (string) $_SERVER['REQUEST_URI'] ?? ''; // phpcs:ignore
 		// 如果包含 /wp-json/v2/powerhouse/plugins ，就跳過，因為設定項要拿到最精準的資料
@@ -22,7 +51,7 @@ final class ApiBooster {
 
 		$this->api_booster_rules = $this->get_enabled_api_booster_rules();
 
-		\add_action('muplugins_loaded', [ $this, 'apply_rules' ], 100);
+		\add_action('muplugins_loaded', [$this, 'apply_rules'], 100);
 	}
 
 	/**
@@ -30,7 +59,8 @@ final class ApiBooster {
 	 *
 	 * @return array<array{name: string, enabled: yes|no, rules: string, plugins: array<string>}>
 	 */
-	protected function get_enabled_api_booster_rules(): array {
+	protected function get_enabled_api_booster_rules(): array
+	{
 		$powerhouse_settings = \get_option('powerhouse_settings', []);
 		$powerhouse_settings = is_array($powerhouse_settings) ? $powerhouse_settings : [];
 
@@ -51,7 +81,7 @@ final class ApiBooster {
 			}
 
 			$url_rules = explode("\n", $url_rules_string);
-			$url_rules = array_map(fn ( $url_rule ) => trim($url_rule), $url_rules); // 移除空白
+			$url_rules = array_map(fn($url_rule) => trim($url_rule), $url_rules); // 移除空白
 			$url_rules = array_filter($url_rules); // 移除 falsy value
 
 			if (!$url_rules) {
@@ -71,7 +101,8 @@ final class ApiBooster {
 	 *
 	 * @return void
 	 */
-	public function apply_rules(): void {
+	public function apply_rules(): void
+	{
 		foreach ($this->api_booster_rules as $index => $api_booster_rule) {
 			$this->only_load_required_plugins($api_booster_rule, (int) $index);
 		}
@@ -85,7 +116,8 @@ final class ApiBooster {
 	 * @param int                                                                                    $index 規則的索引
 	 * @return void
 	 */
-	public function only_load_required_plugins( array $api_booster_rule, int $index ): void {
+	public function only_load_required_plugins(array $api_booster_rule, int $index): void
+	{
 		@[
 			'url_rules' => $url_rules,
 			'plugins'   => $plugins,
@@ -107,7 +139,7 @@ final class ApiBooster {
 		}
 
 		// 修改 option 的 value ，當要 get_option('active_plugins') 時，覆寫
-		\add_filter('option_active_plugins', fn () => $plugins, 100 + $index );
+		\add_filter('option_active_plugins', fn() => $plugins, 100 + $index);
 	}
 
 	/**
@@ -116,7 +148,8 @@ final class ApiBooster {
 	 *
 	 * @return void
 	 */
-	protected function remove_unnecessary_hooks(): void {
+	protected function remove_unnecessary_hooks(): void
+	{
 		// 移除不必要的 WordPress 功能
 		$hooks_to_remove = [
 			'widgets_init',
@@ -128,14 +161,14 @@ final class ApiBooster {
 			'add_admin_bar_menus',
 		];
 
-		foreach ( $hooks_to_remove as $hook ) {
+		foreach ($hooks_to_remove as $hook) {
 			\add_action(
 				$hook,
-				function () use ( $hook ) {
+				function () use ($hook) {
 					\remove_all_actions($hook);
 				},
-			-999999
-				);
+				-999999
+			);
 		}
 	}
 
@@ -146,7 +179,8 @@ final class ApiBooster {
 	 * @param string $pattern 規則字串，* 代表任意數量的 [0-9a-zA-Z/] 字符
 	 * @return bool 是否匹配
 	 */
-	protected function match_url_pattern( string $pattern ): bool {
+	protected function match_url_pattern(string $pattern): bool
+	{
 		// 獲取當前請求的 URI
 		$request_uri = (string) $_SERVER['REQUEST_URI'] ?? ''; // phpcs:ignore
 

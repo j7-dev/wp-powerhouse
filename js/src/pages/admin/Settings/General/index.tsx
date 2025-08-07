@@ -16,6 +16,12 @@ const index = () => {
 	const watchEnableCaptchaLogin = stringToBool(
 		Form.useWatch(['powerhouse_settings', 'enable_captcha_login'], form),
 	)
+	const watchEnableEmailDomainCheckWpMail = stringToBool(
+		Form.useWatch(
+			['powerhouse_settings', 'enable_email_domain_check_wp_mail'],
+			form,
+		),
+	)
 
 	const watchEnableEmailDomainCheckRegister = stringToBool(
 		Form.useWatch(
@@ -38,7 +44,16 @@ const index = () => {
 					}}
 				/>
 
-				<Heading className="mt-16">登入安全</Heading>
+				<Switch
+					formItemProps={{
+						name: ['powerhouse_settings', 'enable_email_domain_check_wp_mail'],
+						label: '收件者 Email 網域驗證 (👍推薦啟用)',
+						tooltip:
+							'啟用後，系統在發送每封郵件前，會先驗證收件者的 Email 網域。只有通過驗證的有效信箱，系統才會將郵件送出，可以防止機器人瘋狂填表單，持續寄送出無效信件 (無效信件可能導致被 Email 提供商警告/停權)',
+					}}
+				/>
+
+				<Heading className="mt-16">登入/註冊安全</Heading>
 
 				<Switch
 					formItemProps={{
@@ -75,11 +90,14 @@ const index = () => {
 					}}
 				/>
 
-				{watchEnableEmailDomainCheckRegister && (
+				{(watchEnableEmailDomainCheckRegister ||
+					watchEnableEmailDomainCheckWpMail) && (
 					<>
 						<p className="mb-1">驗證白名單</p>
 						<p className="text-gray-400 text-xs">
-							白名單中的網域被視為可以註冊，不會進行驗證，已知的合法網域不需要檢查，可以加快註冊流程
+							白名單中的網域被視為可以通過 Email，不在白名單內的 Email
+							網域系統會發送請求檢查對方 Email DNS
+							紀錄來做網域驗證，已知的合法網域不需要檢查，可以加快驗證流程
 						</p>
 
 						<List
