@@ -12,7 +12,11 @@ enum Action: string {
 	/**  @var string 訂閱創建後 */
 	case DATE_CREATED = 'date_created';
 
-	/** @var string 訂閱首次付款成功後 */
+	/**
+	 * @var string 訂閱首次付款成功後，
+	 * 如果要設定例如 TRIAL_END 或 NEXT_PAYMENT 前 N 的時間，可以設定在這個時間點
+	 * 個時間點都被寫入 db
+	 * */
 	case INITIAL_PAYMENT_COMPLETE = 'initial_payment_complete';
 
 	/** @var string 訂閱從成功到失敗 */
@@ -24,10 +28,10 @@ enum Action: string {
 	/** @var string 訂閱付款重試 */
 	case PAYMENT_RETRY = 'payment_retry';
 
-	/** @var string 試用結束前|後 */
+	/** @var string 試用結束 */
 	case TRIAL_END = 'trial_end';
 
-	/** @var string 下次付款前|後 */
+	/** @var string 下次付款 */
 	case NEXT_PAYMENT = 'next_payment';
 
 	/** @var string 新的續訂訂單創建 */
@@ -39,11 +43,7 @@ enum Action: string {
 	/** @var string 訂閱結束，如果訂閱有 "cancelled" 或 "pending-cancel" 狀態，會觸發這個 */
 	case END_OF_PREPAID_TERM = 'end_of_prepaid_term';
 
-	/**
-	 * 取得 訂閱觸發的時間點的 action hook
-	 *
-	 * @return string
-	 */
+	/** @return string 取得 訂閱觸發的時間點的 action hook */
 	public function get_action_hook(): string {
 		return "powerhouse_subscription_at_{$this->value}";
 	}

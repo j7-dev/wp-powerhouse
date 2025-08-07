@@ -74,12 +74,12 @@ abstract class Base {
 	 *
 	 * @param int    $timestamp 排程的時間
 	 * @param string $group     排程的群組
-	 * @param string $unique    排程的唯一值
+	 * @param bool   $unique    是否唯一
 	 * @param int    $priority  排程的優先級
 	 *
 	 * @return int|null 排程的 action_id
 	 */
-	public function schedule_single( int $timestamp, string $group = '', string $unique = '', int $priority = 10 ): int|null {
+	public function schedule_single( int $timestamp, string $group = '', bool $unique = false, int $priority = 10 ): int|null {
 
 		$action_id = \as_schedule_single_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
 
@@ -152,10 +152,11 @@ abstract class Base {
 	/**
 	 * 取消排程
 	 *
+	 * @param string $group 排程的群組
 	 * @return int|null 取消的排程 action_id
 	 */
-	public function unschedule(): int|null {
-		$action_id = $this->get_next_action_id();
+	public function unschedule( $group = '' ): int|null {
+		$action_id = $this->get_next_action_id($group);
 		if ( ! $action_id ) {
 			return null;
 		}
@@ -163,7 +164,7 @@ abstract class Base {
 
 		$method_name = 'after_' . __FUNCTION__;
 		if ( method_exists( static::class, $method_name ) ) {
-			$this->{$method_name}($action_id);
+			$this->{$method_name}($action_id, $group);
 		}
 
 		return $action_id;

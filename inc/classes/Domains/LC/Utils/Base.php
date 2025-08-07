@@ -14,7 +14,7 @@ use J7\WpUtils\Classes\General;
 use Nullix\JsAesPhp\JsAesPhp;
 use J7\Powerhouse\Api;
 
-if ( class_exists( 'J7\Powerhouse\Domains\LC\Utils' ) ) {
+if ( class_exists( 'J7\Powerhouse\Domains\LC\Utils\Base' ) ) {
 	return;
 }
 /**
