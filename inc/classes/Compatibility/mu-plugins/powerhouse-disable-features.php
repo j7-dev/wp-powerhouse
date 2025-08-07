@@ -6,7 +6,7 @@
  * Description:       安全性考量，禁用一些功能
  * Version:           1.0.0
  * Requires at least: 5.7
- * Requires PHP:      8.0
+ * Requires PHP:      7.4
  * Author:            J7
  * Author URI:        https://github.com/j7-dev
  * License:           GPL v2 or later

@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Plugin Name:       Email Validator | Powerhouse
  * Plugin URI:        https://www.powerhouse.cloud
  * Description:       驗證用戶的 Email 網域是否設置郵件伺服器
  * Version:           1.0.0
  * Requires at least: 5.7
- * Requires PHP:      8.0
+ * Requires PHP:      7.4
  * Author:            J7
  * Author URI:        https://github.com/j7-dev
  * License:           GPL v2 or later
@@ -32,7 +33,8 @@ namespace J7\Powerhouse\MU;
  * EmailValidator
  * 驗證用戶的 Email 網域是否設置郵件伺服器
  */
-final class EmailValidator {
+final class EmailValidator
+{
 
 	private const SETTINGS_KEY = 'powerhouse_settings';
 
@@ -43,15 +45,16 @@ final class EmailValidator {
 	private array $whitelist_domains = [];
 
 	/** Constructor */
-	public function __construct() {
+	public function __construct()
+	{
 		$this->init();
 
 		if ($this->settings->register) {
 			/** @category [前台]  WordPress 標準註冊（如 wp-login.php?action=register） */
-			\add_filter('registration_errors', [ $this, 'registration_errors_validate' ], 10, 3);
+			\add_filter('registration_errors', [$this, 'registration_errors_validate'], 10, 3);
 
 			/** @category [前台] WooCommerce My Account 註冊 */
-			\add_filter('woocommerce_registration_errors', [ $this, 'registration_errors_validate' ], 10, 3);
+			\add_filter('woocommerce_registration_errors', [$this, 'registration_errors_validate'], 10, 3);
 		}
 
 		/** @category [前台] 後台建立用戶時的驗證，後台創建用戶先不阻擋 */
@@ -59,17 +62,18 @@ final class EmailValidator {
 
 		if ($this->settings->wp_mail) {
 			/** @category [全局] 所有發信前 */
-			\add_filter('pre_wp_mail', [ $this, 'pre_wp_mail_validate' ], 10, 2);
+			\add_filter('pre_wp_mail', [$this, 'pre_wp_mail_validate'], 10, 2);
 		}
 	}
 
 	/** 從 options 初始化設定 */
-	private function init(): void {
+	private function init(): void
+	{
 		$settings       = \get_option(self::SETTINGS_KEY, []);
 		$settings       = is_array($settings) ? $settings : [];
 		$this->settings = (object) [
-			'register' =>( $settings['enable_email_domain_check_register'] ?? 'yes' ) === 'yes',
-			'wp_mail'  => ( $settings['enable_email_domain_check_wp_mail'] ?? 'yes' ) === 'yes',
+			'register' => ($settings['enable_email_domain_check_register'] ?? 'yes') === 'yes',
+			'wp_mail'  => ($settings['enable_email_domain_check_wp_mail'] ?? 'yes') === 'yes',
 		];
 
 		$whitelist_domains       = $settings['email_domain_check_white_list'] ?? [
@@ -80,7 +84,7 @@ final class EmailValidator {
 			'icloud.com',
 		];
 		$whitelist_domains       = is_array($whitelist_domains) ? $whitelist_domains : [];
-		$whitelist_domains       = \array_map( 'strtolower', $whitelist_domains );
+		$whitelist_domains       = \array_map('strtolower', $whitelist_domains);
 		$this->whitelist_domains = $whitelist_domains;
 	}
 
@@ -91,14 +95,15 @@ final class EmailValidator {
 	 * @param bool      $update 是否為更新操作
 	 * @param \stdClass $user 用戶物件
 	 */
-	public function check_admin_email_domain( \WP_Error $errors, bool $update, \stdClass $user ): void {
+	public function check_admin_email_domain(\WP_Error $errors, bool $update, \stdClass $user): void
+	{
 		// 只在建立新用戶時檢查，不在更新時檢查
-		if ( $update ) {
+		if ($update) {
 			return;
 		}
 
-		if ( isset( $user->user_email ) ) {
-			$this->registration_errors_validate( $errors, $user->user_login, $user->user_email );
+		if (isset($user->user_email)) {
+			$this->registration_errors_validate($errors, $user->user_login, $user->user_email);
 		}
 	}
 
@@ -110,7 +115,8 @@ final class EmailValidator {
 	 * @param string    $user_email 用戶 Email
 	 * @return \WP_Error WP_Error 錯誤
 	 */
-	public function registration_errors_validate( \WP_Error $errors, string $sanitized_user_login, string $user_email ): \WP_Error {
+	public function registration_errors_validate(\WP_Error $errors, string $sanitized_user_login, string $user_email): \WP_Error
+	{
 		try {
 			$this->validate_email_domain($user_email);
 			return $errors;
@@ -133,7 +139,8 @@ final class EmailValidator {
 	 * }     $atts
 	 * @return null|bool 短路返回值
 	 */
-	public function pre_wp_mail_validate( $return, $atts ) {
+	public function pre_wp_mail_validate($return, $atts)
+	{
 		try {
 			$to = $atts['to'] ?? '';
 			if (!$to) {
@@ -161,7 +168,8 @@ final class EmailValidator {
 	 * @return true 如果郵件網域有效，則返回 true
 	 * @throws \Exception 如果郵件網域未設置郵件伺服器，則拋出異常
 	 */
-	private function validate_email_domain( string $user_email ): bool {
+	private function validate_email_domain(string $user_email): bool
+	{
 		// 解析 Email 網域
 		$email_parts = \explode('@', \strtolower($user_email));
 		if (\count($email_parts) !== 2) {
