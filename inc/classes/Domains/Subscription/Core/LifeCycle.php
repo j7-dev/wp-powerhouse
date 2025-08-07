@@ -84,6 +84,32 @@ final class LifeCycle {
 			10,
 			1
 			);
+
+		// 註冊監聽的生命週期
+		\add_action(
+				'woocommerce_subscription_date_updated',
+				function ( $subscription, $date_type, $datetime ) {
+					$mapper = [
+						Action::TRIAL_END->value    => Action::WATCH_TRIAL_END,
+						Action::END->value          => Action::WATCH_END,
+						Action::NEXT_PAYMENT->value => Action::WATCH_NEXT_PAYMENT,
+					];
+
+					foreach ($mapper as $_date_type => $action) {
+						if ( $_date_type === $date_type) {
+							\do_action(
+								$action->get_action_hook(),
+								$subscription,
+								[
+									'datetime' => $datetime,
+								]
+								);
+						}
+					}
+				},
+			10,
+			3
+				);
 	}
 
 	/**
@@ -124,7 +150,6 @@ final class LifeCycle {
 	 * @return void
 	 */
 	public function subscription_failed( $from_status, $to_status, $subscription ): void {
-
 		if ( ! ( $subscription instanceof \WC_Subscription ) ) {
 			return;
 		}
