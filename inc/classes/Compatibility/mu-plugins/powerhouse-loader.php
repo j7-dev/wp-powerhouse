@@ -1,4 +1,30 @@
 <?php
+/**
+ * Plugin Name:       Loader | Powerhouse
+ * Plugin URI:        https://www.powerhouse.cloud
+ * Description:       提前載入 Powerhouse 的 vendor，確保 Powerhouse 是最先載入的
+ * Version:           1.0.0
+ * Requires at least: 5.7
+ * Requires PHP:      8.0
+ * Author:            J7
+ * Author URI:        https://github.com/j7-dev
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       powerhouse
+ * Domain Path:       /languages
+ * Tags: vite, WordPress plugin
+ *
+ * *******************************************************************************************
+ *                                                                                           *
+ *   ██████╗  ██████╗ ██╗    ██╗███████╗██████╗ ██╗  ██╗ ██████╗ ██╗   ██╗███████╗███████╗   *
+ *   ██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔══██╗██║  ██║██╔═══██╗██║   ██║██╔════╝██╔════╝   *
+ *   ██████╔╝██║   ██║██║ █╗ ██║█████╗  ██████╔╝███████║██║   ██║██║   ██║███████╗█████╗     *
+ *   ██╔═══╝ ██║   ██║██║███╗██║██╔══╝  ██╔══██╗██╔══██║██║   ██║██║   ██║╚════██║██╔══╝     *
+ *   ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║██║  ██║╚██████╔╝╚██████╔╝███████║███████╗   *
+ *   ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝   *
+ *                                                                                           *
+ * *********************************** www.powerhouse.cloud **********************************
+ */
 
 namespace J7\Powerhouse\MU;
 
