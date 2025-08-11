@@ -4,7 +4,7 @@
  * Plugin Name:       Email Validator | Powerhouse
  * Plugin URI:        https://www.powerhouse.cloud
  * Description:       驗證用戶的 Email 網域是否設置郵件伺服器
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 5.7
  * Requires PHP:      7.4
  * Author:            J7
