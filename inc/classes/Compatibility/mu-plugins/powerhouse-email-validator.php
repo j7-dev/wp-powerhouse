@@ -4,7 +4,7 @@
  * Plugin Name:       Email Validator | Powerhouse
  * Plugin URI:        https://www.powerhouse.cloud
  * Description:       驗證用戶的 Email 網域是否設置郵件伺服器
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 5.7
  * Requires PHP:      7.4
  * Author:            J7
@@ -37,6 +37,8 @@ final class EmailValidator {
     
     
     private const SETTINGS_KEY = 'powerhouse_settings';
+    
+    private const EMAIL_PATTERN = '/([^<>\s]+@[^<>\s]+)/';
     
     /** @var object{register: bool, wp_mail: bool} $settings 設定 */
     private object $settings;
@@ -126,6 +128,43 @@ final class EmailValidator {
     }
     
     /**
+     * 通用的 Email 網域驗證邏輯
+     *
+     * @param string $user_email 用戶 Email
+     *
+     * @return true 如果郵件網域有效，則返回 true
+     * @throws \Exception 如果郵件網域未設置郵件伺服器，則拋出異常
+     */
+    private function validate_email_domain( string $user_email ): bool {
+        // 這個 Email 有可能長這樣 "test <test@example.com>"，所以要用 pattern 處理
+        $is_matched = preg_match( self::EMAIL_PATTERN, $user_email, $matches );
+        if( !$is_matched ) {
+            throw new \Exception( '無效的 Email 格式' );
+        }
+        $email = $matches[1];
+        
+        // 解析 Email 網域
+        $email_parts = \explode( '@', \strtolower( $email ) );
+        if( \count( $email_parts ) !== 2 ) {
+            throw new \Exception( '無效的 Email 格式' );
+        }
+        
+        $domain = $email_parts[1];
+        
+        // 白名單檢查
+        if( \in_array( $domain, $this->whitelist_domains, true ) ) {
+            return true; // 跳過檢查
+        }
+        
+        // 檢查 MX 記錄
+        if( !checkdnsrr( $domain, 'MX' ) ) {
+            throw new \Exception( '該 Email 網域未設置郵件伺服器，請使用有效的郵件網域' );
+        }
+        
+        return true;
+    }
+    
+    /**
      * 是否發信前中斷發送郵件
      *
      * @param null|bool $return 短路返回值
@@ -170,36 +209,6 @@ final class EmailValidator {
         catch ( \Throwable $th ) {
             return false;
         }
-    }
-    
-    /**
-     * 通用的 Email 網域驗證邏輯
-     *
-     * @param string $user_email 用戶 Email
-     *
-     * @return true 如果郵件網域有效，則返回 true
-	 * @throws \Exception 如果郵件網域未設置郵件伺服器，則拋出異常
-     */
-    private function validate_email_domain( string $user_email ): bool {
-        // 解析 Email 網域
-        $email_parts = \explode( '@', \strtolower( $user_email ) );
-        if( \count( $email_parts ) !== 2 ) {
-			throw new \Exception('無效的 Email 格式');
-        }
-        
-        $domain = $email_parts[1];
-        
-        // 白名單檢查
-        if( \in_array( $domain, $this->whitelist_domains, true ) ) {
-            return true; // 跳過檢查
-        }
-        
-        // 檢查 MX 記錄
-        if( !checkdnsrr( $domain, 'MX' ) ) {
-			throw new \Exception('該 Email 網域未設置郵件伺服器，請使用有效的郵件網域');
-        }
-        
-        return true;
     }
 }
 
