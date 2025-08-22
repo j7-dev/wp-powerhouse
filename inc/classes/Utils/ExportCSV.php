@@ -72,7 +72,7 @@ abstract class ExportCSV {
 	 * @param object $row 文章
 	 * @return array 欄位值
 	 */
-	protected function get_field_value( $row ) {
+	protected function get_field_value( $row ): array {
 		$values = [];
 		foreach ($this->columns as $property => $column_label) {
 			if (property_exists($row, $property)) {
