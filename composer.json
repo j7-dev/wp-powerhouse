@@ -1,54 +1,54 @@
 {
-	"name": "j7-dev/powerhouse",
-	"description": "powerhouse is a library as plugin",
-	"type": "wordpress-plugin",
-	"license": "GPL-2.0-only",
-	"authors": [
-		{
-			"name": "JerryLiu",
-			"email": "j7.dev.gg@gmail.com",
-			"homepage": "https://github.com/j7-dev",
-			"role": "Developer"
-		}
-	],
-	"repositories": [
-		{
-			"type": "composer",
-			"url": "https://wpackagist.org"
-		}
-	],
-	"autoload": {
-		"psr-4": {
-			"J7\\Powerhouse\\": "inc/classes/"
-		}
-	},
-	"config": {
-		"allow-plugins": {
-			"dealerdirect/phpcodesniffer-composer-installer": true,
-			"phpstan/extension-installer": true
-		}
-	},
-	"require": {
-		"kucrut/vite-for-wp": "^0.11.6",
-		"j7-dev/wp-utils": "^0.3.65",
-		"brainfoolong/js-aes-php": "^1.0",
-		"gregwar/captcha": "^1.2",
-		"symfony/finder": "6.0.19"
-	},
-	"require-dev": {
-		"squizlabs/php_codesniffer": "@stable",
-		"wp-coding-standards/wpcs": "@stable",
-		"dealerdirect/phpcodesniffer-composer-installer": "@stable",
-		"phpcompatibility/php-compatibility": "@stable",
-		"phpstan/phpstan": "@stable",
-		"php-stubs/woocommerce-stubs": "@stable",
-		"php-stubs/wordpress-stubs": "@stable",
-		"phpstan/extension-installer": "@stable"
-	},
-	"scripts": {
-		"lint": "phpcs"
-	},
-	"conflict": {
-		"symfony/finder": ">6.0.19"
-	}
+  "name": "j7-dev/powerhouse",
+  "description": "powerhouse is a library as plugin",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-only",
+  "authors": [
+    {
+      "name": "JerryLiu",
+      "email": "j7.dev.gg@gmail.com",
+      "homepage": "https://github.com/j7-dev",
+      "role": "Developer"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "J7\\Powerhouse\\": "inc/classes/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "require": {
+    "kucrut/vite-for-wp": "^0.11.6",
+    "j7-dev/wp-utils": "^0.3.67",
+    "brainfoolong/js-aes-php": "^1.0",
+    "gregwar/captcha": "^1.2",
+    "symfony/finder": "6.0.19"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "@stable",
+    "wp-coding-standards/wpcs": "@stable",
+    "dealerdirect/phpcodesniffer-composer-installer": "@stable",
+    "phpcompatibility/php-compatibility": "@stable",
+    "phpstan/phpstan": "@stable",
+    "php-stubs/woocommerce-stubs": "@stable",
+    "php-stubs/wordpress-stubs": "@stable",
+    "phpstan/extension-installer": "@stable"
+  },
+  "scripts": {
+    "lint": "phpcs"
+  },
+  "conflict": {
+    "symfony/finder": ">6.0.19"
+  }
 }
