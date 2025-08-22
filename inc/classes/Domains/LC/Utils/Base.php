@@ -83,29 +83,11 @@ class Base {
 					self::set_lc_transient($default_lc);
 					// 失敗不清除原本的 saved_code
 					// self::delete_lc_transient($product_slug);
-					\J7\WpUtils\Classes\WC::log(
-						[
-							'error'        => '500 ' . $th->getMessage(),
-							'condition'    => 'transient 不存在|過期，且 saved_code 存在',
-							'saved_code'   => $saved_code,
-							'product_slug' => $product_slug,
-						],
-						'如果 transient 不存在|過期，且 saved_code 存在，則重新發 API 獲取 get_lc_array'
-						);
 					continue;
 				}
 
 				// 如果啟用回得是 401 ，則使用預設的狀態
 				if ( \is_wp_error( $response ) ) {
-					// TEST 印出 WC Logger 記得移除 ---- //
-					\J7\WpUtils\Classes\WC::log(
-						[
-							'product_slug' => $product_slug,
-							'error'        => $response->get_error_message(),
-						],
-						'delete_lc_transient from get_lc_array 如果啟用回得是 401 ，則使用預設的狀態'
-						);
-					// ---------- END TEST ---------- //
 					self::delete_lc_transient($product_slug);
 					$lc_array[] = $default_lc;
 					continue;
@@ -121,6 +103,91 @@ class Base {
 		 * @var array<array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}> $lc_array
 		 */
 		return $lc_array;
+	}
+
+	/**
+	 * 解密
+	 *
+	 * @param string $value 加密後的 string
+	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}|false 單個授權狀態，false 表示解密失敗
+	 */
+	public static function decode( string $value ): array|false {
+
+		try {
+			/**
+		 * @var array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
+		 */
+			$lc_status = JsAesPhp::decrypt($value, Plugin::$kebab);
+
+			if (!is_array($lc_status)) { // @phpstan-ignore-line
+				return false;
+			}
+
+			return $lc_status;
+		} catch ( \Exception $e ) {
+			\J7\WpUtils\Classes\WC::log(
+					[
+						'getMessage' => $e->getMessage(),
+						'value'      => $value,
+					],
+					'LC::decode error'
+				);
+			return false;
+		}
+	}
+
+	/**
+	 * 設置預設的 transient
+	 *
+	 * @param string               $product_slug 產品 key
+	 * @param string               $product_name 產品名稱
+	 * @param array{link?: string} $product_info 產品資訊
+	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
+	 */
+	public static function get_default_lc( string $product_slug, string $product_name, array $product_info ): array {
+		$default_lc = [
+			'code'        => '',
+			'post_status' => '',
+			'expire_date' => '',
+			'type'        => '',
+		];
+
+		$lc                 = $default_lc;
+		$lc['product_slug'] = $product_slug;
+		$lc['product_name'] = $product_name;
+		$lc['link']         = $product_info['link'] ?? '';
+		return $lc;
+	}
+
+	/**
+	 * 刪除 LC transient
+	 * 刪除 product_slug 和 code 到 option
+	 *
+	 * @param string $product_slug 產品 slug
+	 * @return bool 是否刪除成功
+	 */
+	public static function delete_lc_transient( string $product_slug ): bool {
+		/** @var array<string, string> $saved_codes 產品 key 和 code */
+		$saved_codes = \get_option(self::KEY, []);
+		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
+
+		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
+		// $trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
+		// $functions = array_map( fn ( $t ) => $t['function'], $trace );
+		// \J7\WpUtils\Classes\WC::log(
+		// [
+		// 'functions'    => $functions,
+		// 'product_slug' => $product_slug,
+		// 'saved_codes'  => $saved_codes,
+		// ],
+		// 'debug_backtrace delete_lc_transient'
+		// );
+		// -------------------- END TEST ------------------- //
+
+		unset($saved_codes[ $product_slug ]);
+		\update_option(self::KEY, $saved_codes);
+		$delete_transient_result = \delete_transient("lc_{$product_slug}");
+		return (bool) $delete_transient_result;
 	}
 
 	/**
@@ -179,6 +246,39 @@ class Base {
 	}
 
 	/**
+	 * 設置 LC transient
+	 * 儲存 product_slug 和 code 到 option
+	 *
+	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string, logs?: array<mixed>} $data 成功
+	 * @return void
+	 */
+	public static function set_lc_transient( array $data ): void {
+		$product_slug = $data['product_slug'];
+
+		/**
+		 * @var array<string, string> $saved_codes 產品 key 和 code
+		 */
+		$saved_codes                  = \get_option(self::KEY, []);
+		$saved_codes                  = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
+		$saved_codes[ $product_slug ] = $data['code'];
+
+		\update_option(self::KEY, $saved_codes);
+
+		unset($data['logs']);
+		\set_transient("lc_{$product_slug}", self::encode($data), self::CACHE_TIME);
+	}
+
+	/**
+	 * 加密函數
+	 *
+	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string} $license_code 單個授權狀態
+	 * @return string 加密後的 string
+	 */
+	public static function encode( array $license_code ): string {
+		return JsAesPhp::encrypt($license_code, Plugin::$kebab, 1);
+	}
+
+	/**
 	 * 棄用授權碼
 	 *
 	 * @param string $code 授權碼
@@ -220,126 +320,6 @@ class Base {
 		}
 
 		return $data;
-	}
-
-
-	/**
-	 * 設置預設的 transient
-	 *
-	 * @param string               $product_slug 產品 key
-	 * @param string               $product_name 產品名稱
-	 * @param array{link?: string} $product_info 產品資訊
-	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} 單個授權狀態
-	 */
-	public static function get_default_lc( string $product_slug, string $product_name, array $product_info ): array {
-		$default_lc = [
-			'code'        => '',
-			'post_status' => '',
-			'expire_date' => '',
-			'type'        => '',
-		];
-
-		$lc                 = $default_lc;
-		$lc['product_slug'] = $product_slug;
-		$lc['product_name'] = $product_name;
-		$lc['link']         = $product_info['link'] ?? '';
-		return $lc;
-	}
-
-	/**
-	 * 設置 LC transient
-	 * 儲存 product_slug 和 code 到 option
-	 *
-	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string, logs?: array<mixed>} $data 成功
-	 * @return void
-	 */
-	public static function set_lc_transient( array $data ): void {
-		$product_slug = $data['product_slug'];
-
-		/**
-		 * @var array<string, string> $saved_codes 產品 key 和 code
-		 */
-		$saved_codes                  = \get_option(self::KEY, []);
-		$saved_codes                  = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
-		$saved_codes[ $product_slug ] = $data['code'];
-
-		\update_option(self::KEY, $saved_codes);
-
-		unset($data['logs']);
-		\set_transient("lc_{$product_slug}", self::encode($data), self::CACHE_TIME);
-	}
-
-
-	/**
-	 * 刪除 LC transient
-	 * 刪除 product_slug 和 code 到 option
-	 *
-	 * @param string $product_slug 產品 slug
-	 * @return bool 是否刪除成功
-	 */
-	public static function delete_lc_transient( string $product_slug ): bool {
-		/** @var array<string, string> $saved_codes 產品 key 和 code */
-		$saved_codes = \get_option(self::KEY, []);
-		$saved_codes = is_array($saved_codes) ? $saved_codes : []; // @phpstan-ignore-line
-
-		// TEST 印出 WC Logger 記得移除 追查 call stack 用 ---- //
-		// $trace     = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5); // 只看5層
-		// $functions = array_map( fn ( $t ) => $t['function'], $trace );
-		// \J7\WpUtils\Classes\WC::log(
-		// [
-		// 'functions'    => $functions,
-		// 'product_slug' => $product_slug,
-		// 'saved_codes'  => $saved_codes,
-		// ],
-		// 'debug_backtrace delete_lc_transient'
-		// );
-		// -------------------- END TEST ------------------- //
-
-		unset($saved_codes[ $product_slug ]);
-		\update_option(self::KEY, $saved_codes);
-		$delete_transient_result = \delete_transient("lc_{$product_slug}");
-		return (bool) $delete_transient_result;
-	}
-
-	/**
-	 * 解密
-	 *
-	 * @param string $value 加密後的 string
-	 * @return array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string}|false 單個授權狀態，false 表示解密失敗
-	 */
-	public static function decode( string $value ): array|false {
-
-		try {
-			/**
-		 * @var array{code: string, post_status: string, expire_date: string, type: string, product_slug: string, product_name: string} $lc_status
-		 */
-			$lc_status = JsAesPhp::decrypt($value, Plugin::$kebab);
-
-			if (!is_array($lc_status)) { // @phpstan-ignore-line
-				return false;
-			}
-
-			return $lc_status;
-		} catch ( \Exception $e ) {
-			\J7\WpUtils\Classes\WC::log(
-					[
-						'getMessage' => $e->getMessage(),
-						'value'      => $value,
-					],
-					'LC::decode error'
-				);
-			return false;
-		}
-	}
-
-	/**
-	 * 加密函數
-	 *
-	 * @param array{id?: int, post_status: string, code: string, type: string, expire_date: int|string, domain?: string, product_id?: int, product_slug: string, product_name: string} $license_code 單個授權狀態
-	 * @return string 加密後的 string
-	 */
-	public static function encode( array $license_code ): string {
-		return JsAesPhp::encrypt($license_code, Plugin::$kebab, 1);
 	}
 
 	/**
