@@ -34,6 +34,7 @@ abstract class Base {
 		protected $item,
 	) {
 		$this->args = $this->get_args();
+		\add_action(static::$hook, [ __CLASS__, 'action_callback' ]);
 	}
 
 	/** 取得排程的參數，執行時會傳入 action_callback @return array<string, string> */
