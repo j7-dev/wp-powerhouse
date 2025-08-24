@@ -34,7 +34,7 @@ abstract class Base {
 		protected $item,
 	) {
 		$this->args = $this->get_args();
-		\add_action(static::$hook, [ __CLASS__, 'action_callback' ]);
+		\add_action(static::$hook, [ static::class, 'action_callback' ]);
 	}
 
 	/** 取得排程的參數，執行時會傳入 action_callback @return array<string, string> */
@@ -49,27 +49,13 @@ abstract class Base {
 	abstract public static function action_callback( $args ): void;
 
 	/**
-	 * 取得下一個排程的 action_id
+	 * 註冊排程
+	 * 建議在 plugins_loaded 時註冊 或 在 init 時註冊
 	 *
-	 * @param string $group 排程的群組
-	 * @return int|null 下一個排程的 action_id
+	 * @return void
 	 */
-	public function get_next_action_id( $group = '' ): int|null {
-
-		$search_args = [
-			'hook'     => static::$hook,
-			'args'     => [ $this->args ],
-			'group'    => $group,
-			'status'   => \ActionScheduler_Store::STATUS_PENDING,
-			'per_page' => 1,
-			'orderby'  => 'date',
-			'order'    => 'ASC',
-		];
-
-		$action_ids     = \as_get_scheduled_actions( $search_args, 'ids' );
-		$next_action_id = $action_ids ? reset($action_ids) : null;
-
-		return (int) $next_action_id ?: null;
+	public static function register(): void {
+		\add_action( static::$hook, [ static::class, 'action_callback' ] );
 	}
 
 	/**
@@ -97,6 +83,51 @@ abstract class Base {
 		$this->unschedule( $group );
 	}
 
+	/**
+	 * 取消排程
+	 *
+	 * @param string $group 排程的群組
+	 * @return int|null 取消的排程 action_id
+	 */
+	public function unschedule( $group = '' ): int|null {
+		$action_id = $this->get_next_action_id($group);
+		if ( ! $action_id ) {
+			return null;
+		}
+
+		\ActionScheduler_Store::instance()->delete_action( (int) $action_id);
+
+		$method_name = 'after_' . __FUNCTION__;
+		if ( method_exists( static::class, $method_name ) ) {
+			$this->{$method_name}($action_id, $group);
+		}
+
+		return $action_id;
+	}
+
+	/**
+	 * 取得下一個排程的 action_id
+	 *
+	 * @param string $group 排程的群組
+	 * @return int|null 下一個排程的 action_id
+	 */
+	public function get_next_action_id( $group = '' ): int|null {
+
+		$search_args = [
+			'hook'     => static::$hook,
+			'args'     => [ $this->args ],
+			'group'    => $group,
+			'status'   => \ActionScheduler_Store::STATUS_PENDING,
+			'per_page' => 1,
+			'orderby'  => 'date',
+			'order'    => 'ASC',
+		];
+
+		$action_ids     = \as_get_scheduled_actions( $search_args, 'ids' );
+		$next_action_id = $action_ids ? reset($action_ids) : null;
+
+		return (int) $next_action_id ?: null;
+	}
 
 	/**
 	 * 單次排程
@@ -182,28 +213,6 @@ abstract class Base {
 	}
 
 	/**
-	 * 取消排程
-	 *
-	 * @param string $group 排程的群組
-	 * @return int|null 取消的排程 action_id
-	 */
-	public function unschedule( $group = '' ): int|null {
-		$action_id = $this->get_next_action_id($group);
-		if ( ! $action_id ) {
-			return null;
-		}
-
-		\ActionScheduler_Store::instance()->delete_action( (int) $action_id);
-
-		$method_name = 'after_' . __FUNCTION__;
-		if ( method_exists( static::class, $method_name ) ) {
-			$this->{$method_name}($action_id, $group);
-		}
-
-		return $action_id;
-	}
-
-	/**
 	 * 取消所有排程
 	 *
 	 * @param string $group 排程的群組
@@ -216,15 +225,5 @@ abstract class Base {
 		if ( method_exists( static::class, $method_name ) ) {
 			$this->{$method_name}($group);
 		}
-	}
-
-	/**
-	 * 註冊排程
-	 * 建議在 plugins_loaded 時註冊 或 在 init 時註冊
-	 *
-	 * @return void
-	 */
-	public static function register(): void {
-		\add_action( static::$hook, [ static::class, 'action_callback' ] );
 	}
 }
