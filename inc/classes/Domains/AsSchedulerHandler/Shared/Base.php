@@ -34,11 +34,19 @@ abstract class Base {
 		protected $item,
 	) {
 		$this->args = $this->get_args();
-		\add_action(static::$hook, [ static::class, 'action_callback' ]);
 	}
 
 	/** 取得排程的參數，執行時會傳入 action_callback @return array<string, string> */
 	abstract protected function get_args(): array;
+
+	/**
+	 * 註冊 Scheduler 的 callback hook
+	 *
+	 * @return void
+	 */
+	public static function register(): void {
+		\add_action(static::$hook, [ static::class, 'action_callback' ]);
+	}
 
 	/**
 	 * 取得排程的 callback
@@ -47,16 +55,6 @@ abstract class Base {
 	 * @return void
 	 */
 	abstract public static function action_callback( $args ): void;
-
-	/**
-	 * 註冊排程
-	 * 建議在 plugins_loaded 時註冊 或 在 init 時註冊
-	 *
-	 * @return void
-	 */
-	public static function register(): void {
-		\add_action( static::$hook, [ static::class, 'action_callback' ] );
-	}
 
 	/**
 	 * 檢查是否已經有排程
@@ -183,26 +181,6 @@ abstract class Base {
 	public function schedule_async( int $timestamp, string $group = '', bool $unique = false, int $priority = 10 ): int|null {
 
 		$action_id = \as_enqueue_async_action( static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
-
-		$method_name = 'after_' . __FUNCTION__;
-		if ( method_exists( static::class, $method_name ) ) {
-			$this->{$method_name}( $action_id, $timestamp, $group );
-		}
-
-		return $action_id;
-	}
-
-	/**
-	 * 使用 cron 排程
-	 *
-	 * @param string $timestamp 排程的時間
-	 * @param string $group     排程的群組
-	 * @param bool   $unique    是否唯一，只會比較 hook 和 group 參數來判斷唯一性，並不會比較 $args（傳遞的參數）。
-	 * @param int    $priority  排程的優先級
-	 */
-	public function schedule_cron( string $timestamp, string $group = '', bool $unique = false, int $priority = 10 ): int|null {
-
-		$action_id = \as_schedule_cron_action( $timestamp, static::$hook, [ $this->args ], $group, $unique, $priority ) ?: null;
 
 		$method_name = 'after_' . __FUNCTION__;
 		if ( method_exists( static::class, $method_name ) ) {
