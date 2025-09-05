@@ -30,7 +30,7 @@
   },
   "require": {
     "kucrut/vite-for-wp": "^0.11.6",
-    "j7-dev/wp-utils": "^0.3.67",
+    "j7-dev/wp-utils": "^0.3",
     "brainfoolong/js-aes-php": "^1.0",
     "gregwar/captcha": "^1.2",
     "symfony/finder": "6.0.19"
