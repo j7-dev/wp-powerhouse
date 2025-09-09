@@ -32,5 +32,3 @@ release/*
 *.sw?
 
 /vendor/
-
-composer.lock
