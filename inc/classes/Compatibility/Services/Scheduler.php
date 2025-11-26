@@ -23,21 +23,10 @@ final class Scheduler {
 	/** Constructor */
 	public function __construct() {
 		\add_action( 'plugins_loaded', [ __CLASS__ , 'redirect' ], 10 );
+		\add_action( self::AS_COMPATIBILITY_ACTION, [ __CLASS__, 'compatibility' ]);
 		AutoUpdate::instance();
-
-		// 以下是每次版本都會執行一次
-		$scheduled_version = \get_option('powerhouse_compatibility_action_scheduled');
-		if ($scheduled_version === Plugin::$version) {
-			return;
-		}
-
-		EmailValidator::instance();
-		Loader::instance();
-		ApiBooster::instance();
-
 		// 排程只執行一次的兼容設定
 		\add_action( 'init', [ __CLASS__, 'compatibility_action_scheduler' ] );
-		\add_action( self::AS_COMPATIBILITY_ACTION, [ __CLASS__, 'compatibility' ]);
 	}
 
 
@@ -47,7 +36,15 @@ final class Scheduler {
 	 * @return void
 	 */
 	public static function compatibility_action_scheduler(): void {
+		// 以下是每次版本都會執行一次
+		$scheduled_version = \get_option('powerhouse_compatibility_action_scheduled');
+
+		if ($scheduled_version === Plugin::$version) {
+			return;
+		}
+
 		\as_enqueue_async_action( self::AS_COMPATIBILITY_ACTION, [] );
+		\update_option('powerhouse_compatibility_action_scheduled', Plugin::$version);
 	}
 
 	/**
@@ -64,6 +61,10 @@ final class Scheduler {
 		// 判斷是否已經有 wp_ph_access_itemmeta 這張 table，沒有就建立
 		CreateTable::create_itemmeta_table();
 
+		EmailValidator::instance();
+		Loader::instance();
+		ApiBooster::instance();
+
 		// 改寫 wp_actionscheduler_actions table schema，把 args 類型從    varchar(191) NULL 改為 longtext NULL
 		self::modify_action_scheduler_table_schema();
 
@@ -74,7 +75,6 @@ final class Scheduler {
 		// ❗不要刪除此行，註記已經執行過相容設定
 		\flush_rewrite_rules();
 		\wp_cache_flush();
-		\update_option('powerhouse_compatibility_action_scheduled', Plugin::$version);
 	}
 
 
@@ -105,78 +105,108 @@ final class Scheduler {
 	 * @return void
 	 */
 	public static function modify_action_scheduler_table_schema(): void {
+		if (self::is_longtext()) {
+			// 已經是 longtext 就不需要改寫
+			return;
+		}
+
 		global $wpdb;
 
 		$table_name = "{$wpdb->prefix}actionscheduler_actions";
 
-		$sql_query = "SHOW CREATE TABLE `$table_name`";
+		try {
 
-		// 執行查詢，並取得結果
-		// 該查詢會返回兩欄：'Table' 和 'Create Table'
-		$origin_table_schema_array = $wpdb->get_row( $sql_query, ARRAY_A ); // phpcs:ignore
-		$origin_table_schema       = $origin_table_schema_array['Create Table'];
-		if (!$origin_table_schema) {
-			Plugin::logger("modify_action_scheduler_table_schema: 無法取得 {$table_name} 的表結構，請確認 Action Scheduler 是否已安裝並有執行過排程。");
-			return;
-		}
+			$sql_query = "SHOW CREATE TABLE `$table_name`";
 
-		// 為了使用 dbDelta，您需要進行以下調整：
-		// a. 移除反引號 (backticks: `)
-		$dbdelta_sql = str_replace( '`', '', $origin_table_schema );
+			// 執行查詢，並取得結果
+			// 該查詢會返回兩欄：'Table' 和 'Create Table'
+			$origin_table_schema_array = $wpdb->get_row( $sql_query, ARRAY_A ); // phpcs:ignore
+			$origin_table_schema       = $origin_table_schema_array['Create Table'];
+			if (!$origin_table_schema) {
+				Plugin::logger("modify_action_scheduler_table_schema: 無法取得 {$table_name} 的表結構，請確認 Action Scheduler 是否已安裝並有執行過排程。");
+				return;
+			}
 
-		// b. 替換或移除 ENGINE/CHARSET/COLLATE 部分，並確保以 $wpdb->collate 結尾
-		// 這是最複雜的一步，因為要確保只保留 CREATE TABLE ... ( ... ) 部分
+			// 為了使用 dbDelta，您需要進行以下調整：
+			// a. 移除反引號 (backticks: `)
+			$dbdelta_sql = str_replace( '`', '', $origin_table_schema );
 
-		// 為了簡化，我們先移除整個表屬性部分 (例如 ENGINE=InnoDB ...)
-		$dbdelta_sql = preg_replace( '/\s(ENGINE|DEFAULT\sCHARACTER\sSET|COLLATE)=[^;]+$/i', '', $dbdelta_sql );
+			// b. 替換或移除 ENGINE/CHARSET/COLLATE 部分，並確保以 $wpdb->collate 結尾
+			// 這是最複雜的一步，因為要確保只保留 CREATE TABLE ... ( ... ) 部分
 
-		// 確保以分號 (;) 結尾的語句被移除，並準備添加 $wpdb->collate
-		$dbdelta_sql = rtrim( $dbdelta_sql, ';' ) . " $wpdb->collate;";
+			// 為了簡化，我們先移除整個表屬性部分 (例如 ENGINE=InnoDB ...)
+			$dbdelta_sql = preg_replace( '/\s(ENGINE|DEFAULT\sCHARACTER\sSET|COLLATE)=[^;]+$/i', '', $dbdelta_sql );
 
-		// c. 在 $dbdelta_sql 中修改 'args' 欄位定義 (例如從 TEXT NOT NULL 改為 LONGTEXT NULL)
-		// 這一步通常需要使用字串替換或正則表達式來針對特定欄位進行操作。
+			// 確保以分號 (;) 結尾的語句被移除，並準備添加 $wpdb->collate
+			$dbdelta_sql = rtrim( $dbdelta_sql, ';' ) . " $wpdb->collate;";
 
-		// 假設原本是 'args text NOT NULL,'
-		$old_definition = 'args varchar(191)';
-		$new_definition = 'args longtext';
+			// c. 在 $dbdelta_sql 中修改 'args' 欄位定義 (例如從 TEXT NOT NULL 改為 LONGTEXT NULL)
+			// 這一步通常需要使用字串替換或正則表達式來針對特定欄位進行操作。
 
-		$final_dbdelta_sql = \str_replace( $old_definition, $new_definition, $dbdelta_sql );
-		// 移除索引
-		// 1. 移除目標索引
-		$final_dbdelta_sql = \str_replace( 'KEY args (args),', '', $final_dbdelta_sql );
+			// 假設原本是 'args text NOT NULL,'
+			$old_definition = 'args varchar(191)';
+			$new_definition = 'args longtext';
 
-		// 2. 修正留下的 SQL 語法錯誤 (連續逗號)
-		// 將所有「逗號後面跟著任意空白字符，再跟著一個逗號」替換成單個逗號。
-		// 這可以處理 'scheduled_date_gmt(...) ,' 和 ', KEY group_id(...)' 之間的問題。
-		$final_dbdelta_sql = \preg_replace( '/,\s*,/', ',', $final_dbdelta_sql );
+			$final_dbdelta_sql = \str_replace( $old_definition, $new_definition, $dbdelta_sql );
+			// 移除索引
+			// 1. 移除目標索引
+			$final_dbdelta_sql = \str_replace( 'KEY args (args),', '', $final_dbdelta_sql );
 
-		// 3. (可選但推薦) 移除多餘的空行，使語句更整潔
-		$final_dbdelta_sql = \preg_replace( '/\n\s*\n/', "\n", $final_dbdelta_sql );
-		$wpdb->query( "DROP INDEX `args` ON `{$table_name}`" );  // phpcs:ignore
+			// 2. 修正留下的 SQL 語法錯誤 (連續逗號)
+			// 將所有「逗號後面跟著任意空白字符，再跟著一個逗號」替換成單個逗號。
+			// 這可以處理 'scheduled_date_gmt(...) ,' 和 ', KEY group_id(...)' 之間的問題。
+			$final_dbdelta_sql = \preg_replace( '/,\s*,/', ',', $final_dbdelta_sql );
 
-		// 4. 執行 dbDelta
-		if ( ! \function_exists( 'dbDelta' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-		}
+			// 3. (可選但推薦) 移除多餘的空行，使語句更整潔
+			$final_dbdelta_sql = \preg_replace( '/\n\s*\n/', "\n", $final_dbdelta_sql );
+			$wpdb->query( "DROP INDEX `args` ON `{$table_name}`" );  // phpcs:ignore
 
-		$result                      = \dbDelta( $final_dbdelta_sql ); // 實際執行 dbDelta
-		$result['final_dbdelta_sql'] = $final_dbdelta_sql;
+			// 4. 執行 dbDelta
+			if ( ! \function_exists( 'dbDelta' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			}
 
-		// 檢查有沒有修改成功
-		$column_type           = self::get_column_type( 'args' );
-		$result['column_type'] = $column_type;
+			$result                      = \dbDelta( $final_dbdelta_sql ); // 實際執行 dbDelta
+			$result['final_dbdelta_sql'] = $final_dbdelta_sql;
 
-		$is_success = \strpos( $column_type, 'longtext' ) !== false;
+			// 檢查有沒有修改成功
+			$column_type           = self::get_column_type( 'args' );
+			$result['column_type'] = $column_type;
 
-		Plugin::logger(
-		\sprintf(
-		'modify_action_scheduler_table_schema: 已執行修改 %1$s 的表結構 %2$s。',
-		$table_name,
-		$is_success ? '成功✅' : '失敗❌'
-		),
+			$is_success = \strpos( $column_type, 'longtext' ) !== false;
+
+			Plugin::logger(
+			\sprintf(
+			'modify_action_scheduler_table_schema: 已執行修改 %1$s 的表結構 %2$s。',
+			$table_name,
+			$is_success ? '成功✅' : '失敗❌'
+			),
 			'debug',
 			$result
 			);
+
+		} catch (\Throwable $th) {
+			Plugin::logger(
+			\sprintf(
+			'modify_action_scheduler_table_schema: 已執行修改 %1$s 的表結構失敗❌，%2$s',
+			$table_name,
+			$th->getMessage()
+			),
+			'debug',
+			$result
+			);
+		}
+	}
+
+	/**
+	 * 檢查 args 欄位是否為 longtext
+	 *
+	 * @return bool
+	 */
+	private static function is_longtext( string $column_name = 'args' ): bool {
+		$column_type           = self::get_column_type( 'args' );
+		$result['column_type'] = $column_type;
+		return \strpos( $column_type, 'longtext' ) !== false;
 	}
 
 	/**
@@ -185,7 +215,7 @@ final class Scheduler {
 	 * @param string $column_name 欄位名稱。
 	 * @return string|null 該欄位的資料類型 (Type)，如果查詢失敗則返回 null
 	 */
-	private static function get_column_type( string $column_name ): string|null {
+	private static function get_column_type( string $column_name = 'args' ): string|null {
 		global $wpdb;
 
 		$table_name = "{$wpdb->prefix}actionscheduler_actions";
