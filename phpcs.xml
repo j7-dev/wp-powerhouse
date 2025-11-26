@@ -58,6 +58,7 @@
         <exclude name="WordPress.NamingConventions.ValidHookName.UseUnderscores"/>
         <exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
         <exclude name="WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase"/>
     </rule>
 
     <exclude-pattern>.idea/*</exclude-pattern>
