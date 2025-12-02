@@ -237,7 +237,7 @@ Bootstrap::instance();
 ```php
 <?php
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace J7\Powerhouse;
 
@@ -569,7 +569,7 @@ final class V2Api extends ApiBase {
 ```php
 <?php
 
-declare ( strict_types=1 );
+declare(strict_types=1);
 
 namespace J7\Powerhouse\Utils;
 
@@ -847,7 +847,7 @@ class Settings extends BaseDTO {
 ```php
 <?php
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace J7\Powerhouse\Theme\Core;
 
