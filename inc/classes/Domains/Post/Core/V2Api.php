@@ -1,8 +1,4 @@
 <?php
-/**
- * Post CRUD API
- * 可以用 filter 來 filter 參數
- */
 
 declare(strict_types=1);
 
@@ -15,23 +11,16 @@ use J7\Powerhouse\Domains\Post\Utils\CRUD;
 use J7\Powerhouse\Domains\Post\Model\Attachment;
 
 /**
- * Class V2Api
+ * Post CRUD API
+ * 可以用 filter 來 filter 參數
  */
 final class V2Api extends ApiBase {
 	use \J7\WpUtils\Traits\SingletonTrait;
 
-	/**
-	 * Namespace
-	 *
-	 * @var string
-	 */
+	/** @var string Namespace */
 	protected $namespace = 'v2/powerhouse';
 
-	/**
-	 * APIs
-	 *
-	 * @var array{endpoint:string,method:string,permission_callback: ?callable }[]
-	 */
+	/** @var array{endpoint:string,method:string,permission_callback: ?callable }[] APIs */
 	protected $apis = [
 		[
 			'endpoint'            => 'posts',
@@ -42,6 +31,12 @@ final class V2Api extends ApiBase {
 			'endpoint'            => 'posts/(?P<id>\d+)',
 			'method'              => 'get',
 			'permission_callback' => null,
+		],
+		[
+			'endpoint'            => 'posts/(?P<id>\d+)/field/(?P<field_name>[a-zA-Z_-]+)',
+			'method'              => 'get',
+			'permission_callback' => null,
+			'callback'            => [ __CLASS__, 'get_post_field_name_with_id_callback' ],
 		],
 		[
 			'endpoint'            => 'posts',
@@ -161,7 +156,7 @@ final class V2Api extends ApiBase {
 		if (!is_numeric($id)) {
 			throw new \Exception(
 				sprintf(
-				__('post id format not match #%s', 'powerhouse'),
+				\__('post id format not match #%s', 'powerhouse'),
 				$id
 			)
 			);
@@ -172,7 +167,7 @@ final class V2Api extends ApiBase {
 		if (!$post) {
 			throw new \Exception(
 				sprintf(
-				__('post not found #%s', 'powerhouse'),
+				\__('post not found #%s', 'powerhouse'),
 				$id
 			)
 			);
@@ -198,6 +193,64 @@ final class V2Api extends ApiBase {
 		$post_array = CRUD::format_post_details( $post, $with_description, $depth, $recursive_args, $meta_keys );
 
 		$response = new \WP_REST_Response( $post_array );
+
+		return $response;
+	}
+
+
+	/**
+	 * 取得文章的指定單一欄位
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 *
+	 * @return \WP_REST_Response
+	 * @throws \Exception 當文章不存在時拋出異常
+	 * @phpstan-ignore-next-line
+	 */
+	public static function get_post_field_name_with_id_callback( $request ) { // phpcs:ignore
+		$id = $request['id'] ?? null;
+		if (!is_numeric($id)) {
+			throw new \Exception(
+				sprintf(
+				\__('post id format not match #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$post = \get_post( (int) $id );
+
+		if (!$post) {
+			throw new \Exception(
+				sprintf(
+				\__('post not found #%s', 'powerhouse'),
+				$id
+			)
+			);
+		}
+
+		$field_name = $request['field_name'] ?? null;
+		if (!$field_name) {
+			throw new \Exception(
+				sprintf(
+				__('field name is required #%s', 'powerhouse'),
+				$field_name
+			)
+			);
+		}
+		$field_name   = \sanitize_text_field( $field_name );
+		$post_fields  = WP::get_data_fields('post');
+		$is_meta_data = !\in_array( $field_name, $post_fields, true );
+
+		$field_value = $is_meta_data ? \get_post_meta( (int) $id, $field_name, true ) : $post->$field_name;
+
+		$response = new \WP_REST_Response(
+			[
+				'code'    => 'get_field_success',
+				'message' => \sprintf(\__('get post field success "%s"', 'powerhouse'), $field_name),
+				'data'    => $field_value,
+			]
+			);
 
 		return $response;
 	}
