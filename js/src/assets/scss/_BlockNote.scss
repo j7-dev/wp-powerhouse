@@ -136,8 +136,9 @@
 		--bn-colors-highlights-pink-text: #ad1a72;
 		--bn-colors-highlights-pink-background: #f4dfeb;
 
-		--bn-font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Open Sans", "Segoe UI", "Roboto",
-			"Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+		--bn-font-family:
+			"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Open Sans", "Segoe UI", "Roboto", "Oxygen",
+			"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 		--bn-border-radius: 6px;
 
 		/* Derived values */
@@ -258,5 +259,26 @@
 
 	[data-background-color="pink"] {
 		background-color: var(--bn-colors-highlights-pink-background);
+	}
+
+	/* TEXT ALIGNMENT */
+	[data-text-alignment="left"] {
+		justify-content: flex-start !important;
+		text-align: left !important;
+	}
+
+	[data-text-alignment="center"] {
+		justify-content: center !important;
+		text-align: center !important;
+	}
+
+	[data-text-alignment="right"] {
+		justify-content: flex-end !important;
+		text-align: right !important;
+	}
+
+	[data-text-alignment="justify"] {
+		justify-content: flex-start !important;
+		text-align: justify !important;
 	}
 }

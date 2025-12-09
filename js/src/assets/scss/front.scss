@@ -1,8 +1,8 @@
-@import "_reset";
-@import "_scroll";
-@import "_global";
+@use "_reset" as *;
+@use "_scroll" as *;
+@use "_global" as *;
 
-@import "_slidercaptcha";
-@import "_power-course";
-@import "_daisyui";
-@import "_BlockNote";
+@use "_slidercaptcha" as *;
+@use "_power-course" as *;
+@use "_daisyui" as *;
+@use "_BlockNote" as *;
