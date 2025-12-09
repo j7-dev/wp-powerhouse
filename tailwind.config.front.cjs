@@ -61,6 +61,11 @@ module.exports = {
 				'.tw-inline': {
 					display: 'inline',
 				},
+				'.tw-blur': {
+					'--tw-blur': 'blur(8px)',
+					filter:
+						'var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)',
+				},
 			}
 			addUtilities(newUtilities, ['responsive', 'hover'])
 
@@ -83,11 +88,17 @@ module.exports = {
 					'@screen xl': {
 						maxWidth: '1280px',
 					},
-				}
+				},
 			})
 		},
 	],
-	safelist: ['opacity-50', 'border-0', 'w-full', 'aspect-video', 'rounded-xl'],
+	safelist: [
+		'opacity-50',
+		'border-0',
+		'w-full',
+		'aspect-video',
+		'rounded-xl',
+	],
 	blocklist: [
 		'hidden',
 		'columns-1',
@@ -96,7 +107,9 @@ module.exports = {
 		'block',
 		'inline',
 		'blur',
-		'size-full'
+		'size-full',
+		'container',
+		'rtl',
 	],
 	daisyui: {
 		themes: [
