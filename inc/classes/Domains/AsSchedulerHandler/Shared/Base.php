@@ -73,7 +73,7 @@ abstract class Base {
 	 * @param bool   $once 是否只排程一次
 	 * @return void
 	 */
-	public function maybe_unschedule( string $group = '', bool $once ): void {
+	public function maybe_unschedule( string $group, bool $once ): void {
 		if ( !$once ) {
 			return;
 		}
