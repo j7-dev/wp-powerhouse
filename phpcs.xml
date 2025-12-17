@@ -59,6 +59,7 @@
         <exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
         <exclude name="WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase"/>
         <exclude name="WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase"/>
+        <exclude name="Squiz.Commenting.FunctionCommentThrowTag.Missing"/>
     </rule>
 
     <exclude-pattern>.idea/*</exclude-pattern>
