@@ -1,11 +1,11 @@
-@import "_reset";
-@import "_scroll";
-@import "_global";
+@use "_reset" as *;
+@use "_scroll" as *;
+@use "_global" as *;
 
-@import "_antd";
-@import "_BlockNote";
-@import "_BlockNote-mantine";
-@import "_power-course";
+@use "_antd" as *;
+@use "_BlockNote" as *;
+@use "_BlockNote-mantine" as *;
+@use "_power-course" as *;
 
 /* wp-admin menu page icon 大小 */
 #toplevel_page_powerhouse .wp-menu-image.svg {
