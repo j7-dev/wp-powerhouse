@@ -1,6 +1,6 @@
 {
 	"name": "powerhouse",
-	"version": "3.3.43",
+	"version": "3.3.44",
 	"type": "module",
 	"scripts": {
 		"bootstrap": "composer install --no-interaction",
