@@ -49,10 +49,13 @@ final class ReplaceHelper {
 	/**
 	 * 傳入物件或陣列以執行替換
 	 *
-	 * @param array|object $obj 要替換的物件或陣列，例如 \WP_User $user
-	 * @return self 回傳自身以支援 method chaining
+	 * @param mixed $obj 要替換的物件或陣列，例如 \WP_User $user 可能型別為 array|object|null
+     * @return self 回傳自身以支援 method chaining
 	 */
-	public function replace( array|object $obj ): self {
+	public function replace( mixed $obj ): self {
+		if (!\is_array($obj) && !\is_object($obj)) {
+			return $this;
+		}
 		$this->obj = $obj;
 		$this->init();
 		$this->filtered_template = \strtr( $this->filtered_template, $this->get_strtr_replace_array());
