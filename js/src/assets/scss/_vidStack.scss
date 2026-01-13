@@ -1,0 +1,10 @@
+#tw {
+    .pc-vidstack .vds-poster {
+        opacity: 0;
+
+        &[data-visible]{
+            opacity: 1;
+        }
+    }
+}
+
