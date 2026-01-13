@@ -122,7 +122,7 @@ abstract class Base {
 		];
 
 		$action_ids     = \as_get_scheduled_actions( $search_args, 'ids' );
-		$next_action_id = $action_ids ? reset($action_ids) : null;
+		$next_action_id = $action_ids ? \reset($action_ids) : null;
 
 		return (int) $next_action_id ?: null;
 	}
