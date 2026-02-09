@@ -57,6 +57,11 @@ final class DisableFeatures
 			}
 			return $endpoints;
 		}, self::PRIORITY);
+        
+        //圖片  移除所有圖片尺寸
+        \add_filter('intermediate_image_sizes_advanced', static fn() => []);
+        \add_filter('big_image_size_threshold', static fn () => 20000);
+        \add_filter('jpeg_quality', static fn () => 100);
 	}
 }
 
