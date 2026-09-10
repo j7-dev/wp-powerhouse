@@ -38,7 +38,7 @@ require_once "{$_tests_dir}/includes/functions.php";
 
 /**
  * 在 WordPress muplugins_loaded 時載入插件
- * 順序：WooCommerce → Powerhouse
+ * 順序：WooCommerce → WooCommerce Subscriptions（選用）→ Powerhouse
  */
 function _powerhouse_integration_manually_load_plugin(): void {
 	// 1. 載入 WooCommerce
@@ -49,7 +49,16 @@ function _powerhouse_integration_manually_load_plugin(): void {
 		echo "警告：WooCommerce 不存在於 {$woo_path}\n";
 	}
 
-	// 2. 載入 Powerhouse plugin
+	/**
+	 * 2. 載入 WooCommerce Subscriptions（選用）
+	 * 沒安裝時 @group subscription 的測試會自行 skip（見 TestCase::skipIfSubscriptionsMissing）
+	 */
+	$wcs_path = WP_PLUGIN_DIR . '/woocommerce-subscriptions/woocommerce-subscriptions.php';
+	if ( file_exists( $wcs_path ) ) {
+		require_once $wcs_path;
+	}
+
+	// 3. 載入 Powerhouse plugin
 	require dirname( __DIR__ ) . '/plugin.php';
 }
 
