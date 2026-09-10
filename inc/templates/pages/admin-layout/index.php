@@ -21,7 +21,18 @@ use J7\Powerhouse\Plugin;
 			<title><?php echo $app_title; ?></title>
 		</head>
 
-		<body class="md:pt-8">
+			<?php
+			/*
+			 * `id="tw"` 是 Tailwind utility 生效的前提：`tailwind.config.cjs` 設定
+			 * `important: '#tw'`，所有 utility 都輸出成 `#tw .flex { ... }`。
+			 *
+			 * 前台由 `Theme\Core\FrontEnd::add_html_attr()` 把 `id="tw"` 加在 `<html>` 上，
+			 * 但後台一直沒有對應的處理——admin.min.css 內約 900 條 utility 因此從未生效，
+			 * 各 power-* 外掛只能各自打包一份無 scope 的 Tailwind 才有樣式。
+			 * 補上這個 id 之後，powerhouse 的 admin CSS 才真的能被子外掛共用。
+			 */
+			?>
+		<body id="tw" class="md:pt-8">
 			<?php Plugin::load_template('admin-layout/bar'); ?>
 			<main id="<?php echo $app_id; ?>"></main>
 		<?php

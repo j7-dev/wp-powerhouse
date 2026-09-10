@@ -222,10 +222,10 @@ pnpm dev                    # Vite dev server (port 5179)
 pnpm build                  # Build React app → js/dist/
 
 # CSS (separate pipeline)
-pnpm build-css:admin        # Admin SCSS → CSS + Tailwind
-pnpm build-css:front        # Frontend SCSS → CSS + Tailwind
+pnpm build-css:admin        # Admin SCSS → CSS + Tailwind（含 --postcss ./postcss.tailwind.cjs，見 §13）
+pnpm build-css:front        # Frontend SCSS → CSS + Tailwind（同上）
 pnpm build-css:blocknote    # BlockNote editor styles
-pnpm watch-css:admin        # Watch mode
+pnpm watch-css:admin        # Watch mode（同樣掛 --postcss）
 
 # Code Quality
 pnpm lint                   # ESLint + PHPCS
@@ -260,3 +260,95 @@ pnpm bootstrap              # composer install
 | `powerhouse-disable-features.php` | 停用 WP 預設功能（emoji、embed 等） |
 | `powerhouse-email-validator.php` | Email domain 白名單驗證 |
 | `powerhouse-loader.php` | Powerhouse 早期載入 |
+
+---
+
+## 13. CSS Build Pipeline（`#tw` scope + daisyUI scope 修正）
+
+powerhouse 的 Tailwind build 是整個 Power 生態系**唯一**的 CSS 產出點——`tailwind.config.cjs`
+的 `content` 已把兄弟目錄 `power-*/inc` 與 `power-*/js/src` 一併納入掃描，子外掛（power-shop
+等）不再有自己的 Tailwind pipeline，寫的 class 完全依賴這裡的 build 產出。
+
+### `#tw` scope 前提：沒有這個 id，utility 全部靜默失效
+
+`tailwind.config.cjs` 設 `important: '#tw'`，所有 Tailwind utility 一律輸出成
+`#tw .flex{ ... }` 這種前綴選擇器——**必須有一個帶 `id="tw"` 的祖先元素，utility 才會生效**，
+沒有時樣式安靜地不出現、不會有任何錯誤或警告。
+
+| 情境 | `id="tw"` 掛在哪 |
+|------|-------------------|
+| Admin SPA / 任何走 admin-layout 的頁面 | `inc/templates/pages/admin-layout/index.php` 的 `<body>`（2026-08 前一直缺這個 id，`admin.min.css` 內約 900 條 utility 從未在後台生效，各 power-* 子外掛才會各自打包一份無 scope 的 Tailwind 繞過；已補上） |
+| 前台一般頁面 | `Theme\Core\FrontEnd` 的 `language_attributes` filter 自動補在 `<html>` |
+| 子外掛自印獨立 HTML 骨架（不走 `get_header()`，例如 power-shop 的 `PartnerPortalRenderer`） | 子外掛自己顯式印出，powerhouse 管不到 |
+
+新增任何「不走標準 WP 頁面渲染流程」的頁面時，**必須**確認輸出的最外層容器帶有 `id="tw"`，
+否則整頁 Tailwind 全滅。
+
+### daisyUI scope 修正（2026-08-04）
+
+**根因**：
+1. daisyUI v4 的元件 class 以 specificity **(0,1,0)** 輸出（例如 `.pc-btn{}`）。
+2. daisyUI v4 **沒有** `important` 之類的設定可以提高權重——config 只有 `styled` / `themes` /
+   `base` / `utils` / `logs` / `darkTheme` / `prefix` / `themeRoot`。
+3. Tailwind 的 `important: '#tw'` **只作用在 utilities**，不會套到外掛用 `addComponents`
+   加進來的規則。
+4. 子外掛頁面若被 WordPress 佈景主題以相同 specificity (0,1,0) 命中（常見於 `.button` /
+   `[type="submit"]` 這類泛用選擇器），**CSS 同分時由載入順序決勝**——佈景主題排在 plugin
+   CSS 之後 → **永遠贏**，daisyUI 的尺寸 / 變體 class（`pc-btn-sm` / `pc-btn-ghost` 等）因此
+   被主題悄悄蓋掉，且沒有任何錯誤訊息。Tailwind utility 之所以免疫，正是因為
+   `#tw .h-8` 是 (1,1,0)，嚴格大於主題那條，與載入順序無關。
+
+**修正**：把所有 daisyUI 選擇器也收進 `#tw`，與 Tailwind utility 用同一套機制。
+
+- 新增 `scripts/postcss-scope-daisyui.cjs`（PostCSS plugin，從 `tailwind.config.cjs` 的
+  `important` 讀 scope，避免與 Tailwind 設定漂移，把選擇器前置成 `#tw .pc-btn{}`）
+- 新增 `postcss.tailwind.cjs`（給 Tailwind CLI `--postcss` 旗標用的設定，內含上面的 plugin +
+  `autoprefixer`）
+- `build-css:admin` / `build-css:front` / `watch-css:admin` / `watch-css:front` 四個 script
+  都加上 `--postcss ./postcss.tailwind.cjs`
+
+⚠️ **Tailwind CLI 不會自動讀取 `postcss.config.cjs`**（實測：在裡面放一個會印字的 probe
+plugin，跑 `npx tailwindcss ...` 完全沒有輸出；那份設定只有在有人直接呼叫 postcss——例如
+Vite 的 CSS pipeline——時才生效）。CSS 建置**必須**用 `--postcss` 旗標明確指定
+`postcss.tailwind.cjs`，額外的 PostCSS 步驟才會跑。**不要**以為把 plugin 加進
+`postcss.config.cjs` 就會生效。
+
+**識別方式**：靠 `daisyui.prefix: 'pc-'`。比對 `.pc-` 與 `\:pc-` 兩種形式（後者是 Tailwind
+對響應式變體的轉義寫法，`sm:pc-btn-sm` → `.sm\:pc-btn-sm`），且要求 `pc-` 緊接在 `.` 或
+`\:` 之後，才不會誤傷 `.upc-code` 這種剛好含 `pc-` 的第三方 class。
+
+**🔴 根部錨定的選擇器絕對不能加 scope**：`#tw` 本身就掛在 `<html>` / `<body>`。把
+`:root .pc-countdown` 變成 `#tw :root .pc-countdown` 之後，會變成「找 `#tw` 底下的
+`:root` **後代**」——`:root` 永遠是 `<html>`、不可能是自己的後代，**這條規則從此永遠匹配
+不到，且沒有任何錯誤訊息**。實際踩到兩條（daisyUI v4.12）：`:root .pc-countdown`（倒數
+計時元件樣式整個失效）與 `:root:has(:is(.pc-modal-open, .pc-modal:target,
+.pc-modal-toggle:checked + .pc-modal, .pc-modal[open]))`（Modal 開啟時鎖住背景捲動的規則
+失效）。`postcss-scope-daisyui.cjs` 因此有一條 `ROOT_ANCHORED` 守門：selector 第一個
+compound 若是 `:root` / `html` / `body` / `*` / `[data-theme` 一律跳過（這類規則本來就已經
+是 (0,2,0) 以上、或根本沒有主題會來競爭，不加也安全）。**改動 daisyUI 版本或
+`daisyui.prefix` 時，這條識別規則要跟著檢查**——build log 印出的「已把 N 條…收進 "#tw"」
+數字若掉到 0，代表保護整個失效。
+
+**不會反過來蓋掉 Tailwind utility**：轉換後 daisyUI 是 `#tw .pc-btn`（1,1,0）、Tailwind
+utility 是 `#tw .h-8`（1,1,0），specificity 同分；但 Tailwind 的輸出順序是 base →
+components → utilities，utility 排在後面 → utility 仍然勝出，「utility 覆寫元件樣式」這個
+基本心智模型完全不變（已實測位置比對確認）。
+
+**涵蓋不到的情況**：本轉換只能讓「daisyUI 有規則、但輸給主題」的情況翻盤。若 daisyUI
+**根本沒有**對某個元素出規則，主題的樣式沒有對手，仍要由子外掛自己加 Tailwind utility
+壓過去——已知案例：`.pc-modal-backdrop` 內的 `<button>`（daisyUI 只對 form 本身出規則，
+完全沒管 button），主題的 `[type="submit"]` 會把它塗成整片實心色塊。這不是 powerhouse
+建置層能解決的範圍。
+
+**版本快取**：CSS enqueue 是 `?ver={Plugin::$version}`，重跑 build 只改檔案內容、**版本號
+不變**，既有訪客的瀏覽器會沿用舊快取，且**沒有任何錯誤訊息**能提示這件事。部署必要條件：
+重新 build CSS 之後必須 bump 版本號（或走正常 `pnpm release:patch` 流程）。
+
+### 消費方（子外掛）驗證方式
+
+子外掛自己沒有 CSS 檔可以 grep，驗證某個 class 是否真的產出要在 powerhouse 這邊確認：
+
+```bash
+grep -c '\.mb-2{' js/dist/css/admin.min.css     # 1 = 有產出；0 = 沒有（可能沒重跑 build，或 content 掃描沒命中）
+grep -c '#tw \.pc-btn-sm{' js/dist/css/front.min.css   # 確認 daisyUI 已被正確 scope
+```

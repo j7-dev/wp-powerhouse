@@ -44,6 +44,11 @@ globs: "js/src/**/*.{ts,tsx,scss,css}"
 - Ant Design CSS-in-JS 用於元件樣式
 - antd-style 用於自訂 token
 - SCSS 用於全域樣式（admin.scss, front.scss, blocknote.scss）
+- **daisyUI class 會被 CSS 建置階段自動 scope 進 `#tw`**（`scripts/postcss-scope-daisyui.cjs`，
+  2026-08-04 起，見 CLAUDE.md §13），specificity 因此與 Tailwind utility 同量級，穩定勝過
+  WordPress 佈景主題同權重的規則；日常開發直接寫 `pc-*` class 即可，不需要額外疊 Tailwind
+  utility 繞過主題覆蓋。**唯一例外**：daisyUI 對某個元素完全沒出過規則時（例如 modal
+  backdrop 的 `<button>`），沒有規則可以 scope，仍要自行補 Tailwind utility 壓過主題
 
 ## WordPress 外部化
 - `@wordpress/element`, `@wordpress/i18n` → window.wp.*
